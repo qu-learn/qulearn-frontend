@@ -47,18 +47,22 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
         return [
           { id: "/dashboard", label: "Dashboard", icon: User },
           ...baseItems,
+          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
+          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
-      
       case "educator":
         return [
           { id: "/educator", label: "Dashboard", icon: User },
           ...baseItems,
+          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
+          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
-      
       case "course-administrator":
         return [
           { id: "/admin", label: "Dashboard", icon: User },
           ...baseItems,
+          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
+          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
       
       default:
