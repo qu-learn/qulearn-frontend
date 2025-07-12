@@ -4,12 +4,10 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { ArrowLeft, Save, User, Mail, MapPin } from "lucide-react"
 import { useGetMyProfileQuery, useUpdateMyProfileMutation } from "../api"
+import { useNavigate } from "react-router-dom"
 
-interface ProfileSettingsProps {
-  onNavigate: (page: string) => void
-}
-
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onNavigate }) => {
+const ProfileSettings: React.FC = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -80,11 +78,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onNavigate }) => {
             const user = profileData.user
             const dashboardPage =
               user.role === "student"
-                ? "student-dashboard"
+                ? "/dashboard"
                 : user.role === "educator"
-                  ? "educator-dashboard"
-                  : "course-admin-dashboard"
-            onNavigate(dashboardPage)
+                  ? "/educator"
+                  : "/admin"
+            navigate(dashboardPage)
           }}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
         >

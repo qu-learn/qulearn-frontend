@@ -4,13 +4,15 @@ import type React from "react"
 import { ArrowLeft, Users, TrendingUp, Award, BarChart3 } from "lucide-react"
 import { useGetCourseAnalyticsQuery, useGetCourseByIdQuery } from "../api"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { useNavigate, useParams } from "react-router-dom"
 
-interface CourseAnalyticsProps {
-  courseId: string
-  onNavigate: (page: string, options?: { courseId?: string }) => void
-}
+const CourseAnalytics: React.FC = () => {
+  const navigate = useNavigate()
+  const { courseId } = useParams<{ courseId: string }>()
+  if (!courseId) {
+    throw new Error("Course ID is required")
+  }
 
-const CourseAnalytics: React.FC<CourseAnalyticsProps> = ({ courseId, onNavigate }) => {
   const { data: analyticsData, isLoading: analyticsLoading } = useGetCourseAnalyticsQuery(courseId)
   const { data: courseData, isLoading: courseLoading } = useGetCourseByIdQuery(courseId)
 
@@ -47,7 +49,7 @@ const CourseAnalytics: React.FC<CourseAnalyticsProps> = ({ courseId, onNavigate 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <button
-          onClick={() => onNavigate("educator-dashboard")}
+          onClick={() => navigate("/educator")}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -199,13 +201,12 @@ const CourseAnalytics: React.FC<CourseAnalyticsProps> = ({ courseId, onNavigate 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        student.progress === 100
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${student.progress === 100
                           ? "bg-green-100 text-green-800"
                           : student.progress > 0
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-gray-100 text-gray-800"
-                      }`}
+                        }`}
                     >
                       {student.progress === 100 ? "Completed" : student.progress > 0 ? "In Progress" : "Not Started"}
                     </span>

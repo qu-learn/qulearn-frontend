@@ -3,12 +3,10 @@
 import type React from "react"
 import { BookOpen, Users, TrendingUp, Plus, Edit, BarChart3 } from "lucide-react"
 import { useGetEducatorDashboardQuery, useGetMyCoursesQuery } from "../api"
+import { useNavigate } from "react-router-dom"
 
-interface EducatorDashboardProps {
-  onNavigate: (page: string, options?: { courseId?: string }) => void
-}
-
-const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => {
+const EducatorDashboard: React.FC = () => {
+  const navigate = useNavigate()
   const { data: dashboardData, isLoading: dashboardLoading } = useGetEducatorDashboardQuery()
   const { data: coursesData, isLoading: coursesLoading } = useGetMyCoursesQuery()
 
@@ -80,7 +78,7 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <button
-          onClick={() => onNavigate("course-creation")}
+          onClick={() => navigate("/educator/courses/new")}
           className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-colors text-left"
         >
           <Plus className="w-8 h-8 mb-4" />
@@ -89,7 +87,7 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
         </button>
 
         <button
-          onClick={() => onNavigate("circuit-simulator")}
+          onClick={() => navigate("/simulators/circuit")}
           className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-colors text-left"
         >
           <Edit className="w-8 h-8 mb-4" />
@@ -98,7 +96,7 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
         </button>
 
         <button
-          onClick={() => onNavigate("network-simulator")}
+          onClick={() => navigate("/simulators/network")}
           className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-colors text-left"
         >
           <BarChart3 className="w-8 h-8 mb-4" />
@@ -112,7 +110,7 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">My Courses</h2>
           <button
-            onClick={() => onNavigate("course-creation")}
+            onClick={() => navigate("/educator/courses/new")}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Create New Course
@@ -125,7 +123,7 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No courses yet</h3>
             <p className="text-gray-600 mb-6">Create your first course to start teaching quantum computing</p>
             <button
-              onClick={() => onNavigate("course-creation")}
+              onClick={() => navigate("/educator/courses/new")}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Create Your First Course
@@ -178,19 +176,19 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ onNavigate }) => 
 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => onNavigate("course-detail", { courseId: course.id })}
+                    onClick={() => navigate(`/courses/${course.id}`)}
                     className="flex-1 bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors"
                   >
                     View
                   </button>
                   <button
-                    onClick={() => onNavigate("course-creation", { courseId: course.id })}
+                    onClick={() => navigate(`/educator/courses/${course.id}/edit`)}
                     className="flex-1 bg-gray-600 text-white py-2 px-3 rounded text-sm hover:bg-gray-700 transition-colors"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => onNavigate("course-analytics", { courseId: course.id })}
+                    onClick={() => navigate(`/educator/courses/${course.id}/analytics`)}
                     className="bg-green-600 text-white py-2 px-3 rounded text-sm hover:bg-green-700 transition-colors"
                   >
                     <BarChart3 className="w-4 h-4" />

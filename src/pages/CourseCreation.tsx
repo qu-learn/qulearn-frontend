@@ -4,11 +4,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../api"
+import { useNavigate, useParams } from "react-router-dom"
 
-interface CourseCreationProps {
-  courseId?: string
-  onNavigate: (page: string, options?: { courseId?: string }) => void
-}
 
 interface CourseForm {
   title: string
@@ -30,7 +27,7 @@ interface Module {
 interface Lesson {
   id: string
   title: string
-  content: string
+  content?: string
   quiz?: Quiz
   circuitId?: string
   networkId?: string
@@ -51,7 +48,9 @@ interface Question {
   answers: string[]
 }
 
-const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate }) => {
+const CourseCreation: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<"details" | "content" | "preview">("details")
   const [courseForm, setCourseForm] = useState<CourseForm>({
     title: "",
@@ -143,9 +142,9 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
       prev.map((module) =>
         module.id === moduleId
           ? {
-              ...module,
-              lessons: module.lessons.map((lesson) => (lesson.id === lessonId ? { ...lesson, ...updates } : lesson)),
-            }
+            ...module,
+            lessons: module.lessons.map((lesson) => (lesson.id === lessonId ? { ...lesson, ...updates } : lesson)),
+          }
           : module,
       ),
     )
@@ -184,19 +183,19 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
       prev.map((module) =>
         module.id === moduleId
           ? {
-              ...module,
-              lessons: module.lessons.map((lesson) =>
-                lesson.id === lessonId && lesson.quiz
-                  ? {
-                      ...lesson,
-                      quiz: {
-                        ...lesson.quiz,
-                        questions: [...lesson.quiz.questions, newQuestion],
-                      },
-                    }
-                  : lesson,
-              ),
-            }
+            ...module,
+            lessons: module.lessons.map((lesson) =>
+              lesson.id === lessonId && lesson.quiz
+                ? {
+                  ...lesson,
+                  quiz: {
+                    ...lesson.quiz,
+                    questions: [...lesson.quiz.questions, newQuestion],
+                  },
+                }
+                : lesson,
+            ),
+          }
           : module,
       ),
     )
@@ -208,7 +207,7 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
         await updateCourse({ courseId, course: courseForm }).unwrap()
       } else {
         const result = await createCourse(courseForm).unwrap()
-        onNavigate("course-detail", { courseId: result.course.id })
+        navigate(`/courses/${result.course.id}`)
       }
     } catch (error) {
       console.error("Failed to save course:", error)
@@ -222,7 +221,7 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <button
-          onClick={() => onNavigate("educator-dashboard")}
+          onClick={() => navigate("/educator")}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -258,31 +257,28 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
         <nav className="flex space-x-8">
           <button
             onClick={() => setActiveTab("details")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "details"
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "details"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+              }`}
           >
             Course Details
           </button>
           <button
             onClick={() => setActiveTab("content")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "content"
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "content"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+              }`}
           >
             Content & Modules
           </button>
           <button
             onClick={() => setActiveTab("preview")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "preview"
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "preview"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+              }`}
           >
             Preview
           </button>
@@ -435,9 +431,8 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
               {modules.map((module) => (
                 <div
                   key={module.id}
-                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                    selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
-                  }`}
+                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
+                    }`}
                   onClick={() => setSelectedModule(module.id)}
                 >
                   <div className="flex items-center justify-between">
@@ -484,11 +479,10 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
                   {selectedModuleData.lessons.map((lesson) => (
                     <div
                       key={lesson.id}
-                      className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                        selectedLesson === lesson.id
+                      className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedLesson === lesson.id
                           ? "border-green-500 bg-green-50"
                           : "border-gray-200 hover:bg-gray-50"
-                      }`}
+                        }`}
                       onClick={() => setSelectedLesson(lesson.id)}
                     >
                       <div className="flex items-center justify-between">
@@ -728,13 +722,12 @@ const CourseCreation: React.FC<CourseCreationProps> = ({ courseId, onNavigate })
                 className="w-full h-64 object-cover rounded-lg mb-6"
               />
               <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${
-                  courseForm.difficultyLevel === "beginner"
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${courseForm.difficultyLevel === "beginner"
                     ? "bg-green-100 text-green-800"
                     : courseForm.difficultyLevel === "intermediate"
                       ? "bg-yellow-100 text-yellow-800"
                       : "bg-red-100 text-red-800"
-                }`}
+                  }`}
               >
                 {courseForm.difficultyLevel}
               </span>
