@@ -393,7 +393,7 @@ export interface IDeleteEducatorResponse {
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "/api/v1",
+    baseUrl: "http://localhost:3000/api/v1/",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token")
       if (token) {
