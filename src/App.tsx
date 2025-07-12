@@ -1,12 +1,14 @@
-import { Route, BrowserRouter, Routes } from "react-router-dom"
-import { TestPage } from "./pages/TestPage"
+import { BrowserRouter, Routes } from "react-router-dom"
+import { ApiProvider } from '@reduxjs/toolkit/query/react'
+import { api } from './utils/api.ts'
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<TestPage />} />
-      </Routes>
-    </BrowserRouter>
+    <ApiProvider api={api}>
+      <BrowserRouter>
+        <Routes>
+        </Routes>
+      </BrowserRouter>
+    </ApiProvider>
   );
 }
