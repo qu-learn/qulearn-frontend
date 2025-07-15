@@ -3,7 +3,7 @@
 import type React from "react"
 import { User, BookOpen, Zap, Award, LogOut, Settings } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
-import type { IUser } from "../api"
+import { type IUser } from "../utils/types"
 
 interface HeaderProps {
   user: IUser
