@@ -80,8 +80,7 @@ const EducatorDashboard: React.FC = () => {
         <div className="flex gap-20 mb-8 justify-center">
           <button
             onClick={() => navigate("/educator/courses/new")}
-            className="bg-cyan-700 hover:bg-teal-900 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors"
-          >
+            className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 ">
             <Plus className="w-8 h-8 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Create New Course</h3>
           <p className="text-blue-100">Your next quantum computing course</p>
@@ -89,8 +88,7 @@ const EducatorDashboard: React.FC = () => {
 
           <button
             onClick={() => navigate("/simulators/circuit")}
-            className="bg-cyan-700 hover:bg-teal-900 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors"
-          >
+            className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 ">
             <Edit className="w-8 h-8 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Circuit Simulator</h3>
           <p className="text-purple-100">Create interactive circuit examples</p>
@@ -98,8 +96,7 @@ const EducatorDashboard: React.FC = () => {
 
           <button
             onClick={() => navigate("/simulators/network")}
-            className="bg-cyan-700 hover:bg-teal-900 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors"
-          >
+            className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 ">
             <BarChart3 className="w-8 h-8 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Network Simulator</h3>
           <p className="text-green-100">Design quantum network examples</p>
@@ -181,7 +178,7 @@ const EducatorDashboard: React.FC = () => {
                       onClick={() => {
                         navigate(`/courses/${course.id}`)
                       }}
-                      className="flex-1 bg-cyan-700 text-white py-2 px-3 rounded-xl text-sm hover:bg-cyan-900 transition-colors"
+                      className="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-2 px-3 rounded-xl text-sm hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
                     >
                       View
                     </button>
