@@ -14,7 +14,7 @@ import StudentDashboard from "./pages/student/StudentDashboard"
 import MyCourses from "./pages/student/MyCourses"
 import RecommendedCourses from "./pages/student/RecommendedCourses"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
-// import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
+import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 import CourseDetail from "./pages/educator/CourseDetail"
 // import InteractiveLearning from "./pages/InteractiveLearning"
@@ -193,14 +193,14 @@ function AppContent() {
           />
 
           {/* Admin Routes */}
-          {/* <Route
+          <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <CourseAdminDashboard />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Course Routes */}
           <Route
