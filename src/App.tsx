@@ -1,10 +1,5 @@
-import { BrowserRouter, Routes } from "react-router-dom"
-import { ApiProvider } from '@reduxjs/toolkit/query/react'
-import { api } from './utils/api.ts'
+"use client"
 
-<<<<<<< Updated upstream
-export function App() {
-=======
 import type React from "react"
 import { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
@@ -17,7 +12,7 @@ import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
-import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
+// import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 import CourseDetail from "./pages/educator/CourseDetail"
 // import InteractiveLearning from "./pages/InteractiveLearning"
@@ -178,14 +173,14 @@ function AppContent() {
           />
 
           {/* Admin Routes */}
-          <Route
+          {/* <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <CourseAdminDashboard />
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* Course Routes */}
           <Route
@@ -274,13 +269,13 @@ function AppContent() {
 }
 
 function App() {
->>>>>>> Stashed changes
   return (
     <ApiProvider api={api}>
-      <BrowserRouter>
-        <Routes>
-        </Routes>
-      </BrowserRouter>
+      <Router>
+        <AppContent />
+      </Router>
     </ApiProvider>
-  );
+  )
 }
+
+export default App
