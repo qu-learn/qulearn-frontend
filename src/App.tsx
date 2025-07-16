@@ -11,6 +11,8 @@ import CourseCatalogL from "./pages/landing/CourseCatalogL"
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
 import StudentDashboard from "./pages/student/StudentDashboard"
+import MyCourses from "./pages/student/MyCourses"
+import RecommendedCourses from "./pages/student/RecommendedCourses"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 // import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
@@ -18,7 +20,7 @@ import CourseDetail from "./pages/educator/CourseDetail"
 // import InteractiveLearning from "./pages/InteractiveLearning"
 import CircuitSimulator from "./pages/educator/CircuitSimulator"
 import NetworkSimulator from "./pages/educator/NetworkSimulator"
-// import Achievements from "./pages/Achievements"
+import Achievements from "./pages/student/Achievements"
 import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
 // import ProfileSettings from "./pages/ProfileSettings"
@@ -138,6 +140,24 @@ function AppContent() {
             }
           /> 
 
+            <Route
+            path="/my-courses"
+            element={
+              <ProtectedRoute>
+                <MyCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recommended-courses"
+            element={
+              <ProtectedRoute>
+                <RecommendedCourses />
+              </ProtectedRoute>
+            }
+          />
+
+
           {/* Educator Routes */}
           <Route
             path="/educator"
@@ -243,7 +263,7 @@ function AppContent() {
           />
 
           {/* User Routes */}
-          {/* <Route
+          <Route
             path="/achievements"
             element={
               <ProtectedRoute>
@@ -251,14 +271,16 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route
+          
+          {/* Profile Settings */}
+          {/* <Route
             path="/profile"
             element={
               <ProtectedRoute>
                 <ProfileSettings />
               </ProtectedRoute>
             }
-          /> */}
+          />  */}
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
