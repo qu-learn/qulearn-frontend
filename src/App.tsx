@@ -9,7 +9,7 @@ import type { IUser } from "./utils/types"
 import LandingPage from "./pages/landing/LandingPage"
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
-// import StudentDashboard from "./pages/student/StudentDashboard"
+import StudentDashboard from "./pages/student/StudentDashboard"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 // import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
@@ -126,7 +126,7 @@ function AppContent() {
             }
           />
 
-          {/* Student Routes
+          {/* Student Routes */}
           <Route
             path="/dashboard"
             element={
@@ -134,7 +134,7 @@ function AppContent() {
                 <StudentDashboard />
               </ProtectedRoute>
             }
-          /> */}
+          /> 
 
           {/* Educator Routes */}
           <Route
