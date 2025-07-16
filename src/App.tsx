@@ -12,7 +12,7 @@ import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
-// import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
+import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 import CourseDetail from "./pages/educator/CourseDetail"
 // import InteractiveLearning from "./pages/InteractiveLearning"
@@ -173,14 +173,14 @@ function AppContent() {
           />
 
           {/* Admin Routes */}
-          {/* <Route
+          <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <CourseAdminDashboard />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Course Routes */}
           <Route
