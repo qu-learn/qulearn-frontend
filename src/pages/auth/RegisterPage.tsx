@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { ArrowLeft,Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useRegisterMutation} from "../../utils/api"
 import { type IUser } from "../../utils/types"
@@ -55,43 +55,27 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onLogin }) => {
         background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #93c5fd 100%)",
       }}
     >
-      {/* Header */}
-      <header className="bg-blue-800 text-white py-4 px-6">
-        <div className="flex justify-between items-center">
-          <div className="text-xl font-bold">Sign up Page</div>
-          <nav className="flex space-x-6">
-            <a href="#" className="hover:text-blue-200">
-              Home
-            </a>
-            <a href="#" className="hover:text-blue-200">
-              About Us
-            </a>
-            <a href="#" className="hover:text-blue-200">
-              Courses
-            </a>
-            <a href="#" className="hover:text-blue-200">
-              Contact
-            </a>
-          </nav>
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-screen px-4 py-8">
         <div
           className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-auto"
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            backgroundColor: "rgba(255, 255, 255, 0.47)",
             backdropFilter: "blur(10px)",
           }}
         >
+        <Link to="/" className="flex items-center text-blue-700 hover:text-blue-800 mb-8">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+        </Link>
+        
           {/* Left Section with Logo and Title */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Welcome to QuLearn</h1>
 
             {/* Quantum Logo */}
             <div className="flex justify-center mb-6">
-              <div className="relative w-24 h-24">
+              <div className="relative w-100 h-50">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
                   {/* Outer rings */}
                   <circle

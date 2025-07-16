@@ -243,7 +243,7 @@ const CourseCreation: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={isCreating || isUpdating}
-              className="flex items-center px-6 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors disabled:opacity-50"
+              className="flex items-center px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4 mr-2" />
               {isCreating || isUpdating ? "Saving..." : "Save Course"}
@@ -384,7 +384,7 @@ const CourseCreation: React.FC = () => {
                   />
                   <button
                     onClick={addPrerequisite}
-                    className="px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors"
                   >
                     Add
                   </button>
@@ -420,7 +420,7 @@ const CourseCreation: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-900">Modules</h3>
               <button
                 onClick={addModule}
-                className="flex items-center px-3 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Module
