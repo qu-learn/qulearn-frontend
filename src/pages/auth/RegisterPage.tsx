@@ -188,7 +188,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onLogin }) => {
           {/* Right Section with Form */}
           <div>
             {/* Google Sign Up Button */}
-            <button className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg mb-4 flex items-center justify-center border hover:bg-gray-50 transition-colors">
+            {/* <button className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg mb-4 flex items-center justify-center border hover:bg-gray-50 transition-colors">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -208,9 +208,9 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onLogin }) => {
                 />
               </svg>
               Signup with google
-            </button>
+            </button> */}
 
-            <div className="text-center text-gray-600 mb-4">Or signup with your email ——</div>
+            {/* <div className="text-center text-gray-600 mb-4">Or signup with your email ——</div> */}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}

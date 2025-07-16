@@ -10,16 +10,16 @@ import LandingPage from "./pages/landing/LandingPage"
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
 import StudentDashboard from "./pages/student/StudentDashboard"
-// import EducatorDashboard from "./pages/educator/EducatorDashboard"
+import EducatorDashboard from "./pages/educator/EducatorDashboard"
 // import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
-// import CourseCatalog from "./pages/CourseCatalog"
-// import CourseDetail from "./pages/CourseDetail"
+import CourseCatalog from "./pages/educator/CourseCatalog"
+import CourseDetail from "./pages/educator/CourseDetail"
 // import InteractiveLearning from "./pages/InteractiveLearning"
-// import CircuitSimulator from "./pages/CircuitSimulator"
-// import NetworkSimulator from "./pages/NetworkSimulator"
+import CircuitSimulator from "./pages/educator/CircuitSimulator"
+import NetworkSimulator from "./pages/educator/NetworkSimulator"
 // import Achievements from "./pages/Achievements"
-// import CourseCreation from "./pages/CourseCreation"
-// import CourseAnalytics from "./pages/CourseAnalytics"
+import CourseCreation from "./pages/educator/CourseCreation"
+import CourseAnalytics from "./pages/educator/CourseAnalytics"
 // import ProfileSettings from "./pages/ProfileSettings"
 import Header from "./components/Header"
 
@@ -137,15 +137,15 @@ function AppContent() {
           /> 
 
           {/* Educator Routes */}
-          {/* <Route
+          <Route
             path="/educator"
             element={
               <ProtectedRoute>
                 <EducatorDashboard />
               </ProtectedRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/educator/courses/new"
             element={
               <ProtectedRoute>
@@ -160,15 +160,15 @@ function AppContent() {
                 <CourseCreation />
               </ProtectedRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/educator/courses/:courseId/analytics"
             element={
               <ProtectedRoute>
                 <CourseAnalytics />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Admin Routes */}
           {/* <Route
@@ -181,7 +181,7 @@ function AppContent() {
           /> */}
 
           {/* Course Routes */}
-          {/* <Route
+          <Route
             path="/courses"
             element={
               <ProtectedRoute>
@@ -196,7 +196,7 @@ function AppContent() {
                 <CourseDetail />
               </ProtectedRoute>
             }
-          /> */}
+          />
           {/* <Route
             path="/courses/:courseId/lessons/:lessonId"
             element={
@@ -207,7 +207,7 @@ function AppContent() {
           /> */}
 
           {/* Simulator Routes */}
-          {/* <Route
+          <Route
             path="/simulators/circuit"
             element={
               <ProtectedRoute>
@@ -222,8 +222,8 @@ function AppContent() {
                 <CircuitSimulator />
               </ProtectedRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/simulators/network"
             element={
               <ProtectedRoute>
@@ -238,7 +238,7 @@ function AppContent() {
                 <NetworkSimulator />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* User Routes */}
           {/* <Route
