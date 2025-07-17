@@ -16,13 +16,13 @@ import EducatorDashboard from "./pages/educator/EducatorDashboard"
 // import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 import CourseDetail from "./pages/educator/CourseDetail"
-// import InteractiveLearning from "./pages/InteractiveLearning"
+import InteractiveLearning from "./pages/student/InteractiveLearning"
 import CircuitSimulator from "./pages/educator/CircuitSimulator"
 import NetworkSimulator from "./pages/educator/NetworkSimulator"
 import Achievements from "./pages/student/Achievements"
 import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
-// import ProfileSettings from "./pages/ProfileSettings"
+import ProfileSettings from "./pages/student/ProfileSettings"
 import Header from "./components/Header"
 
 interface AppState {
@@ -217,14 +217,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/courses/:courseId/lessons/:lessonId"
             element={
               <ProtectedRoute>
                 <InteractiveLearning />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Simulator Routes */}
           <Route
@@ -271,14 +271,14 @@ function AppContent() {
           />
           
           {/* Profile Settings */}
-          {/* <Route
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
                 <ProfileSettings />
               </ProtectedRoute>
             }
-          />  */}
+          />  
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
