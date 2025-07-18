@@ -12,11 +12,14 @@ import RegisterPage from "./pages/auth/RegisterPage"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import MyCourses from "./pages/student/MyCourses"
 import RecommendedCourses from "./pages/student/RecommendedCourses"
+import CourseDashboard from "./pages/student/CourseDashboard"
+import CourseQuiz from "./pages/student/CourseQuiz"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 // import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
-import CourseDetail from "./pages/educator/CourseDetail"
-import InteractiveLearning from "./pages/student/InteractiveLearning"
+//import CourseDetail from "./pages/educator/CourseDetail"
+import CourseDetail from "./pages/student/CourseDetail"
+//import InteractiveLearning from "./pages/student/InteractiveLearning"
 import CircuitSimulator from "./pages/educator/CircuitSimulator"
 import NetworkSimulator from "./pages/educator/NetworkSimulator"
 import Achievements from "./pages/student/Achievements"
@@ -209,6 +212,25 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/courses/:courseId/dashboard"
+            element={
+              <ProtectedRoute>
+                <CourseDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/courses/:courseId/quiz/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CourseQuiz />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/courses/:courseId"
             element={
@@ -217,14 +239,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/courses/:courseId/lessons/:lessonId"
             element={
               <ProtectedRoute>
                 <InteractiveLearning />
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* Simulator Routes */}
           <Route

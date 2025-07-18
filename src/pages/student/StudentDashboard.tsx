@@ -91,6 +91,25 @@ const StudentDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="mb-8 flex justify-center gap-6">
+        <Link
+          to="/simulators/circuit"
+          className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+        >
+          <BookOpen className="w-5 h-5" />
+          <span>Circuit Simulator</span>
+        </Link>            
+
+        <Link
+          to="/simulators/network"
+          className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+        >
+          <BookOpen className="w-5 h-5" />
+          <span>Network Simulator</span>
+        </Link>            
+      </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Current Courses */}
         <div className="bg-white rounded-xl shadow-lg p-6">
@@ -158,6 +177,25 @@ const StudentDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Browse Courses Section */}
+      <div className="mt-8 bg-blue-200 rounded-xl shadow-lg p-8">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
+            <p className="text-gray-600 text-lg">Discover courses tailored to your interests and learning path</p>
+          </div>
+          <div className="ml-8">
+              <Link
+                to="/recommended-courses"
+                className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+              >
+                <BookOpen className="w-5 h-5" />
+                <span>Browse All Courses</span>
+              </Link>            
+          </div>
+        </div>
+      </div>
+
         {/* Recent Achievements */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
@@ -195,8 +233,10 @@ const StudentDashboard: React.FC = () => {
         </div>
       </div>
 
+      
+
       {/* Recommended Courses */}
-      {dashboardData.recommendedCourses.length > 0 && (
+      {/* {dashboardData.recommendedCourses.length > 0 && (
         <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-cyan-700">Recommended for You</h2>
@@ -240,37 +280,7 @@ const StudentDashboard: React.FC = () => {
             ))}
           </div>
         </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link
-          to="/simulators/circuit"
-          className="bg-gradient-to-r from-cyan-800 to-cyan-500 text-white p-6 rounded-xl hover:from-cyan-900 hover:to-cyan-600 transition-colors block"
-        >
-          <Zap className="w-8 h-8 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Circuit Simulator</h3>
-          <p className="text-blue-100">Build and test quantum circuits</p>
-        </Link>
-
-        <Link
-          to="/simulators/network"
-          className="bg-gradient-to-r from-cyan-800 to-cyan-500 text-white p-6 rounded-xl hover:from-cyan-900 hover:to-cyan-600 transition-colors block"
-        >
-          <Zap className="w-8 h-8 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Network Simulator</h3>
-          <p className="text-blue-100">Explore quantum networks</p>
-        </Link>
-
-        <Link
-          to="/courses"
-          className="bg-gradient-to-r from-cyan-800 to-cyan-500 text-white p-6 rounded-xl hover:from-cyan-900 hover:to-cyan-600 transition-colors block"
-        >
-          <BookOpen className="w-8 h-8 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Browse Courses</h3>
-          <p className="text-blue-100">Discover new learning paths</p>
-        </Link>
-      </div>
+      )} */}
     </div>
     
     <Footer />

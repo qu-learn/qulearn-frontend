@@ -55,7 +55,7 @@ const RecommendedCourses: React.FC = () => {
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Recommended for You</h1>
+          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Course Catalog</h1>
           <p className="text-cyan-600">Discover courses tailored to your interests and learning path</p>
         </div>
 
