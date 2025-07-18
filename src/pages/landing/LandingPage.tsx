@@ -6,6 +6,8 @@ import { Link } from "react-router-dom"
 import { useGetLandingPageDataQuery } from "../../utils/api"
 import heroBackground from "../../assets/b.jpg"
 import { useState, useEffect } from "react"
+import Footer from "../../components/Footer"
+
 
 const LandingPage: React.FC = () => {
   const { data: landingData, isLoading } = useGetLandingPageDataQuery()
@@ -126,7 +128,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
             </p>
           </div>
 
-                <div className="grid grid-cols-4 gap-5 mb-18">
+                <div className="grid grid-cols-4 gap-5 mb-20">
 
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
               <div className="w-18 h-18 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
@@ -140,7 +142,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
-              <div className="w-18 h-18 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
                 <Target className="w-10 h-10 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Gamified Learning</h3>
@@ -151,7 +153,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
-              <div className="w-18 h-18 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
                 <Globe className="w-10 h-10 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Network Simulation</h3>
@@ -162,7 +164,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
-              <div className="w-18 h-18 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="w-10 h-10 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Content</h3>
@@ -221,8 +223,10 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
         </div>
       </section>
 
+      <Footer />
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">QuLearn</h3>
@@ -240,8 +244,9 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
             </div>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
+    
   )
 }
 

@@ -88,7 +88,7 @@ function AppContent() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          {/* <Route path="/courses-landing" element={<CourseCatalogL />} /> */}
+          <Route path="/courses-landing" element={<CourseCatalogL />} />
           <Route
             path="/login"
             element={

@@ -5,6 +5,7 @@ import { BookOpen, Users, TrendingUp, Plus, Edit, BarChart3 } from "lucide-react
 import { useGetEducatorDashboardQuery, useGetMyCoursesQuery } from "../../utils/api"
 import { useNavigate } from "react-router-dom"
 
+
 const EducatorDashboard: React.FC = () => {
   const navigate = useNavigate()
   const { data: dashboardData, isLoading: dashboardLoading } = useGetEducatorDashboardQuery()
@@ -202,6 +203,7 @@ const EducatorDashboard: React.FC = () => {
         </div>
       </div>
     </div>
+        
   )
 }
 
