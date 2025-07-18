@@ -111,7 +111,7 @@ const MyCourses: React.FC = () => {
         {filteredCourses.map((course) => (
           <Link
             key={course.id}
-            to={`/courses/${course.id}`}
+            to={`/courses/${course.id}/dashboard`}
             className="flex-none w-80 h-[480px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
           >
             <div className="relative">
