@@ -6,7 +6,6 @@ import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 
-
 interface CourseForm {
   title: string
   subtitle: string
@@ -112,7 +111,7 @@ const CourseCreation: React.FC = () => {
   const addModule = () => {
     const newModule: Module = {
       id: Date.now().toString(),
-      title: "New Module",
+      title: "Lesson",
       lessons: [],
     }
     setModules((prev) => [...prev, newModule])
@@ -288,7 +287,7 @@ const CourseCreation: React.FC = () => {
       {/* Course Details Tab */}
       {activeTab === "details" && (
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
@@ -413,9 +412,10 @@ const CourseCreation: React.FC = () => {
 
       {/* Content & Modules Tab */}
       {activeTab === "content" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-[auto_1fr] gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Modules List */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900">Modules</h3>
               <button
@@ -456,24 +456,19 @@ const CourseCreation: React.FC = () => {
           </div>
 
           {/* Module Content */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-xs">
             {selectedModuleData ? (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <input
-                    type="text"
-                    value={selectedModuleData.title}
-                    onChange={(e) => updateModule(selectedModule!, e.target.value)}
-                    className="text-lg font-bold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
-                  />
-                  <button
-                    onClick={() => addLesson(selectedModule!)}
-                    className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Lesson
-                  </button>
-                </div>
+             <h3 className="text-lg font-bold text-gray-900">{selectedModuleData.title}</h3>
+             <button
+                onClick={() => addLesson(selectedModule!)}
+                className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
+            >
+            <Plus className="w-4 h-4 mr-1" />
+                Add Lesson
+            </button>
+            </div>
 
                 <div className="space-y-3">
                   {selectedModuleData.lessons.map((lesson) => (
@@ -518,9 +513,10 @@ const CourseCreation: React.FC = () => {
               </div>
             )}
           </div>
+            </div>
 
           {/* Lesson Editor */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl">
             {selectedLessonData ? (
               <div className="space-y-6">
                 <div>
@@ -713,6 +709,7 @@ const CourseCreation: React.FC = () => {
 
       {/* Preview Tab */}
       {activeTab === "preview" && (
+        
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
@@ -748,6 +745,7 @@ const CourseCreation: React.FC = () => {
                 </div>
               )}
             </div>
+
 
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900">Course Content</h2>
@@ -794,6 +792,7 @@ const CourseCreation: React.FC = () => {
         </div>
       )}
     </div>
+    
   )
 }
 

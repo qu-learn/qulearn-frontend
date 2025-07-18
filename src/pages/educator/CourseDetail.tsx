@@ -6,6 +6,7 @@ import { ArrowLeft, Clock, Users, Award, Play } from "lucide-react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useGetCourseByIdQuery, useEnrollInCourseMutation } from "../../utils/api"
 
+
 const CourseDetail: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
@@ -14,13 +15,13 @@ const CourseDetail: React.FC = () => {
   const { data: courseData, isLoading, error } = useGetCourseByIdQuery(courseId!)
   const [enrollInCourse] = useEnrollInCourseMutation()
 
-  const handleEnroll = async () => {
-    try {
-      await enrollInCourse({ courseId: courseId! }).unwrap()
-    } catch (error) {
-      console.error("Enrollment failed:", error)
-    }
-  }
+//   const handleEnroll = async () => {
+//     try {
+//       await enrollInCourse({ courseId: courseId! }).unwrap()
+//     } catch (error) {
+//       console.error("Enrollment failed:", error)
+//     }
+//   }
 
   const handleStartLesson = (lessonId: string) => {
     navigate(`/courses/${courseId}/lessons/${lessonId}`)
@@ -58,7 +59,7 @@ const CourseDetail: React.FC = () => {
         Back to Courses
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-4 lg:grid-cols-3 gap-8">
         {/* Course Content */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -118,7 +119,7 @@ const CourseDetail: React.FC = () => {
         </div>
 
         {/* Course Sidebar */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Course Content</h3>
             <div className="space-y-4">
