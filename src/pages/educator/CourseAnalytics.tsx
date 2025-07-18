@@ -6,6 +6,7 @@ import { useGetCourseAnalyticsQuery, useGetCourseByIdQuery } from "../../utils/a
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { useNavigate, useParams } from "react-router-dom"
 
+
 const CourseAnalytics: React.FC = () => {
   const navigate = useNavigate()
   const { courseId } = useParams<{ courseId: string }>()
