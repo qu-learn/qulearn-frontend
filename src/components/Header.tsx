@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { User, BookOpen, Zap, Award, LogOut, Settings } from "lucide-react"
+import { useState } from "react"
+import { User, BookOpen, Zap, Award, LogOut, Settings, ChevronDown } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
 
@@ -13,37 +14,58 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
   const navigate = useNavigate()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen)
+  }
+
+  const closeDropdown = () => {
+    setIsDropdownOpen(false)
+  }
+
+  const handleLogout = () => {
+    closeDropdown()
+    onLogout()
+  }
+
+  const handleSettingsClick = () => {
+    closeDropdown()
+    navigate("/profile")
+  }
 
   const getNavigationItems = () => {
+    // Base navigation items for ALL users (main navigation)
     const baseItems = [
       { id: "/courses", label: "Courses", icon: BookOpen },
       { id: "/achievements", label: "Achievements", icon: Award },
     ]
 
+    // Role-specific dashboard routing only
     switch (user.role) {
       case "student":
         return [
           { id: "/dashboard", label: "Dashboard", icon: User },
           ...baseItems,
-          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
-          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
+      
       case "educator":
         return [
           { id: "/educator", label: "Dashboard", icon: User },
           ...baseItems,
-          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
-          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
+      
       case "course-administrator":
         return [
           { id: "/admin", label: "Dashboard", icon: User },
           ...baseItems,
-          { id: "/simulators/circuit", label: "Circuit Simulator", icon: Zap },
-          { id: "/simulators/network", label: "Network Simulator", icon: Zap },
         ]
+      
       default:
-        return baseItems
+        return [
+          { id: "/dashboard", label: "Dashboard", icon: User },
+          ...baseItems,
+        ]
     }
   }
 
@@ -82,31 +104,79 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
             </nav>
           </div>
 
+          {/* User profile and action buttons */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl || "/placeholder.svg"} alt={user.fullName} className="w-8 h-8 rounded-full" />
-              ) : (
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">{user.fullName.charAt(0).toUpperCase()}</span>
+            {/* Role-specific action buttons */}
+            {(user.role === "student" || user.role === "educator") && (
+              <>
+                <Link
+                  to="/simulators/circuit"
+                  className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Circuit Simulator
+                </Link>
+                <Link
+                  to="/simulators/network"
+                  className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Network Simulator
+                </Link>
+              </>
+            )}
+
+            {/* User Avatar Dropdown */}
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {user.avatarUrl ? (
+                  <img 
+                    src={user.avatarUrl || "/placeholder.svg"} 
+                    alt={user.fullName} 
+                    className="w-8 h-8 rounded-full" 
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user.fullName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <span className="text-sm font-medium text-gray-700">{user.fullName}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                  <button
+                    onClick={handleSettingsClick}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 mr-3" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Logout
+                  </button>
                 </div>
               )}
-              <span className="text-sm font-medium text-gray-700">{user.fullName}</span>
+
+              {/* Backdrop to close dropdown when clicking outside */}
+              {isDropdownOpen && (
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={closeDropdown}
+                ></div>
+              )}
             </div>
-            <Link
-              to="/profile"
-              className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Link>
-            <button
-              onClick={onLogout}
-              className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </button>
           </div>
         </div>
       </div>

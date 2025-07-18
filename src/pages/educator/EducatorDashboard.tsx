@@ -78,7 +78,7 @@ const EducatorDashboard: React.FC = () => {
         </div>
 
         {/* Quick Actions - Matching exact Figma design */}
-        <div className="flex gap-20 mb-8 justify-center">
+        {/* <div className="flex gap-20 mb-8 justify-center">
           <button
             onClick={() => navigate("/educator/courses/new")}
             className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white text-sm font-medium py-4 px-8 rounded-lg transition-colors hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 ">
@@ -102,18 +102,18 @@ const EducatorDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold mb-2">Network Simulator</h3>
           <p className="text-green-100">Design quantum network examples</p>
           </button>
-        </div>
+        </div> */}
 
         {/* My Courses - Keep all original functionality */}
         <div className="bg-white rounded-2xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-blue-900">My Courses</h2>
-            {/* <button
+            <button
               onClick={() => navigate("/educator/courses/new")}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
+              className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-6 py-3 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
             >
               Create New Course
-            </button> */}
+            </button>
           </div>
 
           {coursesData.courses.length === 0 ? (
