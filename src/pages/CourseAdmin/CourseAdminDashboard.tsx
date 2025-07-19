@@ -12,8 +12,8 @@ const mockEnrollmentData = [
   { month: 'Mar', students: 220 },
   { month: 'Apr', students: 550 },
   { month: 'May', students: 650 },
-  { month: 'Jun', students: 700 },
-  { month: 'Jul', students: 750 },
+  { month: 'Jun', students: 500 },
+  { month: 'Jul', students: 650 },
 ];
 
 // Mock dashboard data
@@ -858,8 +858,8 @@ const CourseAdminDashboard = () => {
                 // Show analytics for published courses
                 <>
                   <div className="flex items-center mb-4">
-                    <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
-                    <h3 className="text-lg font-semibold text-blue-700">Student Enrollment Analytics</h3>
+                    <TrendingUp className="w-5 h-5 text-cyan-700 mr-2" />
+                    <h3 className="text-lg font-semibold text-cyan-700">Student Enrollment Analytics</h3>
                   </div>
 
                   {/* Chart Container */}
