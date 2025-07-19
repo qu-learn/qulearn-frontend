@@ -14,11 +14,6 @@ const mockEnrollmentData = [
   { month: 'May', students: 1050 },
   { month: 'Jun', students: 1100 },
   { month: 'Jul', students: 900 },
-  { month: 'Aug', students: 750 },
-  { month: 'Sep', students: 800 },
-  { month: 'Oct', students: 650 },
-  { month: 'Nov', students: 500 },
-  { month: 'Dec', students: 720 }
 ]
 
 // Mock dashboard data
@@ -187,9 +182,12 @@ const CourseAdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-cyan-900 mb-2">Course Administrator Dashboard</h1>
+        <p className="text-gray-600">Manage courses, users, and platform settings</p>
+      </div>
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Welcome Message */}
         <div className="mb-8">
@@ -459,7 +457,7 @@ const CourseAdminDashboard = () => {
                 <h3 className="text-lg font-bold text-gray-900">User Management</h3>
                 <button
                   onClick={handleAddUserClick}
-                  className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
+                  className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
                 >
                   Add New User
                 </button>
@@ -483,7 +481,7 @@ const CourseAdminDashboard = () => {
             )}
 
             {showAddUserForm && (
-              <div className="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
+              <div className="bg-white p-6 rounded-lg mb-6">
                 <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
                 <form onSubmit={handleSaveNewUser} className="space-y-4">
                   <div>
@@ -555,7 +553,7 @@ const CourseAdminDashboard = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md mt-2"
                     >
                       Add User
                     </button>
@@ -708,7 +706,7 @@ const CourseAdminDashboard = () => {
 
 
             {/* Course Analytics Summary */}
-            <div className="bg-blue-50 rounded-lg p-6 mb-6">
+            <div className="bg-white rounded-lg p-6 mb-6">
               <div className="flex items-center mb-4">
                 <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
                 <h3 className="text-lg font-semibold text-blue-700">Student Enrollment Analytics</h3>
