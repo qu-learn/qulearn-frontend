@@ -37,9 +37,10 @@ const MyCourses: React.FC = () => {
     return null
   }
 
-  const enrolledCourses = dashboardData.enrolledCourses.map(enrollment => enrollment.course)
+  const enrolledCourses = dashboardData.enrolledCourses
 
-  const filteredCourses = enrolledCourses.filter((course) => {
+  const filteredCourses = enrolledCourses.filter((enrollment) => {
+    const course = enrollment.course
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,7 +50,7 @@ const MyCourses: React.FC = () => {
     return matchesSearch && matchesCategory && matchesDifficulty
   })
 
-  const categories = Array.from(new Set(enrolledCourses.map((course) => course.category)))
+  const categories = Array.from(new Set(enrolledCourses.map((enrollment) => enrollment.course.category)))
 
   return (
     <>
@@ -108,72 +109,86 @@ const MyCourses: React.FC = () => {
 
       {/* Course Grid */}
       <div className="flex flex-wrap gap-10 justify-center">
-        {filteredCourses.map((course) => (
+        {filteredCourses.map((enrollment) => (
           <Link
-            key={course.id}
-            to={`/courses/${course.id}/dashboard`}
-            className="flex-none w-80 h-[480px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
+            key={enrollment.course.id}
+            to={`/courses/${enrollment.course.id}/dashboard`}
+            className="flex-none w-80 h-[520px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
           >
             <div className="relative">
               <img
-                src={course.thumbnailUrl || "/1.png"}
-                alt={course.title}
+                src={enrollment.course.thumbnailUrl || "/1.png"}
+                alt={enrollment.course.title}
                 className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute top-4 left-4">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold shadow-md ${
-                    course.difficultyLevel === "beginner"
+                    enrollment.course.difficultyLevel === "beginner"
                       ? "bg-green-500 text-white"
-                      : course.difficultyLevel === "intermediate"
+                      : enrollment.course.difficultyLevel === "intermediate"
                         ? "bg-yellow-500 text-white"
                         : "bg-red-500 text-white"
                   }`}
                 >
-                  {course.difficultyLevel}
+                  {enrollment.course.difficultyLevel}
                 </span>
               </div>
               <div className="absolute top-4 right-4">
                 <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-md">
-                  {course.category}
+                  {enrollment.course.category}
                 </span>
               </div>
             </div>
             
             <div className="p-6 flex flex-col flex-grow">
               <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-cyan-700 transition-colors duration-200 line-clamp-1">
-                {course.title}
+                {enrollment.course.title}
               </h3>
               <p className="text-gray-600 mb-4 text-sm line-clamp-2 leading-relaxed">
-                {course.subtitle}
+                {enrollment.course.subtitle}
               </p>
 
               <div className="flex items-center text-xs text-gray-500 mb-4">
                 <Users className="w-4 h-4 mr-1" />
-                <span className="mr-3 truncate">By {course.instructor.fullName}</span>
+                <span className="mr-3 truncate">By {enrollment.course.instructor.fullName}</span>
                 <Clock className="w-4 h-4 mr-1" />
-                <span>{new Date(course.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(enrollment.course.createdAt).toLocaleDateString()}</span>
               </div>
 
-              {course.prerequisites && course.prerequisites.length > 0 && (
-                <div className="mb-1">
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-cyan-700">Progress</span>
+                  <span className="text-sm text-cyan-600">{enrollment.progressPercentage}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-cyan-500 h-2 rounded-full"
+                    style={{ width: `${enrollment.progressPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {enrollment.course.prerequisites && enrollment.course.prerequisites.length > 0 && (
+                <div className="mb-4">
                   <p className="text-xs font-semibold text-gray-700 mb-2">Prerequisites:</p>
                   <div className="flex flex-wrap gap-1">
-                    {course.prerequisites.slice(0, 2).map((prereq, index) => (
+                    {enrollment.course.prerequisites.slice(0, 2).map((prereq: string, index: number) => (
                       <span key={index} className="px-2 py-1 bg-cyan-50 text-cyan-600 text-xs rounded-md font-medium">
                         {prereq}
                       </span>
                     ))}
-                    {course.prerequisites.length > 2 && (
+                    {enrollment.course.prerequisites.length > 2 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-medium">
-                        +{course.prerequisites.length - 2} more
+                        +{enrollment.course.prerequisites.length - 2} more
                       </span>
                     )}
                   </div>
                 </div>
               )}
               
-              <button className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2">
+              <button className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-auto">
                 Continue Learning
               </button>
             </div>
