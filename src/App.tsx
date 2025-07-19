@@ -19,6 +19,7 @@ import EducatorDashboard from "./pages/educator/EducatorDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 //import CourseDetail from "./pages/educator/CourseDetail"
 import CourseDetail from "./pages/student/CourseDetail"
+import LessonDetail from "./pages/student/LessonDetail"
 //import InteractiveLearning from "./pages/student/InteractiveLearning"
 import CircuitSimulator from "./pages/educator/CircuitSimulator"
 import NetworkSimulator from "./pages/educator/NetworkSimulator"
@@ -239,14 +240,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/courses/:courseId/lessons/:lessonId"
             element={
               <ProtectedRoute>
-                <InteractiveLearning />
+                <LessonDetail />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Simulator Routes */}
           <Route

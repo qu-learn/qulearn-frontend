@@ -142,7 +142,8 @@ const CourseDetail: React.FC = () => {
                 {isRecommendedCourse && (
                   <button
                     onClick={shouldShowEnrolledState ? handleContinueToCourse : handleEnroll}
-                    className="w-full bg-cyan-700 text-white py-3 px-6 rounded-lg hover:bg-cyan-800 transition-colors font-semibold text-lg"
+                    // className="w-full bg-cyan-700 text-white py-3 px-6 rounded-lg hover:bg-cyan-800 transition-colors font-semibold text-lg"
+                    className="bg-cyan-700 text-white py-3 px-6 rounded-lg hover:bg-cyan-800 transition-colors font-semibold text-lg"
                   >
                     {shouldShowEnrolledState ? "Continue to Course" : "Enroll Now"}
                   </button>
@@ -152,34 +153,71 @@ const CourseDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Course Sidebar */}
+        {/* Course Outline */}
         <div className="lg:col-span-3 mt-8">
           <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-cyan-700 mb-6">Course Content</h3>
-            <div className="space-y-4">
-              {course.modules.map((module) => (
-                <div key={module.id} className="border border-gray-200 rounded-lg">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h4 className="font-semibold text-gray-900">{module.title}</h4>
-                  </div>
-                  <div className="p-2">
-                    {module.lessons.map((lesson) => (
-                      <button
-                        key={lesson.id}
-                        onClick={() => handleStartLesson(lesson.id)}
-                        className="w-full text-left p-3 rounded-lg hover:bg-cyan-50 transition-colors text-gray-700 hover:text-cyan-600"
-                      >
-                        <div className="flex items-center">
-                          <Play className="w-4 h-4 mr-3" />
-                          <span className="flex-1">{lesson.title}</span>
-                          {lesson.quiz && <Award className="w-4 h-4 text-yellow-500" />}
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Course Outline</h3>
+            <div className="space-y-6">
+              {course.modules.map((module, moduleIndex) => (
+                <div key={module.id} className="border-l-4 border-cyan-500 pl-6 relative">
+                  {/* Module circle indicator */}
+                  <div className="absolute -left-2 top-2 w-4 h-4 bg-cyan-500 rounded-full border-2 border-white"></div>
+                  
+                  <div className="mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                      {module.title}
+                    </h4>
+                    
+                    {/* Lessons as sub-topics */}
+                    <div className="space-y-2">
+                      {module.lessons.map((lesson, lessonIndex) => (
+                        <div key={lesson.id} className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            <span className="text-sm font-medium text-cyan-600">
+                              {moduleIndex + 1}.{lessonIndex + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <button
+                              onClick={() => handleStartLesson(lesson.id)}
+                              className="text-left text-gray-700 font-medium hover:text-cyan-600 hover:underline transition-colors cursor-pointer"
+                            >
+                              {lesson.title}
+                            </button>
+                          </div>
+                          {lesson.quiz && (
+                            <div className="flex-shrink-0">
+                              <button className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-md border border-amber-200 hover:bg-amber-200 transition-colors">
+                                <Award className="w-3 h-3 mr-1 inline" />
+                                Quiz Available
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </button>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+            
+            {/* Enrollment prompt
+            {!shouldShowEnrolledState && (
+              <div className="mt-8 p-6 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-200">
+                <div className="text-center">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Start Learning?</h4>
+                  <p className="text-gray-600 mb-4">
+                    Enroll in this course to access all lessons, quizzes, and interactive content.
+                  </p>
+                  <button
+                    onClick={handleEnroll}
+                    className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white py-3 px-8 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+                  >
+                    Enroll Now
+                  </button>
+                </div>
+              </div>
+            )} */}
           </div>
         </div>
       </div>
@@ -188,4 +226,5 @@ const CourseDetail: React.FC = () => {
 }
 
 export default CourseDetail
+
 
