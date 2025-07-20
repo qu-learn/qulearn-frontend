@@ -228,8 +228,8 @@ const CourseCreation: React.FC = () => {
         </button>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{courseId ? "Edit Course" : "Create New Course"}</h1>
-            <p className="text-gray-600">Build engaging quantum computing courses</p>
+            <h1 className="text-3xl font-bold text-cyan-700">{courseId ? "Edit Course" : "Create New Course"}</h1>
+            <p className="text-cyan-900">Build engaging quantum computing courses</p>
           </div>
           <div className="flex space-x-4">
             <button
