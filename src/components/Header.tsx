@@ -5,6 +5,8 @@ import { useState } from "react"
 import { User, BookOpen, Zap, Award, LogOut, Settings, ChevronDown } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
+import logoImage1 from "../assets/logo1.png" 
+import logoImage2 from "../assets/logo2.png" 
 
 interface HeaderProps {
   user: IUser
@@ -72,17 +74,22 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
   const navigationItems = getNavigationItems()
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+  <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-cyan-600 to-blue-800 shadow-lg z-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-3 lg:px-0">
+        <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Link to="/">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  QuLearn
-                </h1>
-              </Link>
-            </div>
+            <Link to="/" className="flex items-center space-x-3">
+              <img 
+                src={logoImage2}
+                alt="QuLearn Logo" 
+                className="h-15 w-15" 
+              />
+              <h1 className="text-3xl font-bold bg-white bg-clip-text text-transparent">
+                QuLearn
+              </h1>
+            </Link>
+          </div>
             <nav className="hidden md:ml-8 md:flex md:space-x-8">
               {navigationItems.map((item) => {
                 const Icon = item.icon
@@ -111,14 +118,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
               <>
                 <Link
                   to="/simulators/circuit"
-                  className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="flex items-center px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 >
                   <Zap className="w-4 h-4 mr-2" />
                   Circuit Simulator
                 </Link>
                 <Link
                   to="/simulators/network"
-                  className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="flex items-center px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 >
                   <Zap className="w-4 h-4 mr-2" />
                   Network Simulator
@@ -130,7 +137,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
             <div className="relative">
               <button
                 onClick={toggleDropdown}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex items-center space-x-2 px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {user.avatarUrl ? (
                   <img 
@@ -140,12 +147,12 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
                   />
                 ) : (
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-white text-large font-medium">
                       {user.fullName.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
-                <span className="text-sm font-medium text-gray-700">{user.fullName}</span>
+                <span className="text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors">{user.fullName}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 

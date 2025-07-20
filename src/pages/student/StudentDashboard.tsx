@@ -114,6 +114,7 @@ const StudentDashboard: React.FC = () => {
               </div>
             ) : (
               dashboardData.enrolledCourses.slice(0, 3).map((enrollment) => (
+                <div className="grid grid-cols-3 gap-4 mb-8">
                 <Link
                   key={enrollment.course.id}
                   to={`/courses/${enrollment.course.id}`}
@@ -153,6 +154,7 @@ const StudentDashboard: React.FC = () => {
                     </div>
                   </div>
                 </Link>
+                </div>
               ))
             )}
           </div>

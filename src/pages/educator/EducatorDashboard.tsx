@@ -34,8 +34,8 @@ const EducatorDashboard: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 mb-2">Welcome back, Mrs. Nadee Fernando!</h1>
-          <p className="text-blue-700">Manage your courses and track student progress</p>
+          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Welcome back, Mrs. Nadee Fernando!</h1>
+          <p className="text-cyan-700">Manage your courses and track student progress</p>
         </div>
 
         {/* Stats Overview - Matching exact Figma design */}
@@ -46,8 +46,8 @@ const EducatorDashboard: React.FC = () => {
               <BookOpen className="w-10 h-10 text-blue-600" />
             </div>
             <div className="ml-20">
-              <div className="text-4xl font-bold text-blue-900 mb-5">{dashboardData.publishedCoursesCount}</div>
-            <p className="text-blue-800 text-sm font-medium">Published Courses</p>
+              <div className="text-4xl font-bold text-gray-900 mb-5">{dashboardData.publishedCoursesCount}</div>
+            <p className="text-gray-600 text-sm font-medium mb-m">Published Courses</p>
             </div>
         </div>
         </div>
@@ -58,8 +58,8 @@ const EducatorDashboard: React.FC = () => {
               <Users className="w-10 h-10 text-blue-600" />
             </div>
             <div className="ml-20">
-              <div className="text-4xl font-bold text-blue-900 mb-5">{dashboardData.totalStudents}</div>
-            <p className="text-blue-800 text-sm font-medium mb-3 ">Total Students</p>
+              <div className="text-4xl font-bold text-gray-900 mb-5">{dashboardData.totalStudents}</div>
+            <p className="text-gray-600 text-sm font-medium mb-3 ">Total Students</p>
             </div>
         </div>
         </div>
@@ -70,8 +70,8 @@ const EducatorDashboard: React.FC = () => {
               <TrendingUp className="w-10 h-10 text-blue-600" />
             </div>
             <div className="ml-20">
-              <div className="text-4xl font-bold text-blue-900 mb-5">{coursesData.courses.length}</div>
-            <p className="text-blue-800 text-sm font-medium mb-3">All Courses</p>
+              <div className="text-4xl font-bold text-gray-900 mb-5">{coursesData.courses.length}</div>
+            <p className="text-gray-600 text-sm font-medium mb-3">All Courses</p>
             </div>
         </div>
         </div>
@@ -104,10 +104,10 @@ const EducatorDashboard: React.FC = () => {
           </button>
         </div> */}
 
-        {/* My Courses - Keep all original functionality */}
+        {/* My Courses  */}
         <div className="bg-white rounded-2xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-blue-900">My Courses</h2>
+            <h2 className="text-2xl font-bold text-cyan-700">My Courses</h2>
             <button
               onClick={() => navigate("/educator/courses/new")}
               className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-6 py-3 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"

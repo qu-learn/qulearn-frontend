@@ -10,12 +10,14 @@ import LandingPage from "./pages/landing/LandingPage"
 import CourseCatalogL from "./pages/landing/CourseCatalogL"
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
+import ProfileSettings from "./components/ProfileSettings"
+import CourseCatalog from "./components/CourseCatalog"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import MyCourses from "./pages/student/MyCourses"
 import RecommendedCourses from "./pages/student/RecommendedCourses"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
-import CourseCatalog from "./pages/educator/CourseCatalog"
+// import CourseCatalog from "./pages/educator/CourseCatalog"
 import CourseDetail from "./pages/educator/CourseDetail"
 import InteractiveLearning from "./pages/student/InteractiveLearning"
 import CircuitSimulator from "./pages/educator/CircuitSimulator"
@@ -23,7 +25,7 @@ import NetworkSimulator from "./pages/educator/NetworkSimulator"
 import Achievements from "./pages/student/Achievements"
 import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
-import ProfileSettings from "./pages/student/ProfileSettings"
+// import ProfileSettings from "./pages/student/ProfileSettings"
 import Header from "./components/Header"
 
 interface AppState {
@@ -207,7 +209,7 @@ function AppContent() {
             path="/courses"
             element={
               <ProtectedRoute>
-                <CourseCatalog />
+                <CourseCatalog user={appState.user!} />
               </ProtectedRoute>
             }
           />
@@ -277,7 +279,7 @@ function AppContent() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <ProfileSettings />
+                <ProfileSettings user={appState.user!} />
               </ProtectedRoute>
             }
           />  
