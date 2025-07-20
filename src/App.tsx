@@ -17,6 +17,7 @@ import CourseDashboard from "./pages/student/CourseDashboard"
 import CourseQuiz from "./pages/student/CourseQuiz"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
+import SiteAdminDashboard from "./pages/SiteAdmin/SiteAdminDashboard"
 import CourseCatalog from "./pages/educator/CourseCatalog"
 //import CourseDetail from "./pages/educator/CourseDetail"
 import CourseDetail from "./pages/student/CourseDetail"
@@ -64,7 +65,7 @@ function AppContent() {
     }))
 
     // Navigate to appropriate dashboard
-    const dashboardPath = user.role === "student" ? "/dashboard" : user.role === "educator" ? "/educator" : "/admin"
+    const dashboardPath = user.role === "student" ? "/dashboard" : user.role === "educator" ? "/educator" : user.role === "system-administrator" ? "/site-admin" : "/admin"
     navigate(dashboardPath)
   }
 
@@ -105,7 +106,9 @@ function AppContent() {
                       ? "/dashboard"
                       : appState.user.role === "educator"
                         ? "/educator"
-                        : "/admin"
+                        : appState.user.role == "system-administrator"
+                          ? "/site-admin"
+                          : "/admin"
                   }
                   replace
                 />
@@ -124,7 +127,9 @@ function AppContent() {
                       ? "/dashboard"
                       : appState.user.role === "educator"
                         ? "/educator"
-                        : "/admin"
+                        : appState.user.role == "system-administrator"
+                          ? "/site-admin"
+                          : "/admin"
                   }
                   replace
                 />
@@ -196,12 +201,22 @@ function AppContent() {
             }
           />
 
-          {/* Admin Routes */}
+          {/* Course Admin Routes */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <CourseAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Site Admin Routes */}
+          <Route
+            path="/site-admin"
+            element={
+              <ProtectedRoute>
+                <SiteAdminDashboard />
               </ProtectedRoute>
             }
           />
