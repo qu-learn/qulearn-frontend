@@ -1,4 +1,5 @@
 import type React from "react"
+import logoImage2 from "../assets/logo2.png"
 
 const Footer: React.FC = () => {
   return (
@@ -25,7 +26,7 @@ const Footer: React.FC = () => {
         {/* Logo Section */}
         <div style={{ flex: '1 1 200px', minWidth: '180px' }}>
           <img 
-            src="https://cdn-icons-png.flaticon.com/128/8224/8224757.png" 
+            src={logoImage2} 
             alt="QuLearn Logo" 
             style={{ width: '50px', marginBottom: '10px' }}
           />

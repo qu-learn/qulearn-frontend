@@ -7,6 +7,8 @@ import { useGetLandingPageDataQuery } from "../../utils/api"
 import heroBackground from "../../assets/b.jpg"
 import { useState, useEffect } from "react"
 import Footer from "../../components/Footer"
+import logoImage2 from "../../assets/logo2.png" 
+
 
 
 const LandingPage: React.FC = () => {
@@ -54,9 +56,13 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
   {/* Navigation */}
   <nav className="relative z-10 flex justify-between items-center p-6">
     <div className="flex items-center">
-      <div className="w-8 h-8 bg-blue-400 rounded mr-2"></div>
-      <span className="text-white text-xl font-bold">QuLearn</span>
-    </div>
+  <img 
+    src={logoImage2}
+    alt="QuLearn Logo" 
+    className="w-15 h-15 rounded mr-2"
+  />
+  <span className="text-white text-3xl font-bold">QuLearn</span>
+</div>
     {/* <div className="flex space-x-6">
       <Link to="/" className="text-white hover:text-blue-300">Home</Link>
       <Link to="/about" className="text-white hover:text-blue-300">About Us</Link>
@@ -206,10 +212,10 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
           <p className="text-xl text-blue-100 mb-8">
             Join thousands of students already learning quantum computing with QuLearn
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
             <Link
               to="/register"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-50 transition-colors"
+              className="bg-white text-blue-600 px-8 py-4  rounded-lg font-semibold text-lg hover:bg-blue-50 transition-colors"
             >
               Get Started Free
             </Link>
