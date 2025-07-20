@@ -12,8 +12,8 @@ const mockEnrollmentData = [
   { month: 'Mar', students: 220 },
   { month: 'Apr', students: 550 },
   { month: 'May', students: 650 },
-  { month: 'Jun', students: 500 },
-  { month: 'Jul', students: 650 },
+  { month: 'Jun', students: 700 },
+  { month: 'Jul', students: 750 },
 ];
 
 // Mock dashboard data
@@ -349,22 +349,42 @@ const CourseAdminDashboard = () => {
               <div className="bg-blue-50 rounded-lg shadow-sm border-l-4 border-cyan-700 p-8">
                 <h3 className="text-lg font-semibold text-cyan-700 mb-4">System Overview</h3>
                 <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{mockDashboardData.totalUsers || '1,250'}</div>
-                    <div className="text-sm text-gray-600">Total Users</div>
+                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-600" />
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{mockDashboardData.activeCourses || '94'}</div>
-                    <div className="text-sm text-gray-600">Active Courses</div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{mockDashboardData.totalUsers}</p>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{mockDashboardData.newRegistrationsThisMonth || '36'}</div>
-                    <div className="text-sm text-gray-600">New Registrations</div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                    <p className="text-2xl font-bold text-gray-900">{mockDashboardData.pendingApprovals}</p>
+                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Active Courses</p>
+                      <p className="text-2xl font-bold text-gray-900">{mockDashboardData.activeCourses}</p>
+                    </div>
+                 </div>
+                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">New Registrations</p>
+                    <p className="text-2xl font-bold text-gray-900">{mockDashboardData.newRegistrationsThisMonth}</p>
+                  </div>
+                </div>
+                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
+                    <p className="text-2xl font-bold text-gray-900">{mockDashboardData.pendingApprovals}</p>
                   </div>
+                </div>
                 </div>
               </div>
               {/* Enrollment Chart */}
