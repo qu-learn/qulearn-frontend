@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { ArrowLeft,Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useLoginMutation } from "../../utils/api"
 import { type IUser } from "../../utils/types"
@@ -40,6 +40,55 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       [name]: type === "checkbox" ? checked : value,
     }))
   }
+
+  // Enhanced error message extraction function with debugging
+  const getErrorMessage = (error: any): string => {
+    console.log("Full error object:", error) // Debug log
+    
+    if (!error) return ""
+    
+    // Check for RTK Query error structure
+    if ("data" in error && error.data && typeof error.data === "object") {
+      console.log("Error data:", error.data) // Debug log
+      if ("message" in error.data) {
+        return String(error.data.message)
+      }
+      if ("error" in error.data) {
+        return String(error.data.error)
+      }
+    }
+    
+    // Check for standard error status codes
+    if ("status" in error) {
+      console.log("Error status:", error.status) // Debug log
+      switch (error.status) {
+        case 401:
+          return "Invalid email or password. Please check your credentials and try again."
+        case 404:
+          return "User not found. Please check your email address or sign up for a new account."
+        case 429:
+          return "Too many login attempts. Please wait a few minutes before trying again."
+        case 500:
+          return "Server error. Please try again later or contact support if the problem persists."
+        default:
+          return "Login failed. Please check your credentials and try again."
+      }
+    }
+    
+    // Fallback for other error types
+    if (typeof error === "string") {
+      return error
+    }
+    
+    if (error.message) {
+      return error.message
+    }
+    
+    return "Login failed. Please check your credentials and try again."
+  }
+
+  const errorMessage = getErrorMessage(error)
+  console.log("Final error message:", errorMessage) // Debug log
 
   return (
     <div
@@ -214,13 +263,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 </div>
               </div>
 
+              {/* Enhanced Error Display with debugging */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-sm text-red-600">
-                    {"data" in error && error.data && typeof error.data === "object" && "message" in error.data
-                      ? String(error.data.message)
-                      : "Login failed. Please check your credentials."}
+                    {errorMessage || "Login failed. Please check your credentials and try again."}
                   </p>
+                  {/* Temporary debug info - remove in production */}
+                  <details className="mt-2">
+                    <summary className="text-xs text-gray-500 cursor-pointer">Debug Info (remove in production)</summary>
+                    <pre className="text-xs text-gray-500 mt-1 overflow-auto">
+                      {JSON.stringify(error, null, 2)}
+                    </pre>
+                  </details>
                 </div>
               )}
 
