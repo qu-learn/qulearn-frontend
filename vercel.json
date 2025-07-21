@@ -3,6 +3,10 @@
     "version": 2,
     "rewrites": [
         {
+            "source": "/api/:path(.*)",
+            "destination": "https://qulearn-backend-c497212f0dc2.herokuapp.com/api/:path"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
