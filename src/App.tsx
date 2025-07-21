@@ -93,7 +93,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {appState.user && <Header user={appState.user} onLogout={handleLogout} currentPage={getCurrentPage()} />}
-      <main className={appState.user ? "pt-16" : ""}>
+      <main className={appState.user ? "pt-20" : ""}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
