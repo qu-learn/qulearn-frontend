@@ -53,6 +53,10 @@ import type {
     IUpdateEducatorResponse,
     IAddCourseAdministratorResponse,
     IAddCourseAdministratorRequest,
+    IUpdateCourseAdministratorResponse,
+    IUpdateCourseAdministratorRequest,
+    IGetCourseAdministratorResponse,
+    IDeleteCourseAdministratorResponse,
 } from "./types"
 
 // RTK Query API
@@ -336,23 +340,23 @@ export const api = createApi({
                 body,
             }),
         }),
-        getCourseAdministrators: builder.query<IGetEducatorsResponse, void>({
+        getCourseAdministrators: builder.query<IGetCourseAdministratorResponse, void>({
             query: () => "/sys-admin/course-admins",
         }),
-        deleteCourseAdministrator: builder.mutation<IDeleteEducatorResponse, string>({
+        deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
             query: (cadminId) => ({
                 url: `/sys-admin/course-admins/${cadminId}`,
                 method: "DELETE",
             }),
         }),
-        getCourseAdministrator: builder.query<IGetEducatorResponse, string>({
+        getCourseAdministrator: builder.query<IGetCourseAdministratorResponse, string>({
             query: (cadminId) => `/sys-admin/course-admins/${cadminId}`,
         }),
-        updateCourseAdministrator: builder.mutation<IUpdateEducatorResponse, IUpdateEducatorRequest>({
-            query: ({ educatorId, educator }) => ({
-                url: `/sys-admin/course-admins/${educatorId}`,
+        updateCourseAdministrator: builder.mutation<IUpdateCourseAdministratorResponse, IUpdateCourseAdministratorRequest>({
+            query: ({ cAdminId, cAdmin }) => ({
+                url: `/sys-admin/course-admins/${cAdminId}`,
                 method: "PATCH",
-                body: educator,
+                body: cAdmin,
             }),
         }),
     }),
