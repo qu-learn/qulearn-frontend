@@ -1,20 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { BrowserRouter as Router, Link } from "react-router-dom";
-import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-// Mock data for analytics
-const mockEnrollmentData = [
-  { month: 'Jan', students: 100 },
-  { month: 'Feb', students: 580 },
-  { month: 'Mar', students: 220 },
-  { month: 'Apr', students: 550 },
-  { month: 'May', students: 650 },
-  { month: 'Jun', students: 700 },
-  { month: 'Jul', students: 750 },
-];
+import React, { useState } from "react";
+import { Users } from "lucide-react";
+import { useAddCourseAdministratorMutation } from "../../utils/api";
 
 // Mock dashboard data
 const mockDashboardData = {
@@ -22,85 +10,6 @@ const mockDashboardData = {
   activeCourses: 94,
   newRegistrationsThisMonth: 36,
   pendingApprovals: 8
-};
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: { fullName: string };
-  status: string;
-  createdAt: string;
-  enrollments: number;
-  category: string;
-}
-
-// Mock courses data (initial data, will be moved to state for mutability)
-const initialMockCoursesData = {
-  courses: [
-    {
-      id: "c1",
-      title: "Quantum Foundations",
-      instructor: { fullName: "Dr. Smith" },
-      status: "published",
-      createdAt: "2024-01-15T10:30:00Z",
-      enrollments: 450,
-      category: "Quantum Basics",
-    },
-    {
-      id: "c2",
-      title: "Advanced Quantum Algorithms",
-      instructor: { fullName: "Prof. Johnson" },
-      status: "under-review",
-      createdAt: "2024-02-20T14:20:00Z",
-      enrollments: 0,
-      category: "Advanced Algorithms",
-    },
-    {
-      id: "c3",
-      title: "Quantum Computing Basics",
-      instructor: { fullName: "Dr. Williams" },
-      status: "published",
-      createdAt: "2024-03-10T09:15:00Z",
-      enrollments: 320,
-      category: "Quantum Basics",
-    },
-    {
-      id: "c5",
-      title: "Introduction to AI",
-      instructor: { fullName: "Dr. Alice" },
-      status: "published",
-      createdAt: "2024-04-01T10:00:00Z",
-      enrollments: 600,
-      category: "Artificial Intelligence",
-    },
-    {
-      id: "c6",
-      title: "Machine Learning Fundamentals",
-      instructor: { fullName: "Dr. Bob" },
-      status: "rejected",
-      createdAt: "2024-04-10T11:00:00Z",
-      enrollments: 0,
-      category: "Artificial Intelligence",
-    },
-    {
-      id: "c7",
-      title: "Data Science with Python",
-      instructor: { fullName: "Prof. Carol" },
-      status: "published",
-      createdAt: "2024-05-05T13:00:00Z",
-      enrollments: 720,
-      category: "Data Science",
-    },
-  ],
-  pendingCourses: [
-    {
-      id: "c4",
-      title: "Quantum Machine Learning",
-      instructor: { fullName: "Dr. Brown" },
-      createdAt: "2024-03-25T11:45:00Z",
-      category: "Quantum Basics" // Added category for pending course for consistency
-    },
-  ],
 };
 
 // Mock users data
@@ -136,114 +45,22 @@ const mockUsersData = {
 const SiteAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCourseAnalytics, setSelectedCourseAnalytics] = useState<SelectedCourseAnalytics | null>(null);
   const [showAddUserForm, setShowAddUserForm] = useState(false); // New state for add user form visibility
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
 
-  // State for course management filters
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All");
-
-  // State for mutable course data
-  // Initialize with initialMockCoursesData.courses to allow modifications
-  const [courses, setCourses] = useState(initialMockCoursesData.courses);
-  // Initialize with initialMockCoursesData.pendingCourses to allow modifications
-  const [pendingCourses, setPendingCourses] = useState(initialMockCoursesData.pendingCourses);
-
+   const [addCourseAdmin, { isLoading, error }] = useAddCourseAdministratorMutation()
 
   // Mock API responses (assuming these are static for this example)
-  const dashboardData = mockDashboardData; // Use mockUsersData directly
-  const coursesLoading = false;
+  const dashboardData = mockDashboardData;
   const usersLoading = false;
   const dashboardLoading = false;
-
-  // Filtered courses based on search and filter criteria
-  const filteredCourses = useMemo(() => {
-    let filtered = courses; // Use the mutable 'courses' state for filtering
-
-    // Apply search term filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (course) =>
-          course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.instructor.fullName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply status filter
-    if (statusFilter !== "All") {
-      filtered = filtered.filter((course) => course.status === statusFilter.toLowerCase().replace(' ', '-'));
-    }
-
-    // Apply category filter
-    if (categoryFilter !== "All") {
-      filtered = filtered.filter((course) => course.category === categoryFilter);
-    }
-
-    return filtered;
-  }, [searchTerm, statusFilter, categoryFilter, courses]); // Depend on 'courses' state for re-evaluation
-
-
-  // Function to handle course actions (approve, reject, delete)
-  const handleCourseAction = async (courseId: string, action: string) => {
-    try {
-      // Logic to update the status of courses in the main 'courses' list
-      if (action === "approve" || action === "reject" || action === "delete") {
-        setCourses(prevCourses => {
-          const updatedCourses = prevCourses.map(course => {
-            if (course.id === courseId) {
-              if (action === "approve") {
-                return { ...course, status: "published" }; // Change status to 'published' on approve
-              } else if (action === "reject") {
-                return { ...course, status: "rejected" }; // Change status to 'rejected' on reject
-              }
-            }
-            return course;
-          }).filter(course => !(action === "delete" && course.id === courseId)); // Remove course if action is 'delete'
-          return updatedCourses;
-        });
-
-        // Logic to handle courses in the 'pendingCourses' list
-        setPendingCourses(prevPending => {
-          const updatedPending = prevPending.filter(course => course.id !== courseId); // Remove from pending list
-          const movedCourse = prevPending.find(course => course.id === courseId); // Find the course that was acted upon
-
-          // If a course from pending was approved, add it to the main 'courses' list as 'published'
-          if (movedCourse && action === "approve") {
-            setCourses(prevCourses => [
-              ...prevCourses,
-              // Add default values for enrollments and category if they are not present in pending course mock data
-              { ...movedCourse, status: "published", enrollments: 0, category: movedCourse.category || "Uncategorized" }
-            ]);
-          }
-          return updatedPending;
-        });
-      }
-      // In a real application, you would also make API calls here to persist these changes to a backend database.
-    } catch (error) {
-      console.error(`Failed to ${action} course:`, error);
-    }
-  };
-
-
-  interface SelectedCourseAnalytics {
-    id: string;
-    title: string;
-    status: string;
-  }
-
-  const handleViewAnalytics = (course: Course) => {
-  const { id, title, status } = course // Add status to destructuring
-  setSelectedCourseAnalytics({ id, title, status }) // Pass status to state
-  setActiveTab("analytics") // Switch to analytics tab
-}
-
-  const handleCloseAnalytics = () => {
-    setSelectedCourseAnalytics(null); // Clear selected course
-    setActiveTab("courses"); // Go back to course management
-  };
 
   const handleAddUserClick = () => {
     setShowAddUserForm(true);
@@ -253,10 +70,29 @@ const SiteAdminDashboard = () => {
     setShowAddUserForm(false);
   };
 
-  const handleSaveNewUser = (event: React.FormEvent) => {
+  const handleSaveNewUser = async (event: React.FormEvent) => {
     event.preventDefault();
-    // In a real app, you would send this data to your backend
+
+    try {
+      const response = await addCourseAdmin({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: "defaultPassword", // Default password or prompt user to set one
+        contactNumber: formData.contactNumber,
+        nationalId: formData.nationalId,
+        residentialAddress: formData.residentialAddress,
+        gender: formData.gender
+      }).unwrap()
+
+      console.log(response);
+
+    } catch (error) {
+      console.error("Error adding new user:", error);
+      return;
+    }
+
     console.log("New user data submitted!");
+    console.log(formData);
     setShowAddUserForm(false); // Close form after submission
   };
 
@@ -279,25 +115,13 @@ const SiteAdminDashboard = () => {
     );
   }
 
-  // Extract unique categories for the filter dropdown
-  const uniqueCategories = useMemo(() => {
-    const categories = new Set<string>();
-    // Use the mutable 'courses' state here to get categories from all current courses
-    courses.forEach(course => {
-      if (course.category) {
-        categories.add(course.category);
-      }
-    });
-    return ["All", ...Array.from(categories).sort()];
-  }, [courses]); // Depend on 'courses' state to update categories dynamically
-
   return (
     
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-cyan-900 mb-2">System Administrator Dashboard</h1>
-          <p className="text-gray-600">Manage users, and platform settings</p>
+          <p className="text-gray-600">Manage course administrators, and platform settings</p>
         </div>
 
         <div className="max-w-6xl mx-auto px-6 py-8">
@@ -317,7 +141,7 @@ const SiteAdminDashboard = () => {
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                User Management
+                Course Administrator Management
               </button>
             </nav>
           </div>
@@ -328,12 +152,12 @@ const SiteAdminDashboard = () => {
               {/* Header with Title and Add Button - Only show when form is not open */}
               {!showAddUserForm && (
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">User Management</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Course Administrator Management</h3>
                   <button
                     onClick={handleAddUserClick}
                     className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
                   >
-                    Add New User
+                    Add New Course Administrator
                   </button>
                 </div>
               )}
@@ -354,70 +178,82 @@ const SiteAdminDashboard = () => {
                 </div>
               )}
 
-              {/* Add New Educator Form */}
+              {/* Add New Course Administrator Form */}
               {showAddUserForm && (
-                <div className="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
-                  <form onSubmit={handleSaveNewUser} className="space-y-4">
-                    <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-                      <input
-                        type="text"
-                        id="fullName"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Full Name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Email"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
-                      <input
-                        type="text"
-                        id="contactNumber"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Contact Number"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
-                      <input
-                        type="text"
-                        id="nationalId"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter National ID"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
-                      <input
-                        type="text"
-                        id="residentialAddress"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Residential Address"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-                      <select
-                        id="gender"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Course Administrator</h4>
+                <form onSubmit={handleSaveNewUser} className="space-y-4">
+                  <div>
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Full Name"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, fullName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Email"
+                      value={formData.email}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
+                    <input
+                      type="text"
+                      id="contactNumber"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Contact Number"
+                      value={formData.contactNumber}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
+                    <input
+                      type="text"
+                      id="nationalId"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter National ID"
+                      value={formData.nationalId}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
+                    <input
+                      type="text"
+                      id="residentialAddress"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Residential Address"
+                      value={formData.residentialAddress}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                    <select
+                      id="gender"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      value={formData.gender}
+                      onChange={(e) => setFormData((prevData) => ({ ...prevData, gender: e.target.value }))}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
                     <div className="flex justify-end space-x-3 mt-6">
                       <button
                         type="button"
@@ -430,7 +266,7 @@ const SiteAdminDashboard = () => {
                         type="submit"
                         className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
                       >
-                        Add User
+                        Add Course Administrator
                       </button>
                     </div>
                   </form>
@@ -563,109 +399,6 @@ const SiteAdminDashboard = () => {
               )}
             </div>
           )}
-
-          {activeTab === "analytics" && selectedCourseAnalytics && (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Analytics for: {selectedCourseAnalytics?.title || "Selected Course"}
-                </h3>
-                <button
-                  onClick={handleCloseAnalytics}
-                  className="text-sm text-red-600 hover:underline flex items-center gap-1"
-                >
-                  <X className="w-4 h-4" /> Close Analytics
-                </button>
-              </div>
-
-              {/* Check if course is under review */}
-              {selectedCourseAnalytics.status === 'under-review' ? (
-                // Show empty state for under-review courses
-                <div className="text-center py-12">
-                  <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Analytics Available</h3>
-                  <p className="text-gray-600">
-                    Analytics are not available for courses that are under review. 
-                    Once the course is approved and published, analytics data will be generated.
-                  </p>
-                </div>
-              ) : (
-                // Show analytics for published courses
-                <>
-                  <div className="flex items-center mb-4">
-                    <TrendingUp className="w-5 h-5 text-cyan-700 mr-2" />
-                    <h3 className="text-lg font-semibold text-cyan-700">Student Enrollment Analytics</h3>
-                  </div>
-
-                  {/* Chart Container */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="mb-4">
-                      <h4 className="text-center text-lg font-semibold text-gray-900 mb-6">Student Enrollments Over Time</h4>
-                    </div>
-
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={mockEnrollmentData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e0e4e7" />
-                          <XAxis
-                            dataKey="month"
-                            stroke="#6b7280"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            stroke="#6b7280"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            domain={[0, 1200]}
-                            ticks={[0, 200, 400, 600, 800, 1000, 1200]}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              borderRadius: '8px',
-                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="students"
-                            stroke="#3b82f6"
-                            strokeWidth={2}
-                            dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                            activeDot={{ r: 6, fill: '#1d4ed8' }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div className="text-center mt-4">
-                      <p className="text-sm text-gray-600">Months</p>
-                    </div>
-                  </div>
-
-                  {/* Additional Analytics Cards */}
-                  <div className="grid grid-cols-3 md:grid-cols-3 gap-4 mt-6">
-                    <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                      <div className="text-2xl font-bold text-blue-600">1,058</div>
-                      <div className="text-sm text-gray-600">Total Enrollments</div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                      <div className="text-2xl font-bold text-green-600">85%</div>
-                      <div className="text-sm text-gray-600">Completion Rate</div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-600">4.7</div>
-                      <div className="text-sm text-gray-600">Average Rating</div>
-                    </div>
-                  </div>
-      </>
-    )}
-  </div>
-)}
         </div>
       </div>
     
