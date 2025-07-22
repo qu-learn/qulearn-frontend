@@ -51,6 +51,12 @@ import type {
     IGetEducatorResponse,
     IUpdateEducatorRequest,
     IUpdateEducatorResponse,
+    IAddCourseAdministratorResponse,
+    IAddCourseAdministratorRequest,
+    IUpdateCourseAdministratorResponse,
+    IUpdateCourseAdministratorRequest,
+    IGetCourseAdministratorResponse,
+    IDeleteCourseAdministratorResponse,
 } from "./types"
 
 // RTK Query API
@@ -325,6 +331,34 @@ export const api = createApi({
                 body: educator,
             }),
         }),
+
+        // Course Administrator Management
+        addCourseAdministrator: builder.mutation<IAddCourseAdministratorResponse, IAddCourseAdministratorRequest>({
+            query: (body) => ({
+                url: "/sys-admin/course-admins",
+                method: "POST",
+                body,
+            }),
+        }),
+        getCourseAdministrators: builder.query<IGetCourseAdministratorResponse, void>({
+            query: () => "/sys-admin/course-admins",
+        }),
+        deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
+            query: (cAdminId) => ({
+                url: `/sys-admin/course-admins/${cAdminId}`,
+                method: "DELETE",
+            }),
+        }),
+        getCourseAdministrator: builder.query<IGetCourseAdministratorResponse, string>({
+            query: (cAdminId) => `/sys-admin/course-admins/${cAdminId}`,
+        }),
+        updateCourseAdministrator: builder.mutation<IUpdateCourseAdministratorResponse, IUpdateCourseAdministratorRequest>({
+            query: ({ cAdminId, cAdmin }) => ({
+                url: `/sys-admin/course-admins/${cAdminId}`,
+                method: "PATCH",
+                body: cAdmin,
+            }),
+        }),
     }),
 })
 
@@ -370,4 +404,9 @@ export const {
     useDeleteEducatorMutation,
     useGetEducatorQuery,
     useUpdateEducatorMutation,
+    useAddCourseAdministratorMutation,
+    useGetCourseAdministratorsQuery,
+    useDeleteCourseAdministratorMutation,
+    useGetCourseAdministratorQuery,
+    useUpdateCourseAdministratorMutation,
 } = api
