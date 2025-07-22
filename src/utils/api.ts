@@ -344,13 +344,13 @@ export const api = createApi({
             query: () => "/sys-admin/course-admins",
         }),
         deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
-            query: (cadminId) => ({
-                url: `/sys-admin/course-admins/${cadminId}`,
+            query: (cAdminId) => ({
+                url: `/sys-admin/course-admins/${cAdminId}`,
                 method: "DELETE",
             }),
         }),
         getCourseAdministrator: builder.query<IGetCourseAdministratorResponse, string>({
-            query: (cadminId) => `/sys-admin/course-admins/${cadminId}`,
+            query: (cAdminId) => `/sys-admin/course-admins/${cAdminId}`,
         }),
         updateCourseAdministrator: builder.mutation<IUpdateCourseAdministratorResponse, IUpdateCourseAdministratorRequest>({
             query: ({ cAdminId, cAdmin }) => ({
