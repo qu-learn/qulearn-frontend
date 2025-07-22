@@ -387,3 +387,42 @@ export interface IDeleteEducatorRequest {
 export interface IDeleteEducatorResponse {
   success: boolean
 }
+
+export interface IAddCourseAdministratorRequest {
+  fullName: string
+  email: string
+  password: string
+  contactNumber: string
+  nationalId: string
+  residentialAddress: string
+  gender: string
+}
+
+export interface IAddCourseAdministratorResponse {
+  cAdmin: IUser
+}
+
+export interface IUpdateCourseAdministratorRequest {
+  cAdminId: string
+  cAdmin: IAddCourseAdministratorRequest
+}
+
+export interface IUpdateCourseAdministratorResponse {
+  cAdmin: IUser
+}
+
+export interface IGetCourseAdministratorResponse {
+  cAdmin: IUser
+}
+
+export interface IGetCourseAdministratorsResponse {
+  cAdmins: IUser[]
+}
+
+export interface IDeleteCourseAdministratorRequest {
+  cAdminId: string
+}
+
+export interface IDeleteCourseAdministratorResponse {
+  success: boolean
+}
