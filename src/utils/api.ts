@@ -51,6 +51,8 @@ import type {
     IGetEducatorResponse,
     IUpdateEducatorRequest,
     IUpdateEducatorResponse,
+    IAddCourseAdministratorResponse,
+    IAddCourseAdministratorRequest,
 } from "./types"
 
 // RTK Query API
@@ -325,6 +327,34 @@ export const api = createApi({
                 body: educator,
             }),
         }),
+
+        // Course Administrator Management
+        addCourseAdministrator: builder.mutation<IAddCourseAdministratorResponse, IAddCourseAdministratorRequest>({
+            query: (body) => ({
+                url: "/sys-admin/course-admins",
+                method: "POST",
+                body,
+            }),
+        }),
+        getCourseAdministrators: builder.query<IGetEducatorsResponse, void>({
+            query: () => "/sys-admin/course-admins",
+        }),
+        deleteCourseAdministrator: builder.mutation<IDeleteEducatorResponse, string>({
+            query: (cadminId) => ({
+                url: `/sys-admin/course-admins/${cadminId}`,
+                method: "DELETE",
+            }),
+        }),
+        getCourseAdministrator: builder.query<IGetEducatorResponse, string>({
+            query: (cadminId) => `/sys-admin/course-admins/${cadminId}`,
+        }),
+        updateCourseAdministrator: builder.mutation<IUpdateEducatorResponse, IUpdateEducatorRequest>({
+            query: ({ educatorId, educator }) => ({
+                url: `/sys-admin/course-admins/${educatorId}`,
+                method: "PATCH",
+                body: educator,
+            }),
+        }),
     }),
 })
 
@@ -370,4 +400,9 @@ export const {
     useDeleteEducatorMutation,
     useGetEducatorQuery,
     useUpdateEducatorMutation,
+    useAddCourseAdministratorMutation,
+    useGetCourseAdministratorsQuery,
+    useDeleteCourseAdministratorMutation,
+    useGetCourseAdministratorQuery,
+    useUpdateCourseAdministratorMutation,
 } = api
