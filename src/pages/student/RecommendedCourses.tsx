@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Search, BookOpen, Clock, Users } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useGetMyDashboardQuery } from "../../utils/api"
-import Footer from "../../components/Footer"
+// import Footer from "../../components/Footer"
 
 const RecommendedCourses: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -196,7 +196,7 @@ const RecommendedCourses: React.FC = () => {
         )}
       </div>
       
-      <Footer />
+      {/* <Footer /> */}
     </>
   )
 }

@@ -4,7 +4,7 @@ import type React from "react"
 import { BookOpen, Award, Zap, TrendingUp, Target, Users, Clock } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useGetMyDashboardQuery } from "../../utils/api"
-import Footer from "../../components/Footer"
+// import Footer from "../../components/Footer"
 
 const StudentDashboard: React.FC = () => {
   const { data: dashboardData, isLoading, error } = useGetMyDashboardQuery()
@@ -36,7 +36,7 @@ const StudentDashboard: React.FC = () => {
     <>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cyan-700 mb-2">Welcome Back, Ms. Sanuli Nanayakkara!</h1>
+        <h1 className="text-3xl font-bold text-cyan-700 mb-2">Welcome Back!</h1>
         <p className="text-cyan-600">Continue your quantum computing journey</p>
       </div>
 
@@ -310,7 +310,7 @@ const StudentDashboard: React.FC = () => {
       )} */}
     </div>
     
-    <Footer />
+    {/* <Footer /> */}
     </>
   )
 }
