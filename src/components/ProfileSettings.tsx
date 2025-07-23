@@ -258,8 +258,12 @@ import { useGetMyProfileQuery, useUpdateMyProfileMutation } from "../utils/api"
 import { useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
 
+interface ProfileSettingsProps {
+  user: IUser
+}
 
-const ProfileSettings: React.FC = () => {
+
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     fullName: "",
@@ -347,21 +351,19 @@ const ProfileSettings: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <button
-          onClick={() => {
-            const user = profileData.user
-            const dashboardPage =
-              user.role === "student"
-                ? "/dashboard"
-                : user.role === "educator"
-                  ? "/educator"
-                  : "/admin"
-            navigate(dashboardPage)
-          }}
-          className="flex items-center text-cyan-700 hover:text-blue-800 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </button>
+        onClick={() => {
+          const dashboardPage = user.role === "student" 
+            ? "/dashboard" 
+            : user.role === "educator" 
+            ? "/educator" 
+            : "/admin"
+          navigate(dashboardPage)
+        }}
+        className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Dashboard
+      </button>
         <div>
           <h1 className="text-3xl font-bold text-cyan-700 mb-2">My Profile</h1>
           {/* <p className="text-cyan-600">Manage your account information</p> */}

@@ -47,10 +47,38 @@ interface Question {
   answers: string[]
 }
 
+//gamification types start
+interface Badge {
+  id: string
+  name: string
+  criteria: string
+  iconUrl: string
+}
+
+interface PointRule {
+  lessonPoints: number
+  quizPoints: number
+  simulationPoints: number
+}
+
+interface Milestone {
+  id: string
+  name: string
+  pointsRequired: number
+  rewardDescription: string
+}
+
+interface GamificationSettings {
+  badges: Badge[]
+  pointRules: PointRule
+  milestones: Milestone[]
+}
+//gamification types end
+
 const CourseCreation: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<"details" | "content" | "preview">("details")
+ const [activeTab, setActiveTab] = useState<"details" | "content" | "gamification" | "preview">("details")
   const [courseForm, setCourseForm] = useState<CourseForm>({
     title: "",
     subtitle: "",
@@ -69,6 +97,24 @@ const CourseCreation: React.FC = () => {
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId })
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
+
+  //gamification states start
+   const [gamificationSettings, setGamificationSettings] = useState<GamificationSettings>({
+  badges: [],
+  pointRules: {
+    lessonPoints: 10,
+    quizPoints: 15,
+    simulationPoints: 20
+  },
+  milestones: []
+})
+const [newBadgeName, setNewBadgeName] = useState("")
+const [newBadgeCriteria, setNewBadgeCriteria] = useState("")
+const [newBadgeIcon, setNewBadgeIcon] = useState("")
+const [newMilestoneName, setNewMilestoneName] = useState("")
+const [newMilestonePoints, setNewMilestonePoints] = useState("")
+const [newMilestoneReward, setNewMilestoneReward] = useState("")
+//gamification states end
 
   useEffect(() => {
     if (existingCourse) {
@@ -200,21 +246,90 @@ const CourseCreation: React.FC = () => {
     )
   }
 
-  const handleSave = async () => {
-    try {
-      if (courseId) {
-        await updateCourse({ courseId, course: courseForm }).unwrap()
-      } else {
-        const result = await createCourse(courseForm).unwrap()
-        navigate(`/courses/${result.course.id}`)
+      const handleSave = async () => {
+      try {
+        const courseData = {
+          ...courseForm,
+          gamificationSettings, // Add this line
+          modules // Add this line if not already included
+        }
+        
+        if (courseId) {
+          await updateCourse({ courseId, course: courseData }).unwrap()
+        } else {
+          const result = await createCourse(courseData).unwrap()
+          navigate(`/courses/${result.course.id}`)
+        }
+      } catch (error) {
+        console.error("Failed to save course:", error)
       }
-    } catch (error) {
-      console.error("Failed to save course:", error)
     }
-  }
 
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
   const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
+
+
+  //gamification functions start
+  const addBadge = () => {
+  if (newBadgeName.trim() && newBadgeCriteria.trim()) {
+    const newBadge: Badge = {
+      id: Date.now().toString(),
+      name: newBadgeName.trim(),
+      criteria: newBadgeCriteria.trim(),
+      iconUrl: newBadgeIcon.trim() || ""
+    }
+    setGamificationSettings(prev => ({
+      ...prev,
+      badges: [...prev.badges, newBadge]
+    }))
+    setNewBadgeName("")
+    setNewBadgeCriteria("")
+    setNewBadgeIcon("")
+  }
+}
+
+const removeBadge = (badgeId: string) => {
+  setGamificationSettings(prev => ({
+    ...prev,
+    badges: prev.badges.filter(badge => badge.id !== badgeId)
+  }))
+}
+
+const updatePointRules = (field: keyof PointRule, value: number) => {
+  setGamificationSettings(prev => ({
+    ...prev,
+    pointRules: {
+      ...prev.pointRules,
+      [field]: value
+    }
+  }))
+}
+
+const addMilestone = () => {
+  if (newMilestoneName.trim() && newMilestonePoints.trim() && newMilestoneReward.trim()) {
+    const newMilestone: Milestone = {
+      id: Date.now().toString(),
+      name: newMilestoneName.trim(),
+      pointsRequired: parseInt(newMilestonePoints),
+      rewardDescription: newMilestoneReward.trim()
+    }
+    setGamificationSettings(prev => ({
+      ...prev,
+      milestones: [...prev.milestones, newMilestone]
+    }))
+    setNewMilestoneName("")
+    setNewMilestonePoints("")
+    setNewMilestoneReward("")
+  }
+}
+
+const removeMilestone = (milestoneId: string) => {
+  setGamificationSettings(prev => ({
+    ...prev,
+    milestones: prev.milestones.filter(milestone => milestone.id !== milestoneId)
+  }))
+}//gamification function end
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -272,6 +387,17 @@ const CourseCreation: React.FC = () => {
           >
             Content & Modules
           </button>
+          {/* Gamification Tab */}
+          <button
+          onClick={() => setActiveTab("gamification")}
+          className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            activeTab === "gamification"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          }`}
+        >
+          Gamification Settings
+        </button>
           <button
             onClick={() => setActiveTab("preview")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "preview"
@@ -706,6 +832,203 @@ const CourseCreation: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Gamification Settings Tab */}
+      {activeTab === "gamification" && (
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="space-y-8">
+            {/* Badge Management */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Badge Management</h3>
+              
+              <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Badge Name</label>
+                  <input
+                    type="text"
+                    value={newBadgeName}
+                    onChange={(e) => setNewBadgeName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Quantum Explorer"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Criteria</label>
+                  <input
+                    type="text"
+                    value={newBadgeCriteria}
+                    onChange={(e) => setNewBadgeCriteria(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Complete 5 lessons"
+                  />
+                </div>
+                
+                <div className="flex items-end">
+                  <div className="flex-1 mr-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload Badge Icon</label>
+                    <input
+                      type="text"
+                      value={newBadgeIcon}
+                      onChange={(e) => setNewBadgeIcon(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Icon URL or upload"
+                    />
+                  </div>
+                </div>
+                <button
+                    onClick={addBadge}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                  >
+                    Add Badge
+                  </button>
+              </div>
+
+              {/* Display existing badges */}
+              {gamificationSettings.badges.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Current Badges</h4>
+                  <div className="space-y-2">
+                    {gamificationSettings.badges.map((badge) => (
+                      <div key={badge.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                        <div>
+                          <span className="font-medium text-gray-900">{badge.name}</span>
+                          <span className="text-gray-500 ml-2">- {badge.criteria}</span>
+                        </div>
+                        <button
+                          onClick={() => removeBadge(badge.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Point System Rules */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Point System Rules</h3>
+              
+              <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Lesson</label>
+                  <input
+                    type="number"
+                    value={gamificationSettings.pointRules.lessonPoints}
+                    onChange={(e) => updatePointRules("lessonPoints", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 10"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Quiz</label>
+                  <input
+                    type="number"
+                    value={gamificationSettings.pointRules.quizPoints}
+                    onChange={(e) => updatePointRules("quizPoints", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 15"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Simulation</label>
+                  <input
+                    type="number"
+                    value={gamificationSettings.pointRules.simulationPoints}
+                    onChange={(e) => updatePointRules("simulationPoints", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 20"
+                  />
+                </div>
+                <button
+                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+              >
+                Save Rules
+              </button>
+              </div>
+            </div>
+
+            {/* Milestone Configuration */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Milestone Configuration</h3>
+              
+              <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Milestone Name</label>
+                  <input
+                    type="text"
+                    value={newMilestoneName}
+                    onChange={(e) => setNewMilestoneName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Quantum Explorer"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Points Required</label>
+                  <input
+                    type="number"
+                    value={newMilestonePoints}
+                    onChange={(e) => setNewMilestonePoints(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 100"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Reward Description</label>
+                  <input
+                    type="text"
+                    value={newMilestoneReward}
+                    onChange={(e) => setNewMilestoneReward(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Certificate of Achievement"
+                  />
+                </div>
+                
+                <div className="flex items-end">
+                  <button
+                    onClick={addMilestone}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                  >
+                    Add Milestone
+                  </button>
+                </div>
+              </div>
+
+              {/* Display existing milestones */}
+              {gamificationSettings.milestones.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Current Milestones</h4>
+                  <div className="space-y-2">
+                    {gamificationSettings.milestones.map((milestone) => (
+                      <div key={milestone.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                        <div>
+                          <span className="font-medium text-gray-900">{milestone.name}</span>
+                          <span className="text-gray-500 ml-2">- {milestone.pointsRequired} points</span>
+                          <span className="text-gray-500 ml-2">- {milestone.rewardDescription}</span>
+                        </div>
+                        <button
+                          onClick={() => removeMilestone(milestone.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Preview Tab */}
       {activeTab === "preview" && (

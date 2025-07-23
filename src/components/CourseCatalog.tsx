@@ -142,7 +142,7 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
      
 
       {/* Course Grid */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         {filteredCourses.map((course) => (
           <Link
             key={course.id}
