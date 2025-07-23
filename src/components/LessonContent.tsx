@@ -12,14 +12,15 @@ export function LessonContent({ content }: { content: string }) {
       remarkPlugins={[remarkMath]}
       rehypePlugins={[rehypeMathjax, rehypeRaw]}
       components={{
-        code({ node, inline, className, children, ...props }) {
+        code({ node, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "")
+          const inline = 'inline' in props && props.inline
           return !inline && match ? (
             <SyntaxHighlighter
-              style={vs}
+              style={vs as any}
               language={match[1]}
               PreTag="div"
-              {...props}
+              {...props as any}
             >
               {String(children).replace(/\n$/, "")}
             </SyntaxHighlighter>
