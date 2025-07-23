@@ -27,7 +27,7 @@ const AboutPage: React.FC = () => {
                 <p>
                   Welcome to QuLearn, a pioneering quantum computing learning platform designed 
                   to make the knowledge and skills of university students with a special 
-                  focus on overcoming the latest trends of UCSC. Beyond all a institute for scientific 
+                  focus on overcoming the latest trends of UCSC. Beyond all an institute for scientific 
                   exploration and future-focused technology. QuLearn believes that our business 
                   lies at the intersection of education, innovation and authentic quantum 
                   computing.
@@ -41,7 +41,7 @@ const AboutPage: React.FC = () => {
                   resources to enhance to university level, the team content and learn offer of our way.
                 </p>
                 <p>
-                  Rooted in scientific excellence and innovation. QuLearn is born than a learning 
+                  Rooted in scientific excellence and innovation. QuLearn is more than a learning 
                   platform – it's a launchpad that the next generation of quantum thinkers from UCSC 
                   and beyond.
                 </p>
@@ -74,7 +74,7 @@ const AboutPage: React.FC = () => {
                   To be the leading quantum computing education 
                   platform in Sri Lanka, fostering a new 
                   generation of quantum-literate professionals. We 
-                  quantum knowledge accessible, practical, and 
+                  make quantum knowledge accessible, practical, and 
                   transformative for university students – inspiring 
                   them to innovate and contribute to quantum research 
                   globally.
