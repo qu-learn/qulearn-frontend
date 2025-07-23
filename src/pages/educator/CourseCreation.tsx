@@ -99,6 +99,70 @@ const CourseCreation: React.FC = () => {
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
 
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
+  const [isFormValid, setIsFormValid] = useState(true)
+
+  // Add URL validation helper function
+  const isValidUrl = (string: string): boolean => {
+    try {
+      new URL(string)
+      return true
+    } catch (_) {
+      return false
+    }
+  }
+
+  // Add form validation function
+const validateForm = (): boolean => {
+  const errors: {[key: string]: string} = {}
+
+  // Title validation
+  if (!courseForm.title.trim()) {
+    errors.title = "Course title is required"
+  } else if (courseForm.title.trim().length < 3) {
+    errors.title = "Course title must be at least 3 characters long"
+  }
+
+  // Subtitle validation
+  if (!courseForm.subtitle.trim()) {
+    errors.subtitle = "Course subtitle is required"
+  }
+
+  // Description validation
+  if (!courseForm.description.trim()) {
+    errors.description = "Course description is required"
+  } else if (courseForm.description.trim().length < 20) {
+    errors.description = "Course description must be at least 20 characters long"
+  }
+
+  // Category validation
+  if (!courseForm.category.trim()) {
+    errors.category = "Course category is required"
+  }
+
+  // Thumbnail URL validation
+  if (!courseForm.thumbnailImageUrl.trim()) {
+    errors.thumbnailImageUrl = "Thumbnail image URL is required"
+  } else if (!isValidUrl(courseForm.thumbnailImageUrl)) {
+    errors.thumbnailImageUrl = "Please enter a valid URL"
+  }
+
+  // Jupyter Notebook URL validation (optional but validate if provided)
+  if (courseForm.jupyterNotebookUrl && courseForm.jupyterNotebookUrl.trim() && !isValidUrl(courseForm.jupyterNotebookUrl)) {
+    errors.jupyterNotebookUrl = "Please enter a valid URL"
+  }
+
+  // Prerequisites validation
+  if (courseForm.prerequisites.length === 0) {
+    errors.prerequisites = "At least one prerequisite is required"
+  }
+
+  setFormErrors(errors)
+  setIsFormValid(Object.keys(errors).length === 0)
+  return Object.keys(errors).length === 0
+}
+
+
   //gamification states start
   const [gamificationSettings, setGamificationSettings] = useState<GamificationSettings>({
     badges: [],
@@ -135,8 +199,17 @@ const CourseCreation: React.FC = () => {
   }, [existingCourse])
 
   const handleFormChange = (field: keyof CourseForm, value: any) => {
-    setCourseForm((prev) => ({ ...prev, [field]: value }))
+  setCourseForm((prev) => ({ ...prev, [field]: value }))
+  
+  // Clear specific field error when user starts typing
+  if (formErrors[field]) {
+    setFormErrors(prev => {
+      const newErrors = { ...prev }
+      delete newErrors[field]
+      return newErrors
+    })
   }
+}
 
   const addPrerequisite = () => {
     if (newPrerequisite.trim()) {
@@ -145,6 +218,15 @@ const CourseCreation: React.FC = () => {
         prerequisites: [...prev.prerequisites, newPrerequisite.trim()],
       }))
       setNewPrerequisite("")
+      
+      // Clear prerequisites error when adding
+      if (formErrors.prerequisites) {
+        setFormErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors.prerequisites
+          return newErrors
+        })
+      }
     }
   }
 
@@ -248,27 +330,39 @@ const CourseCreation: React.FC = () => {
   }
 
   const handleSave = async () => {
-    try {
-      const courseData = {
-        ...courseForm,
-        gamificationSettings, // Add this line
-        modules // Add this line if not already included
-      }
-
-      if (courseId) {
-        await updateCourse({ courseId, course: courseData }).unwrap()
-      } else {
-        const result = await createCourse(courseData).unwrap()
-        navigate(`/courses/${result.course.id}`)
-      }
-    } catch (error) {
-      console.error("Failed to save course:", error)
-    }
+  if (!validateForm()) {
+    return
   }
+
+  try {
+    const courseData = {
+      ...courseForm,
+      gamificationSettings,
+      modules
+    }
+    
+    if (courseId) {
+      await updateCourse({ courseId, course: courseData }).unwrap()
+    } else {
+      const result = await createCourse(courseData).unwrap()
+      navigate(`/courses/${result.course.id}`)
+    }
+  } catch (error) {
+    console.error("Failed to save course:", error)
+    setFormErrors({ submit: "Failed to save course. Please try again." })
+  }
+}
 
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
   const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
 
+
+  const FieldError: React.FC<{ error?: string }> = ({ error }) => {
+  if (!error) return null
+  return (
+    <p className="text-sm text-red-600 mt-1">{error}</p>
+  )
+}
 
   //gamification functions start
   const addBadge = () => {
@@ -357,8 +451,8 @@ const CourseCreation: React.FC = () => {
             </button>
             <button
               onClick={handleSave}
-              disabled={isCreating || isUpdating}
-              className="flex items-center px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors disabled:opacity-50"
+              disabled={isCreating || isUpdating || !isFormValid}
+              className="flex items-center px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4 mr-2" />
               {isCreating || isUpdating ? "Saving..." : "Save Course"}
@@ -366,6 +460,12 @@ const CourseCreation: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {formErrors.submit && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+          <p className="text-sm text-red-600">{formErrors.submit}</p>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="mb-8">
@@ -421,9 +521,14 @@ const CourseCreation: React.FC = () => {
                   type="text"
                   value={courseForm.title}
                   onChange={(e) => handleFormChange("title", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.title 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="Enter course title"
                 />
+                <FieldError error={formErrors.title} />
               </div>
 
               <div>
@@ -432,9 +537,14 @@ const CourseCreation: React.FC = () => {
                   type="text"
                   value={courseForm.subtitle}
                   onChange={(e) => handleFormChange("subtitle", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.subtitle 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="Brief course subtitle"
                 />
+                <FieldError error={formErrors.subtitle} />
               </div>
 
               <div>
@@ -443,10 +553,16 @@ const CourseCreation: React.FC = () => {
                   value={courseForm.description}
                   onChange={(e) => handleFormChange("description", e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.description 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="Detailed course description"
                 />
+                <FieldError error={formErrors.description} />
               </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
@@ -454,9 +570,14 @@ const CourseCreation: React.FC = () => {
                   type="text"
                   value={courseForm.category}
                   onChange={(e) => handleFormChange("category", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.category 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="e.g., Quantum Computing, Quantum Algorithms"
                 />
+                <FieldError error={formErrors.category} />
               </div>
             </div>
 
@@ -480,9 +601,14 @@ const CourseCreation: React.FC = () => {
                   type="url"
                   value={courseForm.thumbnailImageUrl}
                   onChange={(e) => handleFormChange("thumbnailImageUrl", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.thumbnailImageUrl 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="https://example.com/image.jpg"
                 />
+                <FieldError error={formErrors.thumbnailImageUrl} />
               </div>
 
               <div>
@@ -491,9 +617,14 @@ const CourseCreation: React.FC = () => {
                   type="url"
                   value={courseForm.jupyterNotebookUrl || ""}
                   onChange={(e) => handleFormChange("jupyterNotebookUrl", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    formErrors.jupyterNotebookUrl 
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
                   placeholder="https://example.com/notebook.ipynb"
                 />
+                <FieldError error={formErrors.jupyterNotebookUrl} />
               </div>
 
               <div>
@@ -530,6 +661,7 @@ const CourseCreation: React.FC = () => {
                     </span>
                   ))}
                 </div>
+                <FieldError error={formErrors.prerequisites} />
               </div>
             </div>
           </div>
