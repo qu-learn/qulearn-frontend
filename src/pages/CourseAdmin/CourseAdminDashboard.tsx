@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter as Router, Link } from "react-router-dom";
 import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X, Edit3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"; // Re-imported Recharts components for analytics chart
-import { useAddEducatorMutation } from "../../utils/api";
+import { useAddEducatorMutation, useGetEducatorsQuery } from "../../utils/api";
 
 interface User {
   id: string;
@@ -92,9 +92,8 @@ const ViewUserModal = ({ user, onClose }: ViewUserModalProps) => {
           <p><strong>National ID:</strong> {user.nationalId || 'N/A'}</p>
           <p><strong>Residential Address:</strong> {user.residentialAddress || 'N/A'}</p>
           <p><strong>Gender:</strong> {user.gender || 'N/A'}</p>
-          <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-          }`}>{user.status}</span></p>
+          <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+            }`}>{user.status}</span></p>
           <p><strong>Registered On:</strong> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p> {/* Changed to direct Date object */}
           <p className="break-all"><strong>User ID:</strong> {user.id}</p>
         </div>
@@ -401,88 +400,11 @@ const initialMockCoursesData = {
   ],
 };
 
-// Mock users data to be pre-populated
-const mockUsersToPrepopulate: User[] = [
-  {
-    id: "U001",
-    fullName: "John Doe",
-    email: "john@example.com",
-    contactNumber: "123-456-7890",
-    nationalId: "NID-001",
-    residentialAddress: "123 Main St, New York, USA",
-    gender: "male",
-    status: "Active",
-    createdAt: new Date("2023-01-10T08:00:00Z"), // Convert to Date object
-    avatarUrl: null,
-  },
-  {
-    id: "U002",
-    fullName: "Jane Smith",
-    email: "jane@example.com",
-    contactNumber: "098-765-4321",
-    nationalId: "NID-002",
-    residentialAddress: "456 Oak Ave, London, UK",
-    gender: "female",
-    status: "Inactive",
-    createdAt: new Date("2023-02-15T10:30:00Z"), // Convert to Date object
-    avatarUrl: null,
-  },
-  {
-    id: "U003",
-    fullName: "Peter Jones",
-    email: "peter@example.com",
-    contactNumber: "111-222-3333",
-    nationalId: "NID-003",
-    residentialAddress: "789 Pine Rd, Sydney, AU",
-    gender: "male",
-    status: "Active",
-    createdAt: new Date("2023-03-01T12:00:00Z"),
-    avatarUrl: null,
-  },
-  {
-    id: "U004",
-    fullName: "Alice Brown",
-    email: "alice@example.com",
-    contactNumber: "444-555-6666",
-    nationalId: "NID-004",
-    residentialAddress: "101 Elm St, Toronto, CA",
-    gender: "female",
-    status: "Active",
-    createdAt: new Date("2023-04-20T09:00:00Z"),
-    avatarUrl: null,
-  },
-  {
-    id: "U005",
-    fullName: "Robert White",
-    email: "robert@example.com",
-    contactNumber: "777-888-9999",
-    nationalId: "NID-005",
-    residentialAddress: "202 Birch Ln, Berlin, DE",
-    gender: "male",
-    status: "Inactive",
-    createdAt: new Date("2023-05-10T11:00:00Z"),
-    avatarUrl: null,
-  },
-  {
-    id: "U006",
-    fullName: "Emily Green",
-    email: "emily@example.com",
-    contactNumber: "123-987-6543",
-    nationalId: "NID-006",
-    residentialAddress: "303 Cedar Blvd, Paris, FR",
-    gender: "female",
-    status: "Active",
-    createdAt: new Date("2023-06-01T14:00:00Z"),
-    avatarUrl: null,
-  },
-];
-
-
 const CourseAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedCourseAnalytics, setSelectedCourseAnalytics] = useState<SelectedCourseAnalytics | null>(null);
 
-    const [formData, setFormData] = useState<IAddEducatorRequest>({
+  const [formData, setFormData] = useState<IAddEducatorRequest>({
     fullName: "",
     email: "",
     password: "",
@@ -505,11 +427,17 @@ const CourseAdminDashboard = () => {
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
-  const [users, setUsers] = useState<User[]>(mockUsersToPrepopulate); // Initialize with mock data
+  const [users, setUsers] = useState<User[]>([]); // Initialize with mock data
   const [usersCurrentPage, setUsersCurrentPage] = useState(1); // Separate pagination for users
   const [usersPerPage] = useState(5); // Number of users to display per page
   const [userSearchTerm, setUserSearchTerm] = useState(''); // Search term for users
   const [userStatusFilter, setUserStatusFilter] = useState('All'); // Status filter for users
+
+  const { data: educators } = useGetEducatorsQuery()
+  useEffect(() => {
+    if (!educators) return
+    setUsers(educators.educators as any)
+  }, [educators])
 
   // States for user modals
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -646,14 +574,14 @@ const CourseAdminDashboard = () => {
 
     try {
       // API request (optional, can be mocked)
-      await addEducator({
+      const newUser2 = await addEducator({
         ...formData,
         password: formData.password || "defaultPassword",
       }).unwrap();
 
       // Add to local state
       const newUser: User = {
-        id: newId,
+        id: newUser2.educator.id || newId, // Use the ID from the API response or the generated one
         fullName: formData.fullName,
         email: formData.email,
         contactNumber: formData.contactNumber,
@@ -808,31 +736,28 @@ const CourseAdminDashboard = () => {
             <nav className="flex space-x-8 overflow-x-auto pb-2">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "overview"
-                    ? "border-cyan-700 text-cyan-700"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "overview"
+                  ? "border-cyan-700 text-cyan-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setActiveTab("courses")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "courses"
-                    ? "border-cyan-700 text-cyan-700"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "courses"
+                  ? "border-cyan-700 text-cyan-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 Course Management
               </button>
               <button
                 onClick={() => setActiveTab("users")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "users"
-                    ? "border-cyan-700 text-cyan-700"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === "users"
+                  ? "border-cyan-700 text-cyan-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 User Management
               </button>
@@ -875,7 +800,7 @@ const CourseAdminDashboard = () => {
                   </div>
                   <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
                     <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <CheckCircle className="w-6 h-6 text-yellow-600" />
+                      <CheckCircle className="w-6 h-6 text-yellow-600" />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
@@ -987,15 +912,14 @@ const CourseAdminDashboard = () => {
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900 capitalize">
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                course.status === "published"
-                                  ? "bg-green-100 text-green-800"
-                                  : course.status === "under-review"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : course.status === "rejected"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-gray-100 text-gray-800"
-                              }`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${course.status === "published"
+                                ? "bg-green-100 text-green-800"
+                                : course.status === "under-review"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : course.status === "rejected"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
                             >
                               {course.status}
                             </span>
@@ -1035,7 +959,7 @@ const CourseAdminDashboard = () => {
                               <button
                                 onClick={() => handleViewAnalytics(course)}
                                 className="text-indigo-600 hover:text-indigo-900"
-                                >
+                              >
                                 <TrendingUp className="w-4 h-4" />
                               </button>
                             </div>
@@ -1073,10 +997,10 @@ const CourseAdminDashboard = () => {
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
                                 <button className="text-blue-600 hover:text-blue-900">
-                                <Link to={`/courses/${course.id}`} className="text-blue-600 hover:text-blue-900">
-                                  <Eye className="w-4 h-4" />
-                                </Link>
-                              </button>
+                                  <Link to={`/courses/${course.id}`} className="text-blue-600 hover:text-blue-900">
+                                    <Eye className="w-4 h-4" />
+                                  </Link>
+                                </button>
                                 <button
                                   onClick={() => handleCourseAction(course.id, "approve")}
                                   className="text-green-600 hover:text-green-900"
@@ -1145,267 +1069,266 @@ const CourseAdminDashboard = () => {
 
               {/* Add New Educator Form */}
               {showAddUserForm && (
-              <div className="bg-white-50 p-6 rounded-lg">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
-                <form onSubmit={handleSaveNewUser} className="space-y-4">
-                  <div>
-                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Full Name"
-                      value={formData.fullName}
-                      onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Email"
-                      value={formData.email}
-                      onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                    <input
-                      type="password"
-                      id="password"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Set a password or leave for default"
-                      value={formData.password}
-                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
-                    <input
-                      type="text"
-                      id="contactNumber"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Contact Number"
-                      value={formData.contactNumber}
-                      onChange={e => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
-                    <input
-                      type="text"
-                      id="nationalId"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter National ID"
-                      value={formData.nationalId}
-                      onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
-                    <input
-                      type="text"
-                      id="residentialAddress"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Residential Address"
-                      value={formData.residentialAddress}
-                      onChange={e => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-                    <select
-                      id="gender"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={formData.gender}
-                      onChange={e => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                    >
-                      <option value="">Select Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="flex justify-end space-x-3 mt-6">
-                    <button
-                      type="button"
-                      onClick={handleCancelAddUser}
-                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold text-sm shadow-md"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
-                      disabled={isAddingEducator}
-                    >
-                      {isAddingEducator ? "Adding..." : "Add User"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
+                <div className="bg-white-50 p-6 rounded-lg">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
+                  <form onSubmit={handleSaveNewUser} className="space-y-4">
+                    <div>
+                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <input
+                        type="text"
+                        id="fullName"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Enter Full Name"
+                        value={formData.fullName}
+                        onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Enter Email"
+                        value={formData.email}
+                        onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                      <input
+                        type="password"
+                        id="password"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Set a password or leave for default"
+                        value={formData.password}
+                        onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
+                      <input
+                        type="text"
+                        id="contactNumber"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Enter Contact Number"
+                        value={formData.contactNumber}
+                        onChange={e => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
+                      <input
+                        type="text"
+                        id="nationalId"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Enter National ID"
+                        value={formData.nationalId}
+                        onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
+                      <input
+                        type="text"
+                        id="residentialAddress"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Enter Residential Address"
+                        value={formData.residentialAddress}
+                        onChange={e => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                      <select
+                        id="gender"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        value={formData.gender}
+                        onChange={e => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div className="flex justify-end space-x-3 mt-6">
+                      <button
+                        type="button"
+                        onClick={handleCancelAddUser}
+                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold text-sm shadow-md"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
+                        disabled={isAddingEducator}
+                      >
+                        {isAddingEducator ? "Adding..." : "Add User"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
 
               {/* User Table and Loading/Error States - Only show when form is not open */}
               {!showAddUserForm && (
                 <>
                   {filteredUsers.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No users found</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  User ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Email
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Registered On
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Actions
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {paginatedUsers.map((user) => (
-                                <tr key={user.id}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 break-all">{user.id}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                      {user.avatarUrl ? (
-                                        <img
-                                          src={user.avatarUrl}
-                                          alt={user.fullName}
-                                          className="w-10 h-10 rounded-full mr-3 object-cover"
-                                          // Corrected type assertion for e.target
-                                          onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src = "https://placehold.co/40x40/cccccc/ffffff?text=U"; }}
-                                        />
-                                      ) : (
-                                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                                          <span className="text-white text-sm font-medium">
-                                            {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
-                                          </span>
-                                        </div>
-                                      )}
-                                      <div>
-                                        <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+                    <div className="text-center py-8">
+                      <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No users found</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                User ID
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Email
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Registered On
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {paginatedUsers.map((user) => (
+                              <tr key={user.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 break-all">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    {user.avatarUrl ? (
+                                      <img
+                                        src={user.avatarUrl}
+                                        alt={user.fullName}
+                                        className="w-10 h-10 rounded-full mr-3 object-cover"
+                                        // Corrected type assertion for e.target
+                                        onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src = "https://placehold.co/40x40/cccccc/ffffff?text=U"; }}
+                                      />
+                                    ) : (
+                                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                                        <span className="text-white text-sm font-medium">
+                                          {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                                        </span>
                                       </div>
+                                    )}
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
                                     </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        user.status === "Active"
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-red-100 text-red-800"
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${true
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
                                       }`}
+                                  >
+                                    {user.status||'Active'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'} {/* Changed to direct Date object */}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                  <div className="flex space-x-2">
+                                    <button
+                                      onClick={() => handleViewUser(user)}
+                                      className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600 flex items-center space-x-1"
                                     >
-                                      {user.status}
-                                    </span>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'} {/* Changed to direct Date object */}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div className="flex space-x-2">
-                                      <button
-                                        onClick={() => handleViewUser(user)}
-                                        className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600 flex items-center space-x-1"
-                                      >
-                                        <Eye className="w-4 h-4" /> <span>View</span>
-                                      </button>
-                                      <button
-                                        onClick={() => handleEditUserClick(user)}
-                                        className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600 flex items-center space-x-1"
-                                      >
-                                        <Edit3 className="w-4 h-4" /> <span>Edit</span>
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteUserClick(user)}
-                                        className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600 flex items-center space-x-1"
-                                      >
-                                        <Trash2 className="w-4 h-4" /> <span>Delete</span>
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                      <Eye className="w-4 h-4" /> <span>View</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleEditUserClick(user)}
+                                      className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600 flex items-center space-x-1"
+                                    >
+                                      <Edit3 className="w-4 h-4" /> <span>Edit</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteUserClick(user)}
+                                      className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600 flex items-center space-x-1"
+                                    >
+                                      <Trash2 className="w-4 h-4" /> <span>Delete</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                        {/* Pagination */}
-                        {totalUsersPages > 1 && (
-                          <div className="flex items-center justify-between mt-6">
-                            <div className="text-sm text-gray-700">
-                              Page {usersCurrentPage} of {totalUsersPages}
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => setUsersCurrentPage((prev) => Math.max(1, prev - 1))}
-                                disabled={usersCurrentPage === 1}
-                                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Previous
-                              </button>
-                              <button
-                                onClick={() => setUsersCurrentPage((prev) => Math.min(totalUsersPages, prev + 1))}
-                                disabled={usersCurrentPage === totalUsersPages}
-                                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Next
-                              </button>
-                            </div>
+                      {/* Pagination */}
+                      {totalUsersPages > 1 && (
+                        <div className="flex items-center justify-between mt-6">
+                          <div className="text-sm text-gray-700">
+                            Page {usersCurrentPage} of {totalUsersPages}
                           </div>
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setUsersCurrentPage((prev) => Math.max(1, prev - 1))}
+                              disabled={usersCurrentPage === 1}
+                              className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Previous
+                            </button>
+                            <button
+                              onClick={() => setUsersCurrentPage((prev) => Math.min(totalUsersPages, prev + 1))}
+                              disabled={usersCurrentPage === totalUsersPages}
+                              className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Next
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
-            {/* Analytics Tab Content */}
-            {activeTab === "analytics" && selectedCourseAnalytics && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">
-                    Analytics for: {selectedCourseAnalytics.title}
-                  </h3>
-                  <button
-                    onClick={handleCloseAnalytics}
-                    className="text-sm text-red-600 hover:underline flex items-center gap-1"
-                  >
-                    <X className="w-4 h-4" /> Close Analytics
-                  </button>
-                </div>
-                {/* Check if course is under review */}
+          {/* Analytics Tab Content */}
+          {activeTab === "analytics" && selectedCourseAnalytics && (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-gray-900">
+                  Analytics for: {selectedCourseAnalytics.title}
+                </h3>
+                <button
+                  onClick={handleCloseAnalytics}
+                  className="text-sm text-red-600 hover:underline flex items-center gap-1"
+                >
+                  <X className="w-4 h-4" /> Close Analytics
+                </button>
+              </div>
+              {/* Check if course is under review */}
               {selectedCourseAnalytics.status === 'under-review' ? (
                 // Show empty state for under-review courses
                 <div className="text-center py-12">
                   <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Analytics Available</h3>
                   <p className="text-gray-600">
-                    Analytics are not available for courses that are under review. 
+                    Analytics are not available for courses that are under review.
                     Once the course is approved and published, analytics data will be generated.
                   </p>
                 </div>
@@ -1426,7 +1349,7 @@ const CourseAdminDashboard = () => {
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={selectedCourseAnalytics.enrollmentHistory}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e0e4e7" />
                           <XAxis
                             dataKey="month"
@@ -1483,30 +1406,30 @@ const CourseAdminDashboard = () => {
                       <div className="text-sm text-gray-600">Average Rating</div>
                     </div>
                   </div>
-      </>
-    )}
-              </div>
-            )}
-          </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
-        {/* The modals are now conditionally rendered based on selectedUser, editingUser, userToDelete */}
-        {selectedUser && <ViewUserModal user={selectedUser} onClose={handleCloseViewUserModal} />}
-        {editingUser && (
-          <EditUserModal
-            user={editingUser}
-            onClose={handleCloseEditUserModal}
-            onSave={handleSaveEditedUser}
-          />
-        )}
-        {userToDelete && (
-          <DeleteConfirmModal
-            userName={userToDelete.fullName}
-            onDelete={handleConfirmDeleteUser}
-            onClose={handleCloseDeleteConfirmModal}
-          />
-        )}
-        {/* CustomModal is now conditionally rendered based on modalMessage presence */}
-        {modalMessage && <CustomModal message={modalMessage} onClose={handleModalClose} />}
+      </div>
+      {/* The modals are now conditionally rendered based on selectedUser, editingUser, userToDelete */}
+      {selectedUser && <ViewUserModal user={selectedUser} onClose={handleCloseViewUserModal} />}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          onClose={handleCloseEditUserModal}
+          onSave={handleSaveEditedUser}
+        />
+      )}
+      {userToDelete && (
+        <DeleteConfirmModal
+          userName={userToDelete.fullName}
+          onDelete={handleConfirmDeleteUser}
+          onClose={handleCloseDeleteConfirmModal}
+        />
+      )}
+      {/* CustomModal is now conditionally rendered based on modalMessage presence */}
+      {modalMessage && <CustomModal message={modalMessage} onClose={handleModalClose} />}
     </div>
   );
 };
