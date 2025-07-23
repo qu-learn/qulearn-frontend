@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4000',
         //target: 'https://qulearn-backend-c497212f0dc2.herokuapp.com',
         changeOrigin: true,
       },
