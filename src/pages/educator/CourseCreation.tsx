@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
+import { LessonContent } from "../../components/LessonContent"
 
 interface CourseForm {
   title: string
@@ -78,7 +79,7 @@ interface GamificationSettings {
 const CourseCreation: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
- const [activeTab, setActiveTab] = useState<"details" | "content" | "gamification" | "preview">("details")
+  const [activeTab, setActiveTab] = useState<"details" | "content" | "gamification" | "preview">("details")
   const [courseForm, setCourseForm] = useState<CourseForm>({
     title: "",
     subtitle: "",
@@ -99,22 +100,22 @@ const CourseCreation: React.FC = () => {
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
 
   //gamification states start
-   const [gamificationSettings, setGamificationSettings] = useState<GamificationSettings>({
-  badges: [],
-  pointRules: {
-    lessonPoints: 10,
-    quizPoints: 15,
-    simulationPoints: 20
-  },
-  milestones: []
-})
-const [newBadgeName, setNewBadgeName] = useState("")
-const [newBadgeCriteria, setNewBadgeCriteria] = useState("")
-const [newBadgeIcon, setNewBadgeIcon] = useState("")
-const [newMilestoneName, setNewMilestoneName] = useState("")
-const [newMilestonePoints, setNewMilestonePoints] = useState("")
-const [newMilestoneReward, setNewMilestoneReward] = useState("")
-//gamification states end
+  const [gamificationSettings, setGamificationSettings] = useState<GamificationSettings>({
+    badges: [],
+    pointRules: {
+      lessonPoints: 10,
+      quizPoints: 15,
+      simulationPoints: 20
+    },
+    milestones: []
+  })
+  const [newBadgeName, setNewBadgeName] = useState("")
+  const [newBadgeCriteria, setNewBadgeCriteria] = useState("")
+  const [newBadgeIcon, setNewBadgeIcon] = useState("")
+  const [newMilestoneName, setNewMilestoneName] = useState("")
+  const [newMilestonePoints, setNewMilestonePoints] = useState("")
+  const [newMilestoneReward, setNewMilestoneReward] = useState("")
+  //gamification states end
 
   useEffect(() => {
     if (existingCourse) {
@@ -246,24 +247,24 @@ const [newMilestoneReward, setNewMilestoneReward] = useState("")
     )
   }
 
-      const handleSave = async () => {
-      try {
-        const courseData = {
-          ...courseForm,
-          gamificationSettings, // Add this line
-          modules // Add this line if not already included
-        }
-        
-        if (courseId) {
-          await updateCourse({ courseId, course: courseData }).unwrap()
-        } else {
-          const result = await createCourse(courseData).unwrap()
-          navigate(`/courses/${result.course.id}`)
-        }
-      } catch (error) {
-        console.error("Failed to save course:", error)
+  const handleSave = async () => {
+    try {
+      const courseData = {
+        ...courseForm,
+        gamificationSettings, // Add this line
+        modules // Add this line if not already included
       }
+
+      if (courseId) {
+        await updateCourse({ courseId, course: courseData }).unwrap()
+      } else {
+        const result = await createCourse(courseData).unwrap()
+        navigate(`/courses/${result.course.id}`)
+      }
+    } catch (error) {
+      console.error("Failed to save course:", error)
     }
+  }
 
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
   const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
@@ -271,64 +272,64 @@ const [newMilestoneReward, setNewMilestoneReward] = useState("")
 
   //gamification functions start
   const addBadge = () => {
-  if (newBadgeName.trim() && newBadgeCriteria.trim()) {
-    const newBadge: Badge = {
-      id: Date.now().toString(),
-      name: newBadgeName.trim(),
-      criteria: newBadgeCriteria.trim(),
-      iconUrl: newBadgeIcon.trim() || ""
+    if (newBadgeName.trim() && newBadgeCriteria.trim()) {
+      const newBadge: Badge = {
+        id: Date.now().toString(),
+        name: newBadgeName.trim(),
+        criteria: newBadgeCriteria.trim(),
+        iconUrl: newBadgeIcon.trim() || ""
+      }
+      setGamificationSettings(prev => ({
+        ...prev,
+        badges: [...prev.badges, newBadge]
+      }))
+      setNewBadgeName("")
+      setNewBadgeCriteria("")
+      setNewBadgeIcon("")
     }
+  }
+
+  const removeBadge = (badgeId: string) => {
     setGamificationSettings(prev => ({
       ...prev,
-      badges: [...prev.badges, newBadge]
+      badges: prev.badges.filter(badge => badge.id !== badgeId)
     }))
-    setNewBadgeName("")
-    setNewBadgeCriteria("")
-    setNewBadgeIcon("")
   }
-}
 
-const removeBadge = (badgeId: string) => {
-  setGamificationSettings(prev => ({
-    ...prev,
-    badges: prev.badges.filter(badge => badge.id !== badgeId)
-  }))
-}
-
-const updatePointRules = (field: keyof PointRule, value: number) => {
-  setGamificationSettings(prev => ({
-    ...prev,
-    pointRules: {
-      ...prev.pointRules,
-      [field]: value
-    }
-  }))
-}
-
-const addMilestone = () => {
-  if (newMilestoneName.trim() && newMilestonePoints.trim() && newMilestoneReward.trim()) {
-    const newMilestone: Milestone = {
-      id: Date.now().toString(),
-      name: newMilestoneName.trim(),
-      pointsRequired: parseInt(newMilestonePoints),
-      rewardDescription: newMilestoneReward.trim()
-    }
+  const updatePointRules = (field: keyof PointRule, value: number) => {
     setGamificationSettings(prev => ({
       ...prev,
-      milestones: [...prev.milestones, newMilestone]
+      pointRules: {
+        ...prev.pointRules,
+        [field]: value
+      }
     }))
-    setNewMilestoneName("")
-    setNewMilestonePoints("")
-    setNewMilestoneReward("")
   }
-}
 
-const removeMilestone = (milestoneId: string) => {
-  setGamificationSettings(prev => ({
-    ...prev,
-    milestones: prev.milestones.filter(milestone => milestone.id !== milestoneId)
-  }))
-}//gamification function end
+  const addMilestone = () => {
+    if (newMilestoneName.trim() && newMilestonePoints.trim() && newMilestoneReward.trim()) {
+      const newMilestone: Milestone = {
+        id: Date.now().toString(),
+        name: newMilestoneName.trim(),
+        pointsRequired: parseInt(newMilestonePoints),
+        rewardDescription: newMilestoneReward.trim()
+      }
+      setGamificationSettings(prev => ({
+        ...prev,
+        milestones: [...prev.milestones, newMilestone]
+      }))
+      setNewMilestoneName("")
+      setNewMilestonePoints("")
+      setNewMilestoneReward("")
+    }
+  }
+
+  const removeMilestone = (milestoneId: string) => {
+    setGamificationSettings(prev => ({
+      ...prev,
+      milestones: prev.milestones.filter(milestone => milestone.id !== milestoneId)
+    }))
+  }//gamification function end
 
 
   return (
@@ -372,8 +373,8 @@ const removeMilestone = (milestoneId: string) => {
           <button
             onClick={() => setActiveTab("details")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "details"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
           >
             Course Details
@@ -381,28 +382,27 @@ const removeMilestone = (milestoneId: string) => {
           <button
             onClick={() => setActiveTab("content")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "content"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
           >
             Content & Modules
           </button>
           {/* Gamification Tab */}
           <button
-          onClick={() => setActiveTab("gamification")}
-          className={`py-2 px-1 border-b-2 font-medium text-sm ${
-            activeTab === "gamification"
+            onClick={() => setActiveTab("gamification")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "gamification"
               ? "border-blue-500 text-blue-600"
               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          }`}
-        >
-          Gamification Settings
-        </button>
+              }`}
+          >
+            Gamification Settings
+          </button>
           <button
             onClick={() => setActiveTab("preview")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "preview"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
           >
             Preview
@@ -539,107 +539,107 @@ const removeMilestone = (milestoneId: string) => {
       {/* Content & Modules Tab */}
       {activeTab === "content" && (
         <div className="grid grid-cols-[auto_1fr] gap-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Modules List */}
-          <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Modules</h3>
-              <button
-                onClick={addModule}
-                className="flex items-center px-3 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors text-sm"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Module
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {modules.map((module) => (
-                <div
-                  key={module.id}
-                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  onClick={() => setSelectedModule(module.id)}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Modules List */}
+            <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Modules</h3>
+                <button
+                  onClick={addModule}
+                  className="flex items-center px-3 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors text-sm"
                 >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">{module.title}</h4>
-                    <div className="flex items-center space-x-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteModule(module.id)
-                        }}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">{module.lessons.length} lessons</p>
-                </div>
-              ))}
-            </div>
-          </div>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Module
+                </button>
+              </div>
 
-          {/* Module Content */}
-          <div className="bg-white rounded-xl shadow-lg p-6 w-xs">
-            {selectedModuleData ? (
-              <>
-                <div className="flex items-center justify-between mb-6">
-             <h3 className="text-lg font-bold text-gray-900">{selectedModuleData.title}</h3>
-             <button
-                onClick={() => addLesson(selectedModule!)}
-                className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
-            >
-            <Plus className="w-4 h-4 mr-1" />
-                Add Lesson
-            </button>
-            </div>
-
-                <div className="space-y-3">
-                  {selectedModuleData.lessons.map((lesson) => (
-                    <div
-                      key={lesson.id}
-                      className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedLesson === lesson.id
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                        }`}
-                      onClick={() => setSelectedLesson(lesson.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <h5 className="font-medium text-gray-900">{lesson.title}</h5>
+              <div className="space-y-3">
+                {modules.map((module) => (
+                  <div
+                    key={module.id}
+                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    onClick={() => setSelectedModule(module.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-gray-900">{module.title}</h4>
+                      <div className="flex items-center space-x-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            deleteLesson(selectedModule!, lesson.id)
+                            deleteModule(module.id)
                           }}
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {lesson.quiz && (
-                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Quiz</span>
-                        )}
-                        {lesson.circuitId && (
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
-                        )}
-                        {lesson.networkId && (
-                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
-                        )}
-                      </div>
                     </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Select a module to edit its content</p>
+                    <p className="text-sm text-gray-500 mt-1">{module.lessons.length} lessons</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
             </div>
+
+            {/* Module Content */}
+            <div className="bg-white rounded-xl shadow-lg p-6 w-xs">
+              {selectedModuleData ? (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-gray-900">{selectedModuleData.title}</h3>
+                    <button
+                      onClick={() => addLesson(selectedModule!)}
+                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Lesson
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {selectedModuleData.lessons.map((lesson) => (
+                      <div
+                        key={lesson.id}
+                        className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedLesson === lesson.id
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-200 hover:bg-gray-50"
+                          }`}
+                        onClick={() => setSelectedLesson(lesson.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-medium text-gray-900">{lesson.title}</h5>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteLesson(selectedModule!, lesson.id)
+                            }}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          {lesson.quiz && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Quiz</span>
+                          )}
+                          {lesson.circuitId && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
+                          )}
+                          {lesson.networkId && (
+                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Select a module to edit its content</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Lesson Editor */}
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl">
@@ -840,7 +840,7 @@ const removeMilestone = (milestoneId: string) => {
             {/* Badge Management */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Badge Management</h3>
-              
+
               <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Badge Name</label>
@@ -852,7 +852,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., Quantum Explorer"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Criteria</label>
                   <input
@@ -863,7 +863,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., Complete 5 lessons"
                   />
                 </div>
-                
+
                 <div className="flex items-end">
                   <div className="flex-1 mr-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Upload Badge Icon</label>
@@ -877,11 +877,11 @@ const removeMilestone = (milestoneId: string) => {
                   </div>
                 </div>
                 <button
-                    onClick={addBadge}
-                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
-                  >
-                    Add Badge
-                  </button>
+                  onClick={addBadge}
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                >
+                  Add Badge
+                </button>
               </div>
 
               {/* Display existing badges */}
@@ -911,7 +911,7 @@ const removeMilestone = (milestoneId: string) => {
             {/* Point System Rules */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Point System Rules</h3>
-              
+
               <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Points per Lesson</label>
@@ -923,7 +923,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., 10"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Points per Quiz</label>
                   <input
@@ -934,7 +934,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., 15"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Points per Simulation</label>
                   <input
@@ -946,17 +946,17 @@ const removeMilestone = (milestoneId: string) => {
                   />
                 </div>
                 <button
-                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
-              >
-                Save Rules
-              </button>
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                >
+                  Save Rules
+                </button>
               </div>
             </div>
 
             {/* Milestone Configuration */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Milestone Configuration</h3>
-              
+
               <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Milestone Name</label>
@@ -968,7 +968,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., Quantum Explorer"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Points Required</label>
                   <input
@@ -979,7 +979,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., 100"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Reward Description</label>
                   <input
@@ -990,7 +990,7 @@ const removeMilestone = (milestoneId: string) => {
                     placeholder="e.g., Certificate of Achievement"
                   />
                 </div>
-                
+
                 <div className="flex items-end">
                   <button
                     onClick={addMilestone}
@@ -1032,7 +1032,7 @@ const removeMilestone = (milestoneId: string) => {
 
       {/* Preview Tab */}
       {activeTab === "preview" && (
-        
+
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
@@ -1043,10 +1043,10 @@ const removeMilestone = (milestoneId: string) => {
               />
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${courseForm.difficultyLevel === "beginner"
-                    ? "bg-green-100 text-green-800"
-                    : courseForm.difficultyLevel === "intermediate"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
+                  ? "bg-green-100 text-green-800"
+                  : courseForm.difficultyLevel === "intermediate"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
                   }`}
               >
                 {courseForm.difficultyLevel}
@@ -1085,7 +1085,7 @@ const removeMilestone = (milestoneId: string) => {
                     ) : (
                       <div className="space-y-3">
                         {module.lessons.map((lesson, lessonIndex) => (
-                          <div key={lesson.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div key={lesson.id} className="flex flex-col justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center">
                               <span className="text-sm text-gray-500 mr-3">{lessonIndex + 1}.</span>
                               <span className="font-medium text-gray-900">{lesson.title}</span>
@@ -1103,6 +1103,11 @@ const removeMilestone = (milestoneId: string) => {
                                 )}
                               </div>
                             </div>
+                            <div>
+                              {lesson.content && (
+                                <LessonContent content={lesson.content} />
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1115,7 +1120,7 @@ const removeMilestone = (milestoneId: string) => {
         </div>
       )}
     </div>
-    
+
   )
 }
 
