@@ -77,13 +77,15 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
 
   const navigationItems = getNavigationItems()
 
+  const dashboardPath = user.role === "student" ? "/dashboard" : user.role === "educator" ? "/educator" : user.role === "system-administrator" ? "/site-admin" : "/admin"
+    
   return (
   <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-cyan-600 to-blue-800 shadow-lg z-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-3 lg:px-0">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center space-x-3">
+            <Link to={dashboardPath} className="flex items-center space-x-3">
               <img 
                 src={logoImage2}
                 alt="QuLearn Logo" 

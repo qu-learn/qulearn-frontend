@@ -248,7 +248,7 @@ export const api = createApi({
             query: ({ courseId, course }) => ({
                 url: `/courses/${courseId}`,
                 method: "PATCH",
-                body: course,
+                body: { course },
             }),
             invalidatesTags: ["Course"],
         }),

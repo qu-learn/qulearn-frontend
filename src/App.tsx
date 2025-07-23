@@ -35,11 +35,13 @@ import CourseAnalytics from "./pages/educator/CourseAnalytics"
 import Header from "./components/Header"
 
 interface AppState {
+  initialized: boolean
   user: IUser | null
 }
 
 function AppContent() {
   const [appState, setAppState] = useState<AppState>({
+    initialized: false,
     user: null,
   })
   const navigate = useNavigate()
@@ -51,7 +53,11 @@ function AppContent() {
     if (token && userData) {
       try {
         const user = JSON.parse(userData)
-        setAppState((prev) => ({ ...prev, user }))
+        setAppState((prev) => ({
+          ...prev,
+          initialized: true,
+          user,
+        }))
       } catch (error) {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
@@ -75,7 +81,10 @@ function AppContent() {
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("user")
-    setAppState({ user: null })
+    setAppState((prev) => ({
+      ...prev,
+      user: null,
+    }))
     navigate("/")
   }
 
@@ -151,9 +160,9 @@ function AppContent() {
                 <StudentDashboard />
               </ProtectedRoute>
             }
-          /> 
+          />
 
-            <Route
+          <Route
             path="/my-courses"
             element={
               <ProtectedRoute>
@@ -313,7 +322,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Profile Settings */}
           <Route
             path="/profile"
@@ -322,7 +331,7 @@ function AppContent() {
                 <ProfileSettings user={appState.user!} />
               </ProtectedRoute>
             }
-          />  
+          />
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
