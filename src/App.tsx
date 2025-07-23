@@ -8,6 +8,7 @@ import { api } from "./utils/api"
 import type { IUser } from "./utils/types"
 import LandingPage from "./pages/landing/LandingPage"
 import CourseCatalogL from "./pages/landing/CourseCatalogL"
+import AboutPage from './pages/landing/AboutPage'
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
 import ProfileSettings from "./components/ProfileSettings"
@@ -98,6 +99,7 @@ function AppContent() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/courses-landing" element={<CourseCatalogL />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route
             path="/login"
             element={
