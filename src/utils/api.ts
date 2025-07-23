@@ -57,6 +57,7 @@ import type {
     IUpdateCourseAdministratorRequest,
     IGetCourseAdministratorResponse,
     IDeleteCourseAdministratorResponse,
+    IGetCourseAdministratorsResponse,
 } from "./types"
 
 // RTK Query API
@@ -340,7 +341,7 @@ export const api = createApi({
                 body,
             }),
         }),
-        getCourseAdministrators: builder.query<IGetCourseAdministratorResponse, void>({
+        getCourseAdministrators: builder.query<IGetCourseAdministratorsResponse, void>({
             query: () => "/sys-admin/course-admins",
         }),
         deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
