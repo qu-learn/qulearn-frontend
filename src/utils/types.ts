@@ -13,6 +13,8 @@ export interface IUser {
   country?: string
   city?: string
   createdAt: string
+  gender?: string
+  contactNumber?: string
 }
 
 export interface IBadge {
