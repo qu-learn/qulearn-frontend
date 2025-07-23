@@ -1,7 +1,7 @@
 import type React from "react"
 import { Trophy, Medal, Star, TrendingUp } from "lucide-react"
 import { useGetAchievementsQuery, useGetMyDashboardQuery } from "../../utils/api"
-import Footer from "../../components/Footer"
+// import Footer from "../../components/Footer"
 
 const Achievements: React.FC = () => {
   const { data: achievementsData, isLoading: achievementsLoading } = useGetAchievementsQuery()
@@ -207,7 +207,7 @@ const Achievements: React.FC = () => {
       </div>
       </div>
       
-      <Footer />
+      {/* <Footer /> */}
     </>
   )
 }

@@ -263,7 +263,7 @@ const CourseDashboard: React.FC = () => {
               {/* Road to Certificate Section */}
               <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Road to Certificate</h2>
-                <p className="text-sm text-gray-600 mb-6">12% of the Lessons Completed</p>
+                {/* <p className="text-sm text-gray-600 mb-6">12% of the Lessons Completed</p> */}
                 
                 <div className="space-y-6">
                   {course.modules.map((module, moduleIndex) => (
