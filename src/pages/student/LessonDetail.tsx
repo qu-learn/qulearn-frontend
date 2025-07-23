@@ -167,7 +167,7 @@ const LessonDetail: React.FC = () => {
               Back to Course
             </Link>
             <div className="text-sm text-gray-500">
-              {course.title} / {currentModule.title} / Lesson {currentModuleIndex + 1}.{currentLessonIndex + 1}
+              {course.title} / {currentModule?.title} / Lesson {currentModuleIndex + 1}.{currentLessonIndex + 1}
             </div>
           </div>
 
@@ -185,7 +185,7 @@ const LessonDetail: React.FC = () => {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{currentLesson.title}</h1>
               <p className="text-lg text-gray-600 mb-4">
-                Module: {currentModule.title}
+                Module: {currentModule?.title}
               </p>
               <div className="flex items-center space-x-6 text-sm text-gray-500">
                 <div className="flex items-center">
