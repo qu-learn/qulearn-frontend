@@ -57,6 +57,7 @@ import type {
     IUpdateCourseAdministratorRequest,
     IGetCourseAdministratorResponse,
     IDeleteCourseAdministratorResponse,
+    IGetCourseAdministratorsResponse,
 } from "./types"
 
 // RTK Query API
@@ -311,9 +312,11 @@ export const api = createApi({
                 method: "POST",
                 body,
             }),
+            invalidatesTags: ["User", "Course"],
         }),
         getEducators: builder.query<IGetEducatorsResponse, void>({
             query: () => "/course-admin/educators",
+            providesTags: ["User"],
         }),
         deleteEducator: builder.mutation<IDeleteEducatorResponse, string>({
             query: (educatorId) => ({
@@ -339,9 +342,11 @@ export const api = createApi({
                 method: "POST",
                 body,
             }),
+            invalidatesTags: ["User", "Course"],
         }),
-        getCourseAdministrators: builder.query<IGetCourseAdministratorResponse, void>({
+        getCourseAdministrators: builder.query<IGetCourseAdministratorsResponse, void>({
             query: () => "/sys-admin/course-admins",
+            providesTags: ["User"],
         }),
         deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
             query: (cAdminId) => ({
