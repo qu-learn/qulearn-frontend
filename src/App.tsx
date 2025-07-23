@@ -100,10 +100,6 @@ function AppContent() {
     return <>{children}</>
   }
 
-  if (!appState.initialized) {
-    return null
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {appState.user && <Header user={appState.user} onLogout={handleLogout} currentPage={getCurrentPage()} />}

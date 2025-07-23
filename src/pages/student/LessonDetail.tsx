@@ -5,6 +5,8 @@ import { useState } from "react"
 import { ArrowLeft, BookOpen, Download, FileText, Video, ExternalLink, Play, Clock, Users } from "lucide-react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useGetCourseByIdQuery } from "../../utils/api"
+import type { ILesson, IModule } from "../../utils/types"
+import { LessonContent } from "../../components/LessonContent"
 
 const LessonDetail: React.FC = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
@@ -33,13 +35,13 @@ const LessonDetail: React.FC = () => {
   }
 
   const { course } = courseData
-  
+
   // Find the current lesson
-  let currentLesson: any = null
-  let currentModule: any = null
+  let currentLesson: ILesson | null = null
+  let currentModule: IModule | null = null
   let currentModuleIndex: number = -1
   let currentLessonIndex: number = -1
-  
+
   for (let moduleIndex = 0; moduleIndex < course.modules.length; moduleIndex++) {
     const module = course.modules[moduleIndex]
     const lessonIndex = module.lessons.findIndex((l: any) => l.id === lessonId)
@@ -157,7 +159,7 @@ const LessonDetail: React.FC = () => {
       <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <Link 
+            <Link
               to={`/courses/${courseId}/dashboard`}
               className="flex items-center text-cyan-700 hover:text-cyan-800 mr-4"
             >
@@ -168,7 +170,7 @@ const LessonDetail: React.FC = () => {
               {course.title} / {currentModule.title} / Lesson {currentModuleIndex + 1}.{currentLessonIndex + 1}
             </div>
           </div>
-          
+
         </div>
       </header>
 
@@ -211,21 +213,19 @@ const LessonDetail: React.FC = () => {
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === "overview"
-                    ? "border-cyan-500 text-cyan-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === "overview"
+                  ? "border-cyan-500 text-cyan-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setActiveTab("materials")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === "materials"
-                    ? "border-cyan-500 text-cyan-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === "materials"
+                  ? "border-cyan-500 text-cyan-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 Materials
               </button>
@@ -236,60 +236,16 @@ const LessonDetail: React.FC = () => {
           <div className="p-6">
             {activeTab === "overview" && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Lesson Overview</h2>
-                  <div className="prose max-w-none text-gray-700">
-                    <p className="mb-4">
-                      Welcome to the introduction of Quantum Machine Learning (QML). This lesson will provide you with a comprehensive 
-                      understanding of how quantum computing principles can be applied to enhance machine learning algorithms.
-                    </p>
-                    <p className="mb-4">
-                      In this lesson, you will learn about the fundamental concepts that bridge quantum computing and machine learning, 
-                      including quantum states, superposition, entanglement, and how these properties can be leveraged to create more 
-                      powerful learning algorithms.
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Learning Objectives</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start">
-                      <span className="w-2 h-2 bg-cyan-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      Understand the basic principles of quantum computing
-                    </li>
-                    <li className="flex items-start">
-                      <span className="w-2 h-2 bg-cyan-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      Learn how quantum properties can enhance machine learning
-                    </li>
-                    <li className="flex items-start">
-                      <span className="w-2 h-2 bg-cyan-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      Explore practical applications of quantum machine learning
-                    </li>
-                    <li className="flex items-start">
-                      <span className="w-2 h-2 bg-cyan-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                      Identify current limitations and future possibilities
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h3>
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <ul className="space-y-1 text-gray-700">
-                      <li>• Basic understanding of classical machine learning</li>
-                      <li>• Linear algebra fundamentals</li>
-                      <li>• Programming experience (Python preferred)</li>
-                    </ul>
-                  </div>
-                </div>
+                {currentLesson.content && (
+                  <LessonContent content={currentLesson.content} />
+                )}
               </div>
             )}
 
             {activeTab === "materials" && (
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Lesson Materials</h2>
-                
+
                 <div className="grid gap-4">
                   {lessonMaterials.map((material) => (
                     <div key={material.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -320,11 +276,11 @@ const LessonDetail: React.FC = () => {
                             <>
                               <a
                                 href={
-                                  material.title.includes("Reference Material") || material.title.includes("Lecture Notes") 
-                                    ? "https://w.wiki/EnFG" 
+                                  material.title.includes("Reference Material") || material.title.includes("Lecture Notes")
+                                    ? "https://w.wiki/EnFG"
                                     : material.title.includes("Video Lecture")
-                                    ? "https://youtu.be/QtWCmO_KIlg?si=qJS20FXynzqGAfrU"
-                                    : material.url
+                                      ? "https://youtu.be/QtWCmO_KIlg?si=qJS20FXynzqGAfrU"
+                                      : material.url
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -354,7 +310,7 @@ const LessonDetail: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex-1 max-w-xs">
               {previousLesson ? (
-                <button 
+                <button
                   onClick={handlePreviousLesson}
                   className="text-left text-gray-600 hover:text-gray-800 font-medium transition-colors group"
                 >
@@ -370,14 +326,14 @@ const LessonDetail: React.FC = () => {
                 <div className="text-gray-400 text-sm">No previous lesson</div>
               )}
             </div>
-            
+
             <button className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors font-medium">
               Mark as Complete
             </button>
-            
+
             <div className="flex-1 max-w-xs text-right">
               {nextLesson ? (
-                <button 
+                <button
                   onClick={handleNextLesson}
                   className="text-right text-cyan-600 hover:text-cyan-700 font-medium transition-colors group"
                 >
