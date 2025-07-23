@@ -8,7 +8,7 @@ import heroBackground from "../../assets/b.jpg"
 import { useState, useEffect } from "react"
 import Footer from "../../components/Footer"
 import logoImage2 from "../../assets/logo2.png" 
-
+import aboutImage from "../../assets/about.jpg"
 
 
 const LandingPage: React.FC = () => {
@@ -161,7 +161,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
           <div className="relative transform transition-all duration-1000 ease-out hover:scale-105">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl transition-opacity duration-500 hover:opacity-0"></div>
             <img
-              src="/src/assets/about.jpg"
+              src={aboutImage}
               alt="Quantum Computing Education"
               className="w-full h-150 object-cover rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out relative z-10"
             />
