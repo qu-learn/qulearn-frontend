@@ -2,12 +2,7 @@ import React, { useState, useMemo } from "react";
 import { BrowserRouter as Router, Link } from "react-router-dom";
 import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X, Edit3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"; // Re-imported Recharts components for analytics chart
-
-// Define interfaces for modal props
-interface CustomModalProps {
-  message: string | null;
-  onClose: () => void;
-}
+import { useAddEducatorMutation } from "../../utils/api";
 
 interface User {
   id: string;
@@ -20,6 +15,21 @@ interface User {
   status: string;
   createdAt: Date;
   avatarUrl: string | null;
+}
+// Define interfaces for modal props
+interface CustomModalProps {
+  message: string | null;
+  onClose: () => void;
+}
+
+interface IAddEducatorRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  contactNumber: string;
+  nationalId: string;
+  residentialAddress: string;
+  gender: string;
 }
 
 interface ViewUserModalProps {
@@ -472,6 +482,18 @@ const CourseAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedCourseAnalytics, setSelectedCourseAnalytics] = useState<SelectedCourseAnalytics | null>(null);
 
+    const [formData, setFormData] = useState<IAddEducatorRequest>({
+    fullName: "",
+    email: "",
+    password: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
+
+  const [addEducator, { isLoading: isAddingEducator }] = useAddEducatorMutation();
+
   // State for course management filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -620,35 +642,49 @@ const CourseAdminDashboard = () => {
       }
       return maxId;
     }, 0);
-    const newId = `U${String(lastUserId + 1).padStart(3, '0')}`; // Pad with zeros to maintain U00X format
-
-    const form = event.target as HTMLFormElement;
-    const newUser: User = { // Explicitly type newUser
-      id: newId, // Assign the generated ID
-      fullName: (form.elements.namedItem('fullName') as HTMLInputElement).value,
-      email: (form.elements.namedItem('email') as HTMLInputElement).value,
-      contactNumber: (form.elements.namedItem('contactNumber') as HTMLInputElement).value,
-      nationalId: (form.elements.namedItem('nationalId') as HTMLInputElement).value,
-      residentialAddress: (form.elements.namedItem('residentialAddress') as HTMLInputElement).value,
-      gender: (form.elements.namedItem('gender') as HTMLSelectElement).value,
-      status: "Active",
-      createdAt: new Date(), // Use current Date for in-memory
-      avatarUrl: null,
-    };
+    const newId = `U${String(lastUserId + 1).padStart(3, '0')}`;
 
     try {
+      // API request (optional, can be mocked)
+      await addEducator({
+        ...formData,
+        password: formData.password || "defaultPassword",
+      }).unwrap();
+
+      // Add to local state
+      const newUser: User = {
+        id: newId,
+        fullName: formData.fullName,
+        email: formData.email,
+        contactNumber: formData.contactNumber,
+        nationalId: formData.nationalId,
+        residentialAddress: formData.residentialAddress,
+        gender: formData.gender,
+        status: "Active",
+        createdAt: new Date(),
+        avatarUrl: null,
+      };
+
       setUsers(prevUsers => {
         const updatedUsers = [...prevUsers, newUser];
-        // Sort users by ID to maintain U001, U002, U003 order in the display
         return updatedUsers.sort((a, b) => {
           const aNum = parseInt(a.id.replace('U', ''), 10);
           const bNum = parseInt(b.id.replace('U', ''), 10);
           return aNum - bNum;
         });
       });
+
       setModalMessage("New user added successfully!");
       setShowAddUserForm(false);
-      form.reset();
+      setFormData({
+        fullName: "",
+        email: "",
+        password: "",
+        contactNumber: "",
+        nationalId: "",
+        residentialAddress: "",
+        gender: "",
+      });
     } catch (error: any) {
       console.error("Error adding new user:", error);
       setModalMessage(`Failed to add user: ${error.message}`);
@@ -807,10 +843,10 @@ const CourseAdminDashboard = () => {
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* System Overview */}
-              <div className="bg-blue-50 rounded-lg shadow-sm border-l-4 border-cyan-700 p-8">
+              <div>
                 <h3 className="text-lg font-semibold text-cyan-700 mb-4">System Overview</h3>
-                <div className="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                <div className="grid grid-cols-4 gap-6 mb-8">
+                  <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                       <Users className="w-6 h-6 text-blue-600" />
                     </div>
@@ -819,7 +855,7 @@ const CourseAdminDashboard = () => {
                       <p className="text-2xl font-bold text-gray-900">{mockDashboardData.totalUsers}</p>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                       <BookOpen className="w-6 h-6 text-green-600" />
                     </div>
@@ -828,7 +864,7 @@ const CourseAdminDashboard = () => {
                       <p className="text-2xl font-bold text-gray-900">{mockDashboardData.activeCourses}</p>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                       <TrendingUp className="w-6 h-6 text-purple-600" />
                     </div>
@@ -837,7 +873,7 @@ const CourseAdminDashboard = () => {
                       <p className="text-2xl font-bold text-gray-900">{mockDashboardData.newRegistrationsThisMonth}</p>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
+                  <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
                     <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                         <CheckCircle className="w-6 h-6 text-yellow-600" />
                     </div>
@@ -850,7 +886,7 @@ const CourseAdminDashboard = () => {
               </div>
               {/* Enrollment Bar Chart (Overall) */}
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Monthly Enrollments (Overall)</h3>
+                <h3 className="text-lg font-bold text-cyan-700 mb-6">Monthly Enrollments</h3>
                 <div className="flex justify-around items-end h-64 border-b border-gray-200 pb-2">
                   {mockOverallEnrollmentData.map((data, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center mx-1">
@@ -1109,86 +1145,110 @@ const CourseAdminDashboard = () => {
 
               {/* Add New Educator Form */}
               {showAddUserForm && (
-                <div className="bg-white-50 p-6 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
-                  <form onSubmit={handleSaveNewUser} className="space-y-4">
-                    <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-                      <input
-                        type="text"
-                        id="fullName"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Full Name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Email"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
-                      <input
-                        type="text"
-                        id="contactNumber"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Contact Number"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
-                      <input
-                        type="text"
-                        id="nationalId"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter National ID"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
-                      <input
-                        type="text"
-                        id="residentialAddress"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Enter Residential Address"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-                      <select
-                        id="gender"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-                    <div className="flex justify-end space-x-3 mt-6">
-                      <button
-                        type="button"
-                        onClick={handleCancelAddUser}
-                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 py-3 px-4 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold text-sm shadow-md"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
-                      >
-                        Add User
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
+              <div className="bg-white-50 p-6 rounded-lg">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Educator</h4>
+                <form onSubmit={handleSaveNewUser} className="space-y-4">
+                  <div>
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Full Name"
+                      value={formData.fullName}
+                      onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Email"
+                      value={formData.email}
+                      onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                    <input
+                      type="password"
+                      id="password"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Set a password or leave for default"
+                      value={formData.password}
+                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
+                    <input
+                      type="text"
+                      id="contactNumber"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Contact Number"
+                      value={formData.contactNumber}
+                      onChange={e => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
+                    <input
+                      type="text"
+                      id="nationalId"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter National ID"
+                      value={formData.nationalId}
+                      onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
+                    <input
+                      type="text"
+                      id="residentialAddress"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter Residential Address"
+                      value={formData.residentialAddress}
+                      onChange={e => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                    <select
+                      id="gender"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      value={formData.gender}
+                      onChange={e => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button
+                      type="button"
+                      onClick={handleCancelAddUser}
+                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold text-sm shadow-md"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
+                      disabled={isAddingEducator}
+                    >
+                      {isAddingEducator ? "Adding..." : "Add User"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
               {/* User Table and Loading/Error States - Only show when form is not open */}
               {!showAddUserForm && (
