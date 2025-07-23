@@ -59,8 +59,8 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
   muted
   playsInline
 >
-  <source src="/public/video5.mp4" type="video/mp4" />
-  <source src="/public/video5.webm" type="video/webm" />
+  <source src="/video5.mp4" type="video/mp4" />
+  <source src="/video5.webm" type="video/webm" />
   
 </video>
   
