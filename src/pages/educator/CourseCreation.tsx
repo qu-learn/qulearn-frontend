@@ -127,7 +127,7 @@ const [newMilestoneReward, setNewMilestoneReward] = useState("")
         difficultyLevel: course.difficultyLevel,
         prerequisites: course.prerequisites,
         thumbnailImageUrl: course.thumbnailUrl,
-        jupyterNotebookUrl: "",
+        jupyterNotebookUrl: course.jupyterNotebookUrl || "",
       })
       setModules(course.modules || [])
     }

@@ -1,8 +1,8 @@
 
 // Types
-type Role = "student" | "educator" | "course-administrator" | "system-administrator"
-type CourseStatus = "draft" | "under-review" | "published" | "rejected"
-type BadgeCriteriaType = "courses-completed" | "simulations-run" | "quizzes-answered"
+export type Role = "student" | "educator" | "course-administrator" | "system-administrator"
+export type CourseStatus = "draft" | "under-review" | "published" | "rejected"
+export type BadgeCriteriaType = "courses-completed" | "simulations-run" | "quizzes-answered"
 
 export interface IUser {
   id: string
@@ -69,6 +69,8 @@ export interface ICourse {
   instructor: Pick<IUser, "id" | "fullName">
   status: CourseStatus
   createdAt: string
+  jupyterNotebookUrl?: string
+  modules: IModule[]
 }
 
 export interface IEnrollment {
@@ -169,7 +171,7 @@ export interface IGetCoursesResponse {
 }
 
 export interface IGetCourseByIdResponse {
-  course: ICourse & { modules: IModule[] }
+  course: ICourse
 }
 
 export interface IEnrollInCourseRequest {
@@ -273,6 +275,7 @@ export interface ICreateCourseRequest {
   prerequisites: string[]
   thumbnailImageUrl: string
   jupyterNotebookUrl?: string
+  modules: IModule[]
 }
 
 export interface ICreateCourseResponse {
