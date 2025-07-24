@@ -1028,6 +1028,44 @@
             getCircuitJSON() {
                 return { ...this.circuit }; // Return deep copy to avoid reference issues
             }
+
+            exportJSON() {
+                const data = JSON.stringify(this.circuit, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quantum_circuit_${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showNotification('Circuit exported successfully', 'success');
+            }
+
+            importJSON(jsonData) {
+                try {
+                    const imported = JSON.parse(jsonData);
+                    if (imported.qubits && imported.gates && Array.isArray(imported.gates)) {
+                        this.circuit = { ...imported }; // Create deep copy
+                        
+                        // Update input fields if they exist
+                        const qubitsInput = document.getElementById(`${this.containerId}-qubits`);
+                        const stepsInput = document.getElementById(`${this.containerId}-steps`);
+                        if (qubitsInput) qubitsInput.value = this.circuit.qubits;
+                        if (stepsInput) stepsInput.value = this.circuit.steps;
+                        
+                        this.renderCircuitCanvas();
+                        this.updateJSON();
+                        showNotification('Circuit imported successfully', 'success');
+                        return true;
+                    } else {
+                        showNotification('Invalid circuit JSON format', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    showNotification('Error parsing JSON: ' + error.message, 'error');
+                    return false;
+                }
+            }
         }
 
         // Global circuit components registry
@@ -1567,44 +1605,6 @@
                 });
             }
 
-            exportJSON() {
-                const data = JSON.stringify(this.circuit, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `quantum_circuit_${Date.now()}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                showNotification('Circuit exported successfully', 'success');
-            }
-
-            importJSON(jsonData) {
-                try {
-                    const imported = JSON.parse(jsonData);
-                    if (imported.qubits && imported.gates && Array.isArray(imported.gates)) {
-                        this.circuit = { ...imported }; // Create deep copy
-                        
-                        // Update input fields if they exist
-                        const qubitsInput = document.getElementById(`${this.containerId}-qubits`);
-                        const stepsInput = document.getElementById(`${this.containerId}-steps`);
-                        if (qubitsInput) qubitsInput.value = this.circuit.qubits;
-                        if (stepsInput) stepsInput.value = this.circuit.steps;
-                        
-                        this.renderCircuitCanvas();
-                        this.updateJSON();
-                        showNotification('Circuit imported successfully', 'success');
-                        return true;
-                    } else {
-                        showNotification('Invalid circuit JSON format', 'error');
-                        return false;
-                    }
-                } catch (error) {
-                    showNotification('Error parsing JSON: ' + error.message, 'error');
-                    return false;
-                }
-            }
-
             runNetworkSimulation() {
                 if (!this.networkCircuit) {
                     showNotification('Generate network circuit first', 'error');
@@ -1942,6 +1942,8 @@
             const mainCircuit = window.circuitComponents['main-circuit'];
             if (mainCircuit) {
                 mainCircuit.exportJSON();
+            } else {
+                showNotification('Circuit component not found', 'error');
             }
         }
 
@@ -1954,9 +1956,15 @@
                     const mainCircuit = window.circuitComponents['main-circuit'];
                     if (mainCircuit) {
                         mainCircuit.importJSON(e.target.result);
+                    } else {
+                        showNotification('Circuit component not found', 'error');
                     }
+                    // Clear the file input for future use
+                    fileInput.value = '';
                 };
                 reader.readAsText(file);
+            } else {
+                showNotification('Please select a JSON file to import', 'error');
             }
         }
 
