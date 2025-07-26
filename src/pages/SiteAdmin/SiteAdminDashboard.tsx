@@ -24,6 +24,56 @@ const SiteAdminDashboard = () => {
     residentialAddress: "",
     gender: "",
   });
+  const [formErrors, setFormErrors] = useState({
+    fullName: "",
+    email: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
+
+  const validateForm = () => {
+    let errors = {
+      fullName: "",
+      email: "",
+      contactNumber: "",
+      nationalId: "",
+      residentialAddress: "",
+      gender: "",
+    };
+    let valid = true;
+  
+    if (!formData.fullName.trim()) {
+      errors.fullName = "Full Name is required.";
+      valid = false;
+    }
+    if (!formData.email.trim()) {
+      errors.email = "Email is required.";
+      valid = false;
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+      errors.email = "Invalid email address.";
+      valid = false;
+    }
+    if (formData.contactNumber && !/^\d{10,15}$/.test(formData.contactNumber)) {
+      errors.contactNumber = "Contact Number should be 10-15 digits.";
+      valid = false;
+    }
+    if (formData.nationalId && formData.nationalId.length < 5) {
+      errors.nationalId = "National ID is too short.";
+      valid = false;
+    }
+    if (formData.residentialAddress && formData.residentialAddress.length < 5) {
+      errors.residentialAddress = "Address is too short.";
+      valid = false;
+    }
+    if (!formData.gender) {
+      errors.gender = "Gender is required.";
+      valid = false;
+    }
+    setFormErrors(errors);
+    return valid;
+  };
 
   const [addCourseAdmin, { isLoading, error }] = useAddCourseAdministratorMutation()
 
@@ -42,6 +92,7 @@ const SiteAdminDashboard = () => {
 
   const handleSaveNewUser = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!validateForm()) return;
 
     try {
       const response = await addCourseAdmin({
@@ -163,6 +214,7 @@ const SiteAdminDashboard = () => {
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, fullName: e.target.value }))}
                       required
                     />
+                    {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -175,6 +227,7 @@ const SiteAdminDashboard = () => {
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, email: e.target.value }))}
                       required
                     />
+                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
                   </div>
                   <div>
                     <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
@@ -186,6 +239,7 @@ const SiteAdminDashboard = () => {
                       value={formData.contactNumber}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
                     />
+                    {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
                   </div>
                   <div>
                     <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
@@ -197,6 +251,7 @@ const SiteAdminDashboard = () => {
                       value={formData.nationalId}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
                     />
+                    {formErrors.nationalId && <p className="text-red-500 text-xs mt-1">{formErrors.nationalId}</p>}
                   </div>
                   <div>
                     <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
@@ -208,6 +263,7 @@ const SiteAdminDashboard = () => {
                       value={formData.residentialAddress}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
                     />
+                    {formErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{formErrors.residentialAddress}</p>}
                   </div>
                   <div>
                     <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
@@ -222,6 +278,7 @@ const SiteAdminDashboard = () => {
                       <option value="female">Female</option>
                       <option value="other">Other</option>
                     </select>
+                    {formErrors.gender && <p className="text-red-500 text-xs mt-1">{formErrors.gender}</p>}
                   </div>
                   <div className="flex justify-end space-x-3 mt-6">
                     <button
