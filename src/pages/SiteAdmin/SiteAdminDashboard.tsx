@@ -117,6 +117,31 @@ const SiteAdminDashboard = () => {
     setShowAddUserForm(false); // Close form after submission
   };
 
+  // Get logged-in user from localStorage
+  const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const loggedInUser = userData ? JSON.parse(userData) : null;
+
+  // Add state for search and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Filter course administrators based on search and status
+  const filteredAdmins = courseAdmins?.cAdmins
+    ? courseAdmins.cAdmins.filter((user) => {
+        // Search by name or email
+        const matchesSearch =
+          user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        // Status filter (assuming user.status is "active"/"inactive", fallback to "active")
+        const userStatus = user.status || "active";
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && userStatus === "active") ||
+          (statusFilter === "inactive" && userStatus === "inactive");
+        return matchesSearch && matchesStatus;
+      })
+    : [];
+
   if (dashboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -141,14 +166,16 @@ const SiteAdminDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cyan-900 mb-2">System Administrator Dashboard</h1>
+        <h1 className="text-3xl font-bold text-cyan-900 mb-2">Site Administrator Dashboard</h1>
         <p className="text-gray-600">Manage course administrators, and platform settings</p>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Welcome Message */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">Welcome back, Nanayakkara A.T.S!</h1>
+          <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">
+            Welcome back, {loggedInUser?.fullName || "System Administrator"}!
+          </h1>
         </div>
 
         {/* Navigation Tabs */}
@@ -189,11 +216,17 @@ const SiteAdminDashboard = () => {
                   type="text"
                   placeholder="Search by name or email"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8">
-                  <option>Filter by Status</option>
-                  <option>Active</option>
-                  <option>Inactive</option>
+                <select
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">Filter by Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </div>
             )}
@@ -238,6 +271,7 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter Contact Number"
                       value={formData.contactNumber}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
+                      required
                     />
                     {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
                   </div>
@@ -250,6 +284,7 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter National ID"
                       value={formData.nationalId}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
+                      required
                     />
                     {formErrors.nationalId && <p className="text-red-500 text-xs mt-1">{formErrors.nationalId}</p>}
                   </div>
@@ -262,6 +297,7 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter Residential Address"
                       value={formData.residentialAddress}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
+                      required
                     />
                     {formErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{formErrors.residentialAddress}</p>}
                   </div>
@@ -272,6 +308,7 @@ const SiteAdminDashboard = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={formData.gender}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, gender: e.target.value }))}
+                      required
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
@@ -306,7 +343,7 @@ const SiteAdminDashboard = () => {
                   <div className="flex justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
-                ) : !courseAdmins || courseAdmins.cAdmins.length === 0 ? (
+                ) : !filteredAdmins || filteredAdmins.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No users found</p>
@@ -317,9 +354,6 @@ const SiteAdminDashboard = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              User ID
-                            </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Name
                             </th>
@@ -338,9 +372,8 @@ const SiteAdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {courseAdmins.cAdmins.map((user) => (
+                          {filteredAdmins.map((user) => (
                             <tr key={user.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   {user.avatarUrl ? (
@@ -357,16 +390,27 @@ const SiteAdminDashboard = () => {
                                     </div>
                                   )}
                                   <div>
-                                    <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {user.fullName.length > 40
+                                        ? user.fullName.slice(0, 37) + "..."
+                                        : user.fullName}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email.length > 30
+                                        ? user.email.slice(0, 27) + "..."
+                                        : user.email}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800`}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    (user.status || "active") === "active"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-gray-200 text-gray-600"
+                                  }`}
                                 >
-                                  {"Active"}
+                                  {(user.status || "Active").charAt(0).toUpperCase() +
+                                    (user.status || "Active").slice(1)}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
