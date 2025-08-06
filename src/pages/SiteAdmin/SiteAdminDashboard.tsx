@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import { Users } from "lucide-react";
 import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery } from "../../utils/api";
 
@@ -16,6 +17,14 @@ const SiteAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
   const [showAddUserForm, setShowAddUserForm] = useState(false); // New state for add user form visibility
   const { data: courseAdmins } = useGetCourseAdministratorsQuery()
+  // local mutable admins array
+  const [admins, setAdmins] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!courseAdmins?.cAdmins) return;
+    setAdmins(courseAdmins.cAdmins);
+  }, [courseAdmins]);
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -24,6 +33,11 @@ const SiteAdminDashboard = () => {
     residentialAddress: "",
     gender: "",
   });
+  // Headless UI modal states
+  const [selectedAdmin, setSelectedAdmin] = useState<any | null>(null); // view
+  const [editingAdmin, setEditingAdmin] = useState<any | null>(null); // edit
+  const [adminToDelete, setAdminToDelete] = useState<any | null>(null); // delete
+  const [modalMessage, setModalMessage] = useState<string>("");
   const [formErrors, setFormErrors] = useState({
     fullName: "",
     email: "",
@@ -125,9 +139,9 @@ const SiteAdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Filter course administrators based on search and status
-  const filteredAdmins = courseAdmins?.cAdmins
-    ? courseAdmins.cAdmins.filter((user) => {
+  // Filter course administrators based on search and status (use local admins state)
+  const filteredAdmins = admins
+    ? admins.filter((user) => {
         // Search by name or email
         const matchesSearch =
           user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,6 +155,29 @@ const SiteAdminDashboard = () => {
         return matchesSearch && matchesStatus;
       })
     : [];
+  // --- modal handlers ---
+  const handleViewAdmin = (admin: any) => setSelectedAdmin(admin);
+  const handleCloseViewAdmin = () => setSelectedAdmin(null);
+
+  const handleEditAdminClick = (admin: any) => setEditingAdmin({ ...admin });
+  const handleCloseEditAdmin = () => setEditingAdmin(null);
+  const handleSaveEditedAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+    setAdmins(prev => prev.map(a => (a.id === editingAdmin.id ? { ...a, ...editingAdmin } : a)));
+    setModalMessage("Administrator updated successfully.");
+    setEditingAdmin(null);
+  };
+
+  const handleDeleteAdminClick = (admin: any) => setAdminToDelete(admin);
+  const handleConfirmDeleteAdmin = () => {
+    if (!adminToDelete) return;
+    setAdmins(prev => prev.filter(a => a.id !== adminToDelete.id));
+    setModalMessage(`Administrator "${adminToDelete.fullName}" deleted.`);
+    setAdminToDelete(null);
+  };
+  const handleCloseDeleteAdmin = () => setAdminToDelete(null);
+  const handleModalClose = () => setModalMessage("");
 
   if (dashboardLoading) {
     return (
@@ -418,13 +455,22 @@ const SiteAdminDashboard = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex space-x-2">
-                                  <button className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600">
+                                  <button
+                                    onClick={() => handleViewAdmin(user)}
+                                    className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600"
+                                  >
                                     View
                                   </button>
-                                  <button className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600">
+                                  <button
+                                    onClick={() => handleEditAdminClick(user)}
+                                    className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600"
+                                  >
                                     Edit
                                   </button>
-                                  <button className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600">
+                                  <button
+                                    onClick={() => handleDeleteAdminClick(user)}
+                                    className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600"
+                                  >
                                     Delete
                                   </button>
                                 </div>
@@ -442,6 +488,139 @@ const SiteAdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Headless UI Modals */}
+      {/* View Modal */}
+      <Transition appear show={!!selectedAdmin} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseViewAdmin}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+
+
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-150"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                    Administrator Details
+                  </Dialog.Title>
+                  <div className="mt-4 space-y-2 text-sm text-gray-700">
+                    <p><strong>Full Name:</strong> {selectedAdmin?.fullName}</p>
+                    <p><strong>Email:</strong> {selectedAdmin?.email}</p>
+                    <p><strong>Contact:</strong> {selectedAdmin?.contactNumber || "N/A"}</p>
+                    <p><strong>National ID:</strong> {selectedAdmin?.nationalId || "N/A"}</p>
+                    <p><strong>Address:</strong> {selectedAdmin?.residentialAddress || "N/A"}</p>
+                    <p><strong>Gender:</strong> {selectedAdmin?.gender || "N/A"}</p>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <button onClick={handleCloseViewAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Close</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Edit Modal */}
+      <Transition appear show={!!editingAdmin} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseEditAdmin}>
+          <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">Edit Administrator</Dialog.Title>
+                  {editingAdmin && (
+                    <form onSubmit={handleSaveEditedAdmin} className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input value={editingAdmin.fullName || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, fullName: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" value={editingAdmin.email || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, email: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                        <input value={editingAdmin.contactNumber || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, contactNumber: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select value={editingAdmin.status || "active"} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, status: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <button type="button" onClick={handleCloseEditAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                        <button type="submit" className="px-4 py-2 bg-cyan-600 text-white rounded-md">Save</button>
+                      </div>
+                    </form>
+                  )}
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Delete Modal */}
+      <Transition appear show={!!adminToDelete} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseDeleteAdmin}>
+          <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">Confirm Delete</Dialog.Title>
+                  <div className="mt-3 text-sm text-gray-700">
+                    Are you sure you want to delete <strong>{adminToDelete?.fullName}</strong>?
+                  </div>
+                  <div className="mt-6 flex justify-end space-x-2">
+                    <button onClick={handleCloseDeleteAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                    <button onClick={handleConfirmDeleteAdmin} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* simple toast */}
+      {modalMessage && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="bg-white border shadow-md px-4 py-2 rounded-md">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="text-sm text-gray-800">{modalMessage}</div>
+              <button onClick={handleModalClose} className="text-gray-500">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
   );
