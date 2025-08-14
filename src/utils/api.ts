@@ -107,6 +107,8 @@ export const api = createApi({
         getMyProfile: builder.query<IGetMyProfileResponse, void>({
             query: () => "/users/me",
             providesTags: ["User"],
+            // do not keep profile in cache when unused
+            keepUnusedDataFor: 0,
         }),
         updateMyProfile: builder.mutation<IUpdateMyProfileResponse, IUpdateMyProfileRequest>({
             query: (body) => ({

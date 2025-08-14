@@ -288,7 +288,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
     confirm: false,
   })
 
-  const { data: profileData, isLoading } = useGetMyProfileQuery()
+  // always refetch profile on mount to avoid showing stale/cached data
+  const { data: profileData, isLoading } = useGetMyProfileQuery(undefined, { refetchOnMountOrArgChange: true })
   const [updateProfile, { isLoading: isUpdating }] = useUpdateMyProfileMutation()
 
   useEffect(() => {
