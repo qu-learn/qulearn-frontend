@@ -143,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
             <div className="relative">
               <button
                 onClick={toggleDropdown}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="group flex items-center space-x-2 px-3 py-2 rounded-md text-large font-medium text-white hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {user.avatarUrl ? (
                   <img 
@@ -152,14 +152,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
                     className="w-8 h-8 rounded-full" 
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-large font-medium">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center transition-colors">
+                    <span className="text-white text-large font-medium transition-colors">
                       {user.fullName.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
-                <span className="text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors">{user.fullName}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="text-large font-medium text-white group-hover:text-blue-600 transition-colors">{user.fullName}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform text-white group-hover:text-blue-600 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Menu */}
