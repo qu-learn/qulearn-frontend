@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Users } from "lucide-react";
-import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery } from "../../utils/api";
+import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation } from "../../utils/api";
 
 // Mock dashboard data
 const mockDashboardData = {
@@ -90,6 +90,9 @@ const SiteAdminDashboard = () => {
   };
 
   const [addCourseAdmin, { isLoading, error }] = useAddCourseAdministratorMutation()
+  const [updateCourseAdministrator, { isLoading: updating }] = useUpdateCourseAdministratorMutation()
+  // new: delete mutation hook
+  const [deleteCourseAdministrator, { isLoading: deleting }] = useDeleteCourseAdministratorMutation()
 
   // Mock API responses (assuming these are static for this example)
   const dashboardData = mockDashboardData;
@@ -146,12 +149,9 @@ const SiteAdminDashboard = () => {
         const matchesSearch =
           user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        // Status filter (assuming user.status is "active"/"inactive", fallback to "active")
+        // Status filter (backend statuses: active, suspended, deactivated, deleted)
         const userStatus = user.status || "active";
-        const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "active" && userStatus === "active") ||
-          (statusFilter === "inactive" && userStatus === "inactive");
+        const matchesStatus = statusFilter === "all" || userStatus === statusFilter;
         return matchesSearch && matchesStatus;
       })
     : [];
@@ -159,22 +159,59 @@ const SiteAdminDashboard = () => {
   const handleViewAdmin = (admin: any) => setSelectedAdmin(admin);
   const handleCloseViewAdmin = () => setSelectedAdmin(null);
 
-  const handleEditAdminClick = (admin: any) => setEditingAdmin({ ...admin });
+  const handleEditAdminClick = (admin: any) => {
+    // ensure editingAdmin has accountStatus (backend expects accountStatus in update payload)
+    setEditingAdmin({ ...admin, accountStatus: admin.status || "active" });
+  };
   const handleCloseEditAdmin = () => setEditingAdmin(null);
-  const handleSaveEditedAdmin = (e: React.FormEvent) => {
+  const handleSaveEditedAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAdmin) return;
-    setAdmins(prev => prev.map(a => (a.id === editingAdmin.id ? { ...a, ...editingAdmin } : a)));
-    setModalMessage("Administrator updated successfully.");
-    setEditingAdmin(null);
+
+    // Build payload for backend (IAddCourseAdministratorRequest shape for updates)
+    const payload: any = {
+      fullName: editingAdmin.fullName,
+      email: editingAdmin.email,
+      contactNumber: editingAdmin.contactNumber,
+      nationalId: editingAdmin.nationalId,
+      residentialAddress: editingAdmin.residentialAddress,
+      gender: editingAdmin.gender,
+      // include accountStatus key expected by backend
+      accountStatus: editingAdmin.accountStatus,
+    };
+
+    try {
+      const response = await updateCourseAdministrator({
+        cAdminId: editingAdmin.id,
+        cAdmin: payload,
+      }).unwrap();
+
+      // update local admins list from server response
+      const updated = response.cAdmin;
+      setAdmins(prev => prev.map(a => (a.id === updated.id ? updated : a)));
+      setModalMessage("Administrator updated successfully.");
+      setEditingAdmin(null);
+    } catch (err) {
+      console.error("Failed to update administrator:", err);
+      setModalMessage("Failed to update administrator.");
+    }
   };
 
   const handleDeleteAdminClick = (admin: any) => setAdminToDelete(admin);
-  const handleConfirmDeleteAdmin = () => {
+  const handleConfirmDeleteAdmin = async () => {
     if (!adminToDelete) return;
-    setAdmins(prev => prev.filter(a => a.id !== adminToDelete.id));
-    setModalMessage(`Administrator "${adminToDelete.fullName}" deleted.`);
-    setAdminToDelete(null);
+    try {
+      // call backend to delete
+      await deleteCourseAdministrator(adminToDelete.id).unwrap();
+      // remove locally on success
+      setAdmins(prev => prev.filter(a => a.id !== adminToDelete.id));
+      setModalMessage(`Administrator "${adminToDelete.fullName}" deleted.`);
+    } catch (err) {
+      console.error("Failed to delete administrator:", err);
+      setModalMessage("Failed to delete administrator.");
+    } finally {
+      setAdminToDelete(null);
+    }
   };
   const handleCloseDeleteAdmin = () => setAdminToDelete(null);
   const handleModalClose = () => setModalMessage("");
@@ -263,7 +300,8 @@ const SiteAdminDashboard = () => {
                 >
                   <option value="all">Filter by Status</option>
                   <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="deactivated">Deactivated</option>
                 </select>
               </div>
             )}
@@ -446,8 +484,10 @@ const SiteAdminDashboard = () => {
                                       : "bg-gray-200 text-gray-600"
                                   }`}
                                 >
-                                  {(user.status || "Active").charAt(0).toUpperCase() +
-                                    (user.status || "Active").slice(1)}
+                                  {(() => {
+                                    const s = (user.status || "active");
+                                    return s.charAt(0).toUpperCase() + s.slice(1);
+                                  })()}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -567,9 +607,10 @@ const SiteAdminDashboard = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Status</label>
-                        <select value={editingAdmin.status || "active"} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, status: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <select value={editingAdmin.accountStatus || "active"} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, accountStatus: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                           <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
+                          <option value="suspended">Suspended</option>
+                          <option value="deactivated">Deactivated</option>
                         </select>
                       </div>
                       <div className="flex justify-end space-x-2 mt-4">
@@ -601,7 +642,13 @@ const SiteAdminDashboard = () => {
                   </div>
                   <div className="mt-6 flex justify-end space-x-2">
                     <button onClick={handleCloseDeleteAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
-                    <button onClick={handleConfirmDeleteAdmin} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+                    <button
+                      onClick={handleConfirmDeleteAdmin}
+                      disabled={deleting}
+                      className={`px-4 py-2 text-white rounded-md ${deleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600"}`}
+                    >
+                      {deleting ? "Deleting..." : "Delete"}
+                    </button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
