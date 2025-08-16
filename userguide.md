@@ -378,19 +378,5 @@ Keep your profile updated with:
 - **Backup Procedures**: Maintain regular data backups
 - **Training Programs**: Provide ongoing training for users
 
-## Contact Information
 
-For additional support or questions:
 
-- **Technical Support**: support@qulearn.com
-- **General Inquiries**: info@qulearn.com
-- **Educational Support**: education@qulearn.com
-- **Documentation**: docs.qulearn.com
-
----
-
-*This user guide is regularly updated. For the latest version and additional resources, visit our documentation portal.*
-
-**Version**: 1.0  
-**Last Updated**: September 2025  
-**Platform Version**: Latest
