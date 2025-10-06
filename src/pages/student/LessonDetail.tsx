@@ -154,27 +154,7 @@ const LessonDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Link
-              to={`/courses/${courseId}/dashboard`}
-              className="flex items-center text-cyan-700 hover:text-cyan-800 mr-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Course
-            </Link>
-            <div className="text-sm text-gray-500">
-              {course.title} / {currentModule?.title} / Lesson {currentModuleIndex + 1}.{currentLessonIndex + 1}
-            </div>
-          </div>
 
-        </div>
-      </header>
-
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
         {/* Lesson Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -352,7 +332,7 @@ const LessonDetail: React.FC = () => {
           </div>
         </div>
       </main>
-    </div>
+  
   )
 }
 

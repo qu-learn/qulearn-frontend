@@ -429,13 +429,13 @@ const validateForm = (): boolean => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <button
+        {/* <button
           onClick={() => navigate("/educator")}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
-        </button>
+        </button> */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-cyan-700">{courseId ? "Edit Course" : "Create New Course"}</h1>

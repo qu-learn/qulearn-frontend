@@ -161,17 +161,17 @@ function Breadcrumbs({ user }: BreadcrumbsProps) {
                         e.preventDefault()
                         navigate(c.to)
                       }}
-                      className="text-gray-600 hover:text-gray-800 text-sm"
+                      className="text-blue-600 hover:text-gray-800 text-lg"
                     >
                       {c.label}
                     </Link>
                   ) : (
-                    <span className="text-gray-500 text-sm">{c.label}</span>
+                    <span className="text-blue-500 text-lg">{c.label}</span>
                   )}
-                  <span className="mx-2 text-gray-300 text-xs">/</span>
+                  <span className="mx-2 text-blue-300 text-lg">/</span>
                 </>
               ) : (
-                <span className="text-gray-700 font-semibold text-sm">{c.label}</span>
+                <span className="text-blue-700 font-semibold text-lg">{c.label}</span>
               )}
             </li>
           )
