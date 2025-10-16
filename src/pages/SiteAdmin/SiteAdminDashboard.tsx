@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import { Users } from "lucide-react";
 import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery } from "../../utils/api";
 
@@ -16,6 +17,14 @@ const SiteAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
   const [showAddUserForm, setShowAddUserForm] = useState(false); // New state for add user form visibility
   const { data: courseAdmins } = useGetCourseAdministratorsQuery()
+  // local mutable admins array
+  const [admins, setAdmins] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!courseAdmins?.cAdmins) return;
+    setAdmins(courseAdmins.cAdmins);
+  }, [courseAdmins]);
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -24,6 +33,61 @@ const SiteAdminDashboard = () => {
     residentialAddress: "",
     gender: "",
   });
+  // Headless UI modal states
+  const [selectedAdmin, setSelectedAdmin] = useState<any | null>(null); // view
+  const [editingAdmin, setEditingAdmin] = useState<any | null>(null); // edit
+  const [adminToDelete, setAdminToDelete] = useState<any | null>(null); // delete
+  const [modalMessage, setModalMessage] = useState<string>("");
+  const [formErrors, setFormErrors] = useState({
+    fullName: "",
+    email: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
+
+  const validateForm = () => {
+    let errors = {
+      fullName: "",
+      email: "",
+      contactNumber: "",
+      nationalId: "",
+      residentialAddress: "",
+      gender: "",
+    };
+    let valid = true;
+  
+    if (!formData.fullName.trim()) {
+      errors.fullName = "Full Name is required.";
+      valid = false;
+    }
+    if (!formData.email.trim()) {
+      errors.email = "Email is required.";
+      valid = false;
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+      errors.email = "Invalid email address.";
+      valid = false;
+    }
+    if (formData.contactNumber && !/^\d{10,15}$/.test(formData.contactNumber)) {
+      errors.contactNumber = "Contact Number should be 10-15 digits.";
+      valid = false;
+    }
+    if (formData.nationalId && formData.nationalId.length < 5) {
+      errors.nationalId = "National ID is too short.";
+      valid = false;
+    }
+    if (formData.residentialAddress && formData.residentialAddress.length < 5) {
+      errors.residentialAddress = "Address is too short.";
+      valid = false;
+    }
+    if (!formData.gender) {
+      errors.gender = "Gender is required.";
+      valid = false;
+    }
+    setFormErrors(errors);
+    return valid;
+  };
 
   const [addCourseAdmin, { isLoading, error }] = useAddCourseAdministratorMutation()
 
@@ -42,6 +106,7 @@ const SiteAdminDashboard = () => {
 
   const handleSaveNewUser = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!validateForm()) return;
 
     try {
       const response = await addCourseAdmin({
@@ -65,6 +130,54 @@ const SiteAdminDashboard = () => {
     console.log(formData);
     setShowAddUserForm(false); // Close form after submission
   };
+
+  // Get logged-in user from localStorage
+  const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const loggedInUser = userData ? JSON.parse(userData) : null;
+
+  // Add state for search and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Filter course administrators based on search and status (use local admins state)
+  const filteredAdmins = admins
+    ? admins.filter((user) => {
+        // Search by name or email
+        const matchesSearch =
+          user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        // Status filter (assuming user.status is "active"/"inactive", fallback to "active")
+        const userStatus = user.status || "active";
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && userStatus === "active") ||
+          (statusFilter === "inactive" && userStatus === "inactive");
+        return matchesSearch && matchesStatus;
+      })
+    : [];
+  // --- modal handlers ---
+  const handleViewAdmin = (admin: any) => setSelectedAdmin(admin);
+  const handleCloseViewAdmin = () => setSelectedAdmin(null);
+
+  const handleEditAdminClick = (admin: any) => setEditingAdmin({ ...admin });
+  const handleCloseEditAdmin = () => setEditingAdmin(null);
+  const handleSaveEditedAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+    setAdmins(prev => prev.map(a => (a.id === editingAdmin.id ? { ...a, ...editingAdmin } : a)));
+    setModalMessage("Administrator updated successfully.");
+    setEditingAdmin(null);
+  };
+
+  const handleDeleteAdminClick = (admin: any) => setAdminToDelete(admin);
+  const handleConfirmDeleteAdmin = () => {
+    if (!adminToDelete) return;
+    setAdmins(prev => prev.filter(a => a.id !== adminToDelete.id));
+    setModalMessage(`Administrator "${adminToDelete.fullName}" deleted.`);
+    setAdminToDelete(null);
+  };
+  const handleCloseDeleteAdmin = () => setAdminToDelete(null);
+  const handleModalClose = () => setModalMessage("");
 
   if (dashboardLoading) {
     return (
@@ -90,14 +203,16 @@ const SiteAdminDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cyan-900 mb-2">System Administrator Dashboard</h1>
+        <h1 className="text-3xl font-bold text-cyan-900 mb-2">Site Administrator Dashboard</h1>
         <p className="text-gray-600">Manage course administrators, and platform settings</p>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Welcome Message */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">Welcome back, Nanayakkara A.T.S!</h1>
+          <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">
+            Welcome back, {loggedInUser?.fullName || "System Administrator"}!
+          </h1>
         </div>
 
         {/* Navigation Tabs */}
@@ -138,11 +253,17 @@ const SiteAdminDashboard = () => {
                   type="text"
                   placeholder="Search by name or email"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8">
-                  <option>Filter by Status</option>
-                  <option>Active</option>
-                  <option>Inactive</option>
+                <select
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">Filter by Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </div>
             )}
@@ -163,6 +284,7 @@ const SiteAdminDashboard = () => {
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, fullName: e.target.value }))}
                       required
                     />
+                    {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -175,6 +297,7 @@ const SiteAdminDashboard = () => {
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, email: e.target.value }))}
                       required
                     />
+                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
                   </div>
                   <div>
                     <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
@@ -185,7 +308,9 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter Contact Number"
                       value={formData.contactNumber}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
+                      required
                     />
+                    {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
                   </div>
                   <div>
                     <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
@@ -196,7 +321,9 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter National ID"
                       value={formData.nationalId}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
+                      required
                     />
+                    {formErrors.nationalId && <p className="text-red-500 text-xs mt-1">{formErrors.nationalId}</p>}
                   </div>
                   <div>
                     <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
@@ -207,7 +334,9 @@ const SiteAdminDashboard = () => {
                       placeholder="Enter Residential Address"
                       value={formData.residentialAddress}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
+                      required
                     />
+                    {formErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{formErrors.residentialAddress}</p>}
                   </div>
                   <div>
                     <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
@@ -216,12 +345,14 @@ const SiteAdminDashboard = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={formData.gender}
                       onChange={(e) => setFormData((prevData) => ({ ...prevData, gender: e.target.value }))}
+                      required
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
                     </select>
+                    {formErrors.gender && <p className="text-red-500 text-xs mt-1">{formErrors.gender}</p>}
                   </div>
                   <div className="flex justify-end space-x-3 mt-6">
                     <button
@@ -249,7 +380,7 @@ const SiteAdminDashboard = () => {
                   <div className="flex justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
-                ) : !courseAdmins || courseAdmins.cAdmins.length === 0 ? (
+                ) : !filteredAdmins || filteredAdmins.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No users found</p>
@@ -260,9 +391,6 @@ const SiteAdminDashboard = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              User ID
-                            </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Name
                             </th>
@@ -281,9 +409,8 @@ const SiteAdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {courseAdmins.cAdmins.map((user) => (
+                          {filteredAdmins.map((user) => (
                             <tr key={user.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   {user.avatarUrl ? (
@@ -300,16 +427,27 @@ const SiteAdminDashboard = () => {
                                     </div>
                                   )}
                                   <div>
-                                    <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {user.fullName.length > 40
+                                        ? user.fullName.slice(0, 37) + "..."
+                                        : user.fullName}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email.length > 30
+                                        ? user.email.slice(0, 27) + "..."
+                                        : user.email}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800`}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    (user.status || "active") === "active"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-gray-200 text-gray-600"
+                                  }`}
                                 >
-                                  {"Active"}
+                                  {(user.status || "Active").charAt(0).toUpperCase() +
+                                    (user.status || "Active").slice(1)}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -317,13 +455,22 @@ const SiteAdminDashboard = () => {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex space-x-2">
-                                  <button className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600">
+                                  <button
+                                    onClick={() => handleViewAdmin(user)}
+                                    className="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded border border-blue-600"
+                                  >
                                     View
                                   </button>
-                                  <button className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600">
+                                  <button
+                                    onClick={() => handleEditAdminClick(user)}
+                                    className="text-indigo-600 hover:text-indigo-900 text-xs px-2 py-1 rounded border border-indigo-600"
+                                  >
                                     Edit
                                   </button>
-                                  <button className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600">
+                                  <button
+                                    onClick={() => handleDeleteAdminClick(user)}
+                                    className="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded border border-red-600"
+                                  >
                                     Delete
                                   </button>
                                 </div>
@@ -341,6 +488,139 @@ const SiteAdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Headless UI Modals */}
+      {/* View Modal */}
+      <Transition appear show={!!selectedAdmin} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseViewAdmin}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+
+
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-150"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                    Administrator Details
+                  </Dialog.Title>
+                  <div className="mt-4 space-y-2 text-sm text-gray-700">
+                    <p><strong>Full Name:</strong> {selectedAdmin?.fullName}</p>
+                    <p><strong>Email:</strong> {selectedAdmin?.email}</p>
+                    <p><strong>Contact:</strong> {selectedAdmin?.contactNumber || "N/A"}</p>
+                    <p><strong>National ID:</strong> {selectedAdmin?.nationalId || "N/A"}</p>
+                    <p><strong>Address:</strong> {selectedAdmin?.residentialAddress || "N/A"}</p>
+                    <p><strong>Gender:</strong> {selectedAdmin?.gender || "N/A"}</p>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <button onClick={handleCloseViewAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Close</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Edit Modal */}
+      <Transition appear show={!!editingAdmin} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseEditAdmin}>
+          <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">Edit Administrator</Dialog.Title>
+                  {editingAdmin && (
+                    <form onSubmit={handleSaveEditedAdmin} className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input value={editingAdmin.fullName || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, fullName: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" value={editingAdmin.email || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, email: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                        <input value={editingAdmin.contactNumber || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, contactNumber: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select value={editingAdmin.status || "active"} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, status: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <button type="button" onClick={handleCloseEditAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                        <button type="submit" className="px-4 py-2 bg-cyan-600 text-white rounded-md">Save</button>
+                      </div>
+                    </form>
+                  )}
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Delete Modal */}
+      <Transition appear show={!!adminToDelete} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseDeleteAdmin}>
+          <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">Confirm Delete</Dialog.Title>
+                  <div className="mt-3 text-sm text-gray-700">
+                    Are you sure you want to delete <strong>{adminToDelete?.fullName}</strong>?
+                  </div>
+                  <div className="mt-6 flex justify-end space-x-2">
+                    <button onClick={handleCloseDeleteAdmin} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                    <button onClick={handleConfirmDeleteAdmin} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* simple toast */}
+      {modalMessage && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="bg-white border shadow-md px-4 py-2 rounded-md">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="text-sm text-gray-800">{modalMessage}</div>
+              <button onClick={handleModalClose} className="text-gray-500">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
   );
