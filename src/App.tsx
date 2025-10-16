@@ -33,6 +33,8 @@ import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
 // import ProfileSettings from "./pages/student/ProfileSettings"
 import Header from "./components/Header"
+import Breadcrumbs from "./components/Breadcrumbs"
+
 
 interface AppState {
   initialized: boolean
@@ -92,6 +94,16 @@ function AppContent() {
     return location.pathname
   }
 
+  // Debug: log navigation changes and current user to help diagnose unexpected redirects
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.debug("Navigation ->", location.pathname, "user:", appState.user)
+    } catch (err) {
+      // noop
+    }
+  }, [location.pathname, appState.user])
+
   // Protected route wrapper
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!appState.user) {
@@ -104,6 +116,8 @@ function AppContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {appState.user && <Header user={appState.user} onLogout={handleLogout} currentPage={getCurrentPage()} />}
       <main className={appState.user ? "pt-20" : ""}>
+        {/* Breadcrumbs are rendered inside main so the fixed header (when present) doesn't overlap them. */}
+        <Breadcrumbs user={appState.user} />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
