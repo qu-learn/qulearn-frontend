@@ -2,64 +2,10 @@ import React, { useState, useMemo, useEffect, Fragment } from "react";
 import { BrowserRouter as Router, Link } from "react-router-dom";
 import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X, Edit3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"; // Re-imported Recharts components for analytics chart
-import { useAddEducatorMutation, useGetEducatorsQuery, useUpdateEducatorMutation, useDeleteEducatorMutation, useGetCourseAdminDashboardQuery } from "../../utils/api";
+import { useAddEducatorMutation, useGetEducatorsQuery, useUpdateEducatorMutation, useDeleteEducatorMutation, useGetCourseAdminDashboardQuery, useGetCourseAdminCoursesQuery } from "../../utils/api";
 import { Dialog, Transition } from "@headlessui/react";
 
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  contactNumber?: string;
-  nationalId?: string;
-  residentialAddress?: string;
-  gender?: string;
-  status: string;
-  createdAt: Date;
-  avatarUrl: string | null;
-}
-// Define interfaces for modal props
-interface CustomModalProps {
-  message: string | null;
-  onClose: () => void;
-}
-
-interface IAddEducatorRequest {
-  fullName: string;
-  email: string;
-  password: string;
-  contactNumber: string;
-  nationalId: string;
-  residentialAddress: string;
-  gender: string;
-}
-
-interface ViewUserModalProps {
-  user: User | null;
-  onClose: () => void;
-}
-
-interface EditUserModalProps {
-  user: User;
-  onClose: () => void;
-  onSave: (userId: string, updatedData: any) => void; // 'any' for updatedData for now, could be more specific
-}
-
-interface DeleteConfirmModalProps {
-  userName: string;
-  onDelete: () => void;
-  onClose: () => void;
-}
-
-// Mock data for analytics (overall enrollments)
-const mockOverallEnrollmentData = [
-  { month: 'Jan', students: 100 },
-  { month: 'Feb', students: 580 },
-  { month: 'Mar', students: 220 },
-  { month: 'Apr', students: 550 },
-  { month: 'May', students: 650 },
-  { month: 'Jun', students: 700 },
-  { month: 'Jul', students: 750 },
-];
+import type { IUser, IAddEducatorRequest, ICourse, CourseStatus } from "../../utils/types";
 
 // Mock courses data (initial data, will be moved to state for mutability)
 const initialMockCoursesData = {
@@ -156,6 +102,20 @@ const initialMockCoursesData = {
   ],
 };
 
+type CourseWithMeta = ICourse & {
+  enrollments?: number;
+  category?: string;
+  // local mock/enrichment field used by this component
+  enrollmentHistory?: { month: string; students: number }[];
+};
+
+type SelectedCourseAnalytics = {
+  id: string;
+  title: string;
+  status: CourseStatus;
+  enrollmentHistory: { month: string; students: number }[];
+};
+
 const CourseAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedCourseAnalytics, setSelectedCourseAnalytics] = useState<SelectedCourseAnalytics | null>(null);
@@ -169,6 +129,7 @@ const CourseAdminDashboard = () => {
     residentialAddress: "",
     gender: "",
   });
+
   // add form errors
   const [addFormErrors, setAddFormErrors] = useState({
     fullName: "",
@@ -199,12 +160,12 @@ const CourseAdminDashboard = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
 
   // State for mutable course data
-  const [courses, setCourses] = useState(initialMockCoursesData.courses);
-  const [pendingCourses, setPendingCourses] = useState(initialMockCoursesData.pendingCourses);
+  const [courses, setCourses] = useState<CourseWithMeta[]>(initialMockCoursesData.courses as CourseWithMeta[]);
+  const [pendingCourses, setPendingCourses] = useState<CourseWithMeta[]>(initialMockCoursesData.pendingCourses as CourseWithMeta[]);
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
-  const [users, setUsers] = useState<User[]>([]); // Initialize with mock data
+  const [users, setUsers] = useState<IUser[]>([]); // use IUser from types.ts
   const [usersCurrentPage, setUsersCurrentPage] = useState(1); // Separate pagination for users
   const [usersPerPage] = useState(5); // Number of users to display per page
   const [userSearchTerm, setUserSearchTerm] = useState(''); // Search term for users
@@ -213,16 +174,34 @@ const CourseAdminDashboard = () => {
   const { data: educators } = useGetEducatorsQuery()
   useEffect(() => {
     if (!educators) return
-    setUsers(educators.educators as any)
+    setUsers(educators.educators)
   }, [educators])
 
   // --- NEW: use API hook for the dashboard data ---
   const { data: dashboardData, isLoading: dashboardLoading, isError: dashboardError } = useGetCourseAdminDashboardQuery();
 
+  // --- NEW: fetch courses list for course-admin ---
+  const { data: courseAdminCoursesData, isLoading: coursesLoading, isError: coursesError } = useGetCourseAdminCoursesQuery();
+  
+  // When API data arrives map to local CourseWithMeta shape and replace local state
+  useEffect(() => {
+    if (!courseAdminCoursesData?.courses) return;
+    const apiCourses: CourseWithMeta[] = courseAdminCoursesData.courses.map((c) => ({
+      ...c,
+      // API ICourse doesn't include these local-only fields; provide sensible defaults
+      enrollments: (c as any).enrollments ?? 0,
+      category: c.category ?? "Uncategorized",
+      enrollmentHistory: (c as any).enrollmentHistory ?? [],
+    }));
+    setCourses(apiCourses);
+    // keep pendingCourses for the "Pending Course Submissions" section
+    setPendingCourses(apiCourses.filter((c) => c.status === "under-review"));
+  }, [courseAdminCoursesData]);
+
   // States for user modals
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  const [userToDelete, setUserToDelete] = useState<IUser | null>(null);
 
   // State for custom modal
   const [modalMessage, setModalMessage] = useState('');
@@ -355,9 +334,14 @@ const CourseAdminDashboard = () => {
   };
 
 
-  const handleViewAnalytics = (course: Course) => {
-    const { id, title, status, enrollmentHistory } = course; // Destructure enrollmentHistory
-    setSelectedCourseAnalytics({ id, title, status, enrollmentHistory }); // Pass it here
+  const handleViewAnalytics = (course: CourseWithMeta) => {
+    const { id, title, status, enrollmentHistory } = course;
+    setSelectedCourseAnalytics({
+      id,
+      title,
+      status,
+      enrollmentHistory: enrollmentHistory ?? [],
+    });
     setActiveTab("analytics");
   };
 
@@ -461,7 +445,7 @@ const CourseAdminDashboard = () => {
     }
   };
 
-  const handleViewUser = (user: User) => { // Explicitly type user
+  const handleViewUser = (user: IUser) => {
     setSelectedUser(user);
   };
 
@@ -469,7 +453,7 @@ const CourseAdminDashboard = () => {
     setSelectedUser(null);
   };
 
-  const handleEditUserClick = (user: User) => { // Explicitly type user
+  const handleEditUserClick = (user: IUser) => {
     setEditingUser(user);
   };
 
@@ -505,7 +489,7 @@ const CourseAdminDashboard = () => {
     setEditingUser(null);
   };
 
-  const handleDeleteUserClick = (user: User) => { // Explicitly type user
+  const handleDeleteUserClick = (user: IUser) => {
     setUserToDelete(user);
   };
 
