@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Fragment } from "react";
 import { BrowserRouter as Router, Link } from "react-router-dom";
 import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X, Edit3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"; // Re-imported Recharts components for analytics chart
-import { useAddEducatorMutation, useGetEducatorsQuery } from "../../utils/api";
+import { useAddEducatorMutation, useGetEducatorsQuery, useUpdateEducatorMutation, useDeleteEducatorMutation, useGetCourseAdminDashboardQuery } from "../../utils/api";
+import { Dialog, Transition } from "@headlessui/react";
 
 interface User {
   id: string;
@@ -49,225 +50,6 @@ interface DeleteConfirmModalProps {
   onClose: () => void;
 }
 
-// Custom Modal Component
-const CustomModal = ({ message, onClose }: CustomModalProps) => {
-  if (!message) return null;
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification</h3>
-        <p className="text-gray-700 mb-6">{message}</p>
-        <div className="flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-cyan-600 text-white py-2 px-4 rounded-md hover:bg-cyan-700 transition-colors duration-200"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-// View User Modal Component
-const ViewUserModal = ({ user, onClose }: ViewUserModalProps) => {
-  if (!user) return null;
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">User Details</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="space-y-3 text-gray-700">
-          <p><strong>Full Name:</strong> {user.fullName}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Contact Number:</strong> {user.contactNumber || 'N/A'}</p>
-          <p><strong>National ID:</strong> {user.nationalId || 'N/A'}</p>
-          <p><strong>Residential Address:</strong> {user.residentialAddress || 'N/A'}</p>
-          <p><strong>Gender:</strong> {user.gender || 'N/A'}</p>
-          <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-            }`}>{user.status}</span></p>
-          <p><strong>Registered On:</strong> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p> {/* Changed to direct Date object */}
-          <p className="break-all"><strong>User ID:</strong> {user.id}</p>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={onClose}
-            className="bg-cyan-600 text-white py-2 px-4 rounded-md hover:bg-cyan-700 transition-colors duration-200"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Edit User Modal Component
-const EditUserModal = ({ user, onClose, onSave }: EditUserModalProps) => {
-  const [formData, setFormData] = useState({
-    fullName: user.fullName,
-    email: user.email,
-    contactNumber: user.contactNumber || '',
-    nationalId: user.nationalId || '',
-    residentialAddress: user.residentialAddress || '',
-    gender: user.gender || '',
-    status: user.status,
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(user.id, formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Edit User</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-            <input
-              type="text"
-              id="fullName"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.fullName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              id="email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
-            <input
-              type="text"
-              id="contactNumber"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.contactNumber}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
-            <input
-              type="text"
-              id="nationalId"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.nationalId}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
-            <input
-              type="text"
-              id="residentialAddress"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.residentialAddress}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-            <select
-              id="gender"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.gender}
-              onChange={handleChange}
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              id="status"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold text-sm shadow-md"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Delete Confirmation Modal Component
-const DeleteConfirmModal = ({ userName, onDelete, onClose }: DeleteConfirmModalProps) => {
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Deletion</h3>
-        <p className="text-gray-700 mb-6">Are you sure you want to delete user "{userName}"? This action cannot be undone.</p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold text-sm shadow-md"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onDelete}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 font-semibold text-sm shadow-md"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
 // Mock data for analytics (overall enrollments)
 const mockOverallEnrollmentData = [
   { month: 'Jan', students: 100 },
@@ -278,32 +60,6 @@ const mockOverallEnrollmentData = [
   { month: 'Jun', students: 700 },
   { month: 'Jul', students: 750 },
 ];
-
-// Mock dashboard data
-const mockDashboardData = {
-  totalUsers: 1250,
-  activeCourses: 94,
-  newRegistrationsThisMonth: 36,
-  pendingApprovals: 8
-};
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: { fullName: string };
-  status: string;
-  createdAt: string;
-  enrollments: number; // Keep this for the table display
-  category: string;
-  enrollmentHistory?: { month: string; students: number; }[]; // Added for course-specific analytics
-}
-
-interface SelectedCourseAnalytics {
-  id: string;
-  title: string;
-  status: string;
-  enrollmentHistory?: { month: string; students: number; }[]; // Added for course-specific analytics
-}
 
 // Mock courses data (initial data, will be moved to state for mutability)
 const initialMockCoursesData = {
@@ -413,8 +169,29 @@ const CourseAdminDashboard = () => {
     residentialAddress: "",
     gender: "",
   });
+  // add form errors
+  const [addFormErrors, setAddFormErrors] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
+  // edit form errors
+  const [editFormErrors, setEditFormErrors] = useState({
+    fullName: "",
+    email: "",
+    contactNumber: "",
+    nationalId: "",
+    residentialAddress: "",
+    gender: "",
+  });
 
   const [addEducator, { isLoading: isAddingEducator }] = useAddEducatorMutation();
+  const [updateEducator, { isLoading: isUpdatingEducator }] = useUpdateEducatorMutation();
+  const [deleteEducator, { isLoading: isDeletingEducator }] = useDeleteEducatorMutation();
 
   // State for course management filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -431,13 +208,16 @@ const CourseAdminDashboard = () => {
   const [usersCurrentPage, setUsersCurrentPage] = useState(1); // Separate pagination for users
   const [usersPerPage] = useState(5); // Number of users to display per page
   const [userSearchTerm, setUserSearchTerm] = useState(''); // Search term for users
-  const [userStatusFilter, setUserStatusFilter] = useState('All'); // Status filter for users
+  const [userStatusFilter, setUserStatusFilter] = useState('all'); // Status filter for users (use same values as SiteAdminDashboard)
 
   const { data: educators } = useGetEducatorsQuery()
   useEffect(() => {
     if (!educators) return
     setUsers(educators.educators as any)
   }, [educators])
+
+  // --- NEW: use API hook for the dashboard data ---
+  const { data: dashboardData, isLoading: dashboardLoading, isError: dashboardError } = useGetCourseAdminDashboardQuery();
 
   // States for user modals
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -447,10 +227,29 @@ const CourseAdminDashboard = () => {
   // State for custom modal
   const [modalMessage, setModalMessage] = useState('');
 
-  // Mock API responses (assuming these are static for this example)
-  const dashboardData = mockDashboardData;
-  const coursesLoading = false;
-  const dashboardLoading = false;
+  // Get logged-in user from localStorage (use same approach as SiteAdminDashboard)
+  const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const loggedInUser = userData ? JSON.parse(userData) : null;
+
+  // build fallback months with zeros when API doesn't return enrollmentsPerMonth
+  const buildEmptyMonths = (count = 6) => {
+    const now = new Date();
+    const months: { month: string; count: number }[] = [];
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ month: d.toLocaleString("en-US", { month: "short" }), count: 0 });
+    }
+    return months;
+  };
+
+  // Use API data; keep existing fallback for enrollmentsPerMonth
+  const enrollmentData = dashboardData?.enrollmentsPerMonth ?? buildEmptyMonths(6);
+  const totalUsersCount = dashboardData?.totalUsers ?? 0;
+  const activeCoursesCount = dashboardData?.activeCourses ?? 0;
+  const newRegistrationsThisMonthCount = dashboardData?.newRegistrationsThisMonth ?? 0;
+  const pendingApprovalsCount = dashboardData?.pendingApprovals ?? 0;
+
+  const maxOverallStudents = Math.max(...enrollmentData.map((d) => d.count), 1);
 
   // Filtered courses based on search and filter criteria
   const filteredCourses = useMemo(() => {
@@ -477,7 +276,18 @@ const CourseAdminDashboard = () => {
     return filtered;
   }, [searchTerm, statusFilter, categoryFilter, courses]);
 
-  // Filtered users based on search and filter criteria
+  // Move uniqueCategories here so its hook runs on every render (avoid being after early returns)
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    courses.forEach(course => {
+      if (course.category) {
+        categories.add(course.category);
+      }
+    });
+    return ["All", ...Array.from(categories).sort()];
+  }, [courses]);
+
+  // Filtered users based on search and filter criteria (align with SiteAdminDashboard)
   const filteredUsers = useMemo(() => {
     let filtered = users;
 
@@ -489,13 +299,20 @@ const CourseAdminDashboard = () => {
       );
     }
 
-    if (userStatusFilter !== "All") {
-      filtered = filtered.filter((user) => user.status === userStatusFilter);
-    }
+    // treat missing status as "active" and allow "all"
+    filtered = filtered.filter((user) => {
+      const userStatus = (user.status || "active").toLowerCase();
+      return userStatusFilter === "all" || userStatus === userStatusFilter;
+    });
 
     return filtered;
   }, [userSearchTerm, userStatusFilter, users]);
 
+  // Pagination logic for User Management (needed because paginatedUsers is used in the JSX)
+  const indexOfLastUser = usersCurrentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const paginatedUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalUsersPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   // Function to handle course actions (approve, reject, delete)
   const handleCourseAction = async (courseId: string, action: string) => {
@@ -558,8 +375,31 @@ const CourseAdminDashboard = () => {
     setShowAddUserForm(false);
   };
 
+  const validateAddForm = () => {
+    const errors = {
+      fullName: "",
+      email: "",
+      password: "",
+      contactNumber: "",
+      nationalId: "",
+      residentialAddress: "",
+      gender: "",
+    };
+    let valid = true;
+    if (!formData.fullName.trim()) { errors.fullName = "Full name is required"; valid = false; }
+    if (!formData.email.trim()) { errors.email = "Email is required"; valid = false; }
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) { errors.email = "Invalid email"; valid = false; }
+    if (formData.contactNumber && !/^\d{10,15}$/.test(formData.contactNumber)) { errors.contactNumber = "Contact must be 10-15 digits"; valid = false; }
+    if (formData.nationalId && formData.nationalId.length < 5) { errors.nationalId = "National ID is too short"; valid = false; }
+    if (formData.residentialAddress && formData.residentialAddress.length < 5) { errors.residentialAddress = "Address is too short"; valid = false; }
+    if (!formData.gender) { errors.gender = "Gender is required"; valid = false; }
+    setAddFormErrors(errors);
+    return valid;
+  };
+
   const handleSaveNewUser = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!validateAddForm()) return;
 
     // Generate a new sequential ID (U001, U002, U003...)
     const lastUserId = users.reduce((maxId, user) => {
@@ -604,6 +444,8 @@ const CourseAdminDashboard = () => {
 
       setModalMessage("New user added successfully!");
       setShowAddUserForm(false);
+      // clear add form errors
+      setAddFormErrors({ fullName: "", email: "", password: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: ""});
       setFormData({
         fullName: "",
         email: "",
@@ -633,14 +475,29 @@ const CourseAdminDashboard = () => {
 
   const handleSaveEditedUser = async (userId: string, updatedData: any) => {
     try {
-      setUsers(prevUsers => prevUsers.map(user =>
-        user.id === userId ? { ...user, ...updatedData } : user
-      ));
+      // build minimal payload (server accepts partials)
+      const payload: any = {
+        fullName: updatedData.fullName,
+        email: updatedData.email,
+        contactNumber: updatedData.contactNumber,
+        nationalId: updatedData.nationalId,
+        residentialAddress: updatedData.residentialAddress,
+        gender: updatedData.gender,
+        status: updatedData.status && String(updatedData.status).toLowerCase(),
+        // include password only if present and non-empty
+      };
+      if (updatedData.password) payload.password = updatedData.password;
+
+      const res = await updateEducator({ educatorId: userId, educator: payload }).unwrap();
+      const updatedUser = res.educator;
+      // update local users state with canonical server response
+      setUsers(prev => prev.map(u => (u.id === updatedUser.id ? updatedUser as any : u)));
       setModalMessage("User updated successfully!");
+      setEditFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
       setEditingUser(null);
     } catch (error: any) {
       console.error("Error updating user:", error);
-      setModalMessage(`Failed to update user: ${error.message}`);
+      setModalMessage(error?.data?.message || error.message || "Failed to update user");
     }
   };
 
@@ -659,12 +516,13 @@ const CourseAdminDashboard = () => {
     }
 
     try {
+      await deleteEducator(userToDelete.id).unwrap();
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
       setModalMessage(`User "${userToDelete.fullName}" deleted successfully!`);
       setUserToDelete(null);
     } catch (error: any) {
       console.error("Error deleting user:", error);
-      setModalMessage(`Failed to delete user: ${error.message}`);
+      setModalMessage(error?.data?.message || error.message || "Failed to delete user");
     }
   };
 
@@ -684,7 +542,8 @@ const CourseAdminDashboard = () => {
     );
   }
 
-  if (!dashboardData) {
+  // Show error UI only when not loading and no data returned
+  if (!dashboardData && !dashboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -695,26 +554,8 @@ const CourseAdminDashboard = () => {
     );
   }
 
-  // Extract unique categories for the filter dropdown
-  const uniqueCategories = useMemo(() => {
-    const categories = new Set<string>();
-    courses.forEach(course => {
-      if (course.category) {
-        categories.add(course.category);
-      }
-    });
-    return ["All", ...Array.from(categories).sort()];
-  }, [courses]);
-
-  // Pagination logic for User Management
-  const indexOfLastUser = usersCurrentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const paginatedUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalUsersPages = Math.ceil(filteredUsers.length / usersPerPage);
-
-  // Calculate max students for bar chart height normalization (for overall enrollments)
-  const maxOverallStudents = Math.max(...mockOverallEnrollmentData.map((d) => d.students));
-
+  const totalEnrollments = enrollmentData.reduce((sum, data) => sum + data.count, 0);
+  const averageEnrollments = totalEnrollments / enrollmentData.length || 0;
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 font-inter">
@@ -728,7 +569,9 @@ const CourseAdminDashboard = () => {
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Welcome Message */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">Welcome back, Nanayakkara A.T.S!</h1>
+            <h1 className="text-2xl font-bold text-cyan-700 mb-2 text-center">
+              Welcome back, {loggedInUser?.fullName || "Administrator"}!
+            </h1>
           </div>
 
           {/* Navigation Tabs */}
@@ -777,7 +620,7 @@ const CourseAdminDashboard = () => {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Total Users</p>
-                      <p className="text-2xl font-bold text-gray-900">{mockDashboardData.totalUsers}</p>
+                      <p className="text-2xl font-bold text-gray-900">{totalUsersCount}</p>
                     </div>
                   </div>
                   <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
@@ -786,7 +629,7 @@ const CourseAdminDashboard = () => {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Active Courses</p>
-                      <p className="text-2xl font-bold text-gray-900">{mockDashboardData.activeCourses}</p>
+                      <p className="text-2xl font-bold text-gray-900">{activeCoursesCount}</p>
                     </div>
                   </div>
                   <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
@@ -795,7 +638,7 @@ const CourseAdminDashboard = () => {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">New Registrations</p>
-                      <p className="text-2xl font-bold text-gray-900">{mockDashboardData.newRegistrationsThisMonth}</p>
+                      <p className="text-2xl font-bold text-gray-900">{newRegistrationsThisMonthCount}</p>
                     </div>
                   </div>
                   <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
@@ -804,7 +647,7 @@ const CourseAdminDashboard = () => {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
-                      <p className="text-2xl font-bold text-gray-900">{mockDashboardData.pendingApprovals}</p>
+                      <p className="text-2xl font-bold text-gray-900">{pendingApprovalsCount}</p>
                     </div>
                   </div>
                 </div>
@@ -813,25 +656,25 @@ const CourseAdminDashboard = () => {
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-cyan-700 mb-6">Monthly Enrollments</h3>
                 <div className="flex justify-around items-end h-64 border-b border-gray-200 pb-2">
-                  {mockOverallEnrollmentData.map((data, index) => (
+                  {enrollmentData.map((data, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center mx-1">
                       <div
                         className="w-full bg-cyan-700 rounded-t-md"
                         style={{
-                          height: `${(data.students / maxOverallStudents) * 200}px`, // Max height 200px
+                          height: `${(data.count / maxOverallStudents) * 200}px`, // Max height 200px
                           width: '80%', // Control bar width
                         }}
                       ></div>
                       <div className="text-xs text-gray-600 mt-2 text-center">
-                        <div className="font-semibold">{data.students}</div>
+                        <div className="font-semibold">{data.count}</div>
                         <div>{data.month}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          )}
+               </div>
+             </div>
+           )}
 
           {/* Course Management Tab */}
           {activeTab === "courses" && (
@@ -1060,9 +903,10 @@ const CourseAdminDashboard = () => {
                     value={userStatusFilter}
                     onChange={(e) => setUserStatusFilter(e.target.value)}
                   >
-                    <option value="All">Filter by Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="all">Filter by Status</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="deactivated">Deactivated</option>
                   </select>
                 </div>
               )}
@@ -1083,6 +927,7 @@ const CourseAdminDashboard = () => {
                         onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                         required
                       />
+                      {addFormErrors.fullName && <p className="text-red-500 text-xs mt-1">{addFormErrors.fullName}</p>}
                     </div>
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -1095,6 +940,7 @@ const CourseAdminDashboard = () => {
                         onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         required
                       />
+                      {addFormErrors.email && <p className="text-red-500 text-xs mt-1">{addFormErrors.email}</p>}
                     </div>
                     <div>
                       <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
@@ -1117,6 +963,7 @@ const CourseAdminDashboard = () => {
                         value={formData.contactNumber}
                         onChange={e => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
                       />
+                      {addFormErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{addFormErrors.contactNumber}</p>}
                     </div>
                     <div>
                       <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
@@ -1128,6 +975,7 @@ const CourseAdminDashboard = () => {
                         value={formData.nationalId}
                         onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
                       />
+                      {addFormErrors.nationalId && <p className="text-red-500 text-xs mt-1">{addFormErrors.nationalId}</p>}
                     </div>
                     <div>
                       <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
@@ -1139,6 +987,7 @@ const CourseAdminDashboard = () => {
                         value={formData.residentialAddress}
                         onChange={e => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
                       />
+                      {addFormErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{addFormErrors.residentialAddress}</p>}
                     </div>
                     <div>
                       <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
@@ -1153,6 +1002,7 @@ const CourseAdminDashboard = () => {
                         <option value="female">Female</option>
                         <option value="other">Other</option>
                       </select>
+                      {addFormErrors.gender && <p className="text-red-500 text-xs mt-1">{addFormErrors.gender}</p>}
                     </div>
                     <div className="flex justify-end space-x-3 mt-6">
                       <button
@@ -1188,9 +1038,7 @@ const CourseAdminDashboard = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                User ID
-                              </th>
+                              {/* Removed User ID column */}
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Name
                               </th>
@@ -1211,7 +1059,6 @@ const CourseAdminDashboard = () => {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {paginatedUsers.map((user) => (
                               <tr key={user.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 break-all">{user.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <div className="flex items-center">
                                     {user.avatarUrl ? (
@@ -1230,11 +1077,17 @@ const CourseAdminDashboard = () => {
                                       </div>
                                     )}
                                     <div>
-                                      <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+                                      <div className="text-sm font-medium text-gray-900">
+                                        {user.fullName && user.fullName.length > 40
+                                          ? user.fullName.slice(0, 37) + "..."
+                                          : user.fullName}
+                                      </div>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {user.email && user.email.length > 30 ? user.email.slice(0, 27) + "..." : user.email}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span
                                     className={`px-2 py-1 rounded-full text-xs font-medium ${true
@@ -1242,11 +1095,11 @@ const CourseAdminDashboard = () => {
                                       : "bg-red-100 text-red-800"
                                       }`}
                                   >
-                                    {user.status||'Active'}
+                                    {user.status || 'Active'}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'} {/* Changed to direct Date object */}
+                                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                   <div className="flex space-x-2">
@@ -1412,24 +1265,186 @@ const CourseAdminDashboard = () => {
           )}
         </div>
       </div>
-      {/* The modals are now conditionally rendered based on selectedUser, editingUser, userToDelete */}
-      {selectedUser && <ViewUserModal user={selectedUser} onClose={handleCloseViewUserModal} />}
-      {editingUser && (
-        <EditUserModal
-          user={editingUser}
-          onClose={handleCloseEditUserModal}
-          onSave={handleSaveEditedUser}
-        />
+
+      { /* New Headless UI modals (View / Edit / Delete) and toast */ }
+      <Transition appear show={!!selectedUser} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseViewUserModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-150"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-3">User Details</Dialog.Title>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <p><strong>Full Name:</strong> {selectedUser?.fullName}</p>
+                    <p><strong>Email:</strong> {selectedUser?.email}</p>
+                    <p><strong>Contact Number:</strong> {selectedUser?.contactNumber || "N/A"}</p>
+                    <p><strong>National ID:</strong> {selectedUser?.nationalId || "N/A"}</p>
+                    <p><strong>Residential Address:</strong> {selectedUser?.residentialAddress || "N/A"}</p>
+                    <p><strong>Gender:</strong> {selectedUser?.gender || "N/A"}</p>
+                    <p><strong>Status:</strong> {selectedUser?.status}</p>
+                    <p><strong>Registered On:</strong> {selectedUser?.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : "N/A"}</p>
+                    <p className="break-all"><strong>User ID:</strong> {selectedUser?.id}</p>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <button onClick={handleCloseViewUserModal} className="px-4 py-2 bg-gray-100 rounded-md">Close</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition appear show={!!editingUser} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseEditUserModal}>
+          <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">Edit User</Dialog.Title>
+                  {editingUser && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        // validate editingUser
+                        const errors = { fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" };
+                        let valid = true;
+                        if (!editingUser.fullName || !editingUser.fullName.trim()) { errors.fullName = "Full name is required"; valid = false; }
+                        if (!editingUser.email || !editingUser.email.trim()) { errors.email = "Email is required"; valid = false; }
+                        else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(editingUser.email)) { errors.email = "Invalid email"; valid = false; }
+                        if (editingUser.contactNumber && !/^\d{10,15}$/.test(editingUser.contactNumber)) { errors.contactNumber = "Contact must be 10-15 digits"; valid = false; }
+                        if (editingUser.nationalId && editingUser.nationalId.length < 5) { errors.nationalId = "National ID is too short"; valid = false; }
+                        if (editingUser.residentialAddress && editingUser.residentialAddress.length < 5) { errors.residentialAddress = "Address is too short"; valid = false; }
+                        setEditFormErrors(errors);
+                        if (!valid) return;
+
+                        // call existing handler (signature: userId, updatedData)
+                        handleSaveEditedUser(editingUser.id, editingUser);
+                      }}
+                      className="space-y-3"
+                    >
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input value={editingUser.fullName || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, fullName: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {editFormErrors.fullName && <p className="text-red-500 text-xs mt-1">{editFormErrors.fullName}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" value={editingUser.email || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, email: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {editFormErrors.email && <p className="text-red-500 text-xs mt-1">{editFormErrors.email}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                        <input value={editingUser.contactNumber || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, contactNumber: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {editFormErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{editFormErrors.contactNumber}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">National ID</label>
+                        <input value={editingUser.nationalId || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, nationalId: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {editFormErrors.nationalId && <p className="text-red-500 text-xs mt-1">{editFormErrors.nationalId}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Residential Address</label>
+                        <input value={editingUser.residentialAddress || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, residentialAddress: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {editFormErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{editFormErrors.residentialAddress}</p>}
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Gender</label>
+                        <select value={editingUser.gender || ""} onChange={e => setEditingUser((prev:any) => ({ ...prev, gender: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                        {editFormErrors.gender && <p className="text-red-500 text-xs mt-1">{editFormErrors.gender}</p>}
+                      </div>
+
+                      {/* NEW: Account Status select */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Account Status</label>
+                        <select
+                          value={editingUser.status || "active"}
+                          onChange={e => setEditingUser((prev:any) => ({ ...prev, status: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                          <option value="active">Active</option>
+                          <option value="suspended">Suspended</option>
+                          <option value="deactivated">Deactivated</option>
+                        </select>
+                        {/* optional: display validation error if you add editFormErrors.status */}
+                      </div>
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <button type="button" onClick={handleCloseEditUserModal} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                        <button type="submit" className="px-4 py-2 bg-cyan-600 text-white rounded-md">Save</button>
+                      </div>
+                    </form>
+                  )}
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition appear show={!!userToDelete} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseDeleteConfirmModal}>
+          <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">Confirm Deletion</Dialog.Title>
+                  <div className="mt-3 text-sm text-gray-700">
+                    Are you sure you want to delete <strong>{userToDelete?.fullName}</strong>? This action cannot be undone.
+                  </div>
+                  <div className="mt-6 flex justify-end space-x-2">
+                    <button onClick={handleCloseDeleteConfirmModal} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
+                    <button onClick={handleConfirmDeleteUser} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      { /* simple toast for modalMessage (keeps same behavior as before) */ }
+      {modalMessage && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="bg-white border shadow-md px-4 py-2 rounded-md">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="text-sm text-gray-800">{modalMessage}</div>
+              <button onClick={handleModalClose} className="text-gray-500">Close</button>
+            </div>
+          </div>
+        </div>
       )}
-      {userToDelete && (
-        <DeleteConfirmModal
-          userName={userToDelete.fullName}
-          onDelete={handleConfirmDeleteUser}
-          onClose={handleCloseDeleteConfirmModal}
-        />
-      )}
-      {/* CustomModal is now conditionally rendered based on modalMessage presence */}
-      {modalMessage && <CustomModal message={modalMessage} onClose={handleModalClose} />}
     </div>
   );
 };

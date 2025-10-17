@@ -162,23 +162,45 @@ const SiteAdminDashboard = () => {
   const handleEditAdminClick = (admin: any) => {
     // ensure editingAdmin has accountStatus (backend expects accountStatus in update payload)
     setEditingAdmin({ ...admin, accountStatus: admin.status || "active" });
+    // clear previous form errors when opening edit modal
+    setFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
   };
   const handleCloseEditAdmin = () => setEditingAdmin(null);
   const handleSaveEditedAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAdmin) return;
 
-    // Build payload for backend (IAddCourseAdministratorRequest shape for updates)
-    const payload: any = {
-      fullName: editingAdmin.fullName,
-      email: editingAdmin.email,
-      contactNumber: editingAdmin.contactNumber,
-      nationalId: editingAdmin.nationalId,
-      residentialAddress: editingAdmin.residentialAddress,
-      gender: editingAdmin.gender,
-      // include accountStatus key expected by backend
-      accountStatus: editingAdmin.accountStatus,
+    // validate editingAdmin
+    const errors = {
+      fullName: "",
+      email: "",
+      contactNumber: "",
+      nationalId: "",
+      residentialAddress: "",
+      gender: "",
     };
+    let valid = true;
+    if (!editingAdmin.fullName || !editingAdmin.fullName.trim()) { errors.fullName = "Full name is required."; valid = false; }
+    if (!editingAdmin.email || !editingAdmin.email.trim()) { errors.email = "Email is required."; valid = false; }
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(editingAdmin.email)) { errors.email = "Invalid email address."; valid = false; }
+    if (editingAdmin.contactNumber && !/^\d{10,15}$/.test(editingAdmin.contactNumber)) { errors.contactNumber = "Contact Number should be 10-15 digits."; valid = false; }
+    // optional checks for nationalId/address
+    if (editingAdmin.nationalId && editingAdmin.nationalId.length < 5) { errors.nationalId = "National ID is too short."; valid = false; }
+    if (editingAdmin.residentialAddress && editingAdmin.residentialAddress.length < 5) { errors.residentialAddress = "Address is too short."; valid = false; }
+    setFormErrors(errors);
+    if (!valid) return;
+ 
+     // Build payload for backend (IAddCourseAdministratorRequest shape for updates)
+     const payload: any = {
+       fullName: editingAdmin.fullName,
+       email: editingAdmin.email,
+       contactNumber: editingAdmin.contactNumber,
+       nationalId: editingAdmin.nationalId,
+       residentialAddress: editingAdmin.residentialAddress,
+       gender: editingAdmin.gender,
+       // include accountStatus key expected by backend
+       accountStatus: editingAdmin.accountStatus,
+     };
 
     try {
       const response = await updateCourseAdministrator({
@@ -596,14 +618,17 @@ const SiteAdminDashboard = () => {
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Full Name</label>
                         <input value={editingAdmin.fullName || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, fullName: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Email</label>
                         <input type="email" value={editingAdmin.email || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, email: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Contact Number</label>
                         <input value={editingAdmin.contactNumber || ""} onChange={e => setEditingAdmin((prev:any) => ({ ...prev, contactNumber: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+                        {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Status</label>
