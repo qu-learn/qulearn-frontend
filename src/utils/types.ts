@@ -1,8 +1,8 @@
-
 // Types
 export type Role = "student" | "educator" | "course-administrator" | "system-administrator"
 export type CourseStatus = "draft" | "under-review" | "published" | "rejected"
 export type BadgeCriteriaType = "courses-completed" | "simulations-run" | "quizzes-answered"
+export type AccountStatus = "active" | "suspended" | "deactivated" | "deleted"
 
 export interface IUser {
   id: string
@@ -15,6 +15,9 @@ export interface IUser {
   createdAt: string
   gender?: string
   contactNumber?: string
+  status?: AccountStatus
+  nationalId?: string
+  residentialAddress?: string
 }
 
 export interface IBadge {
@@ -73,6 +76,8 @@ export interface ICourse {
   createdAt: string
   jupyterNotebookUrl?: string
   modules: IModule[]
+  enrollments?: number;
+  enrollmentHistory?: { month: string; students: number }[];
 }
 
 export interface IEnrollment {
@@ -401,6 +406,8 @@ export interface IAddCourseAdministratorRequest {
   nationalId: string
   residentialAddress: string
   gender: string
+  // New: optional account status for updates (kept optional to avoid affecting creation flows)
+  accountStatus?: AccountStatus
 }
 
 export interface IAddCourseAdministratorResponse {
