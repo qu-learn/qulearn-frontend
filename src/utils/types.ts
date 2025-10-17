@@ -16,6 +16,8 @@ export interface IUser {
   gender?: string
   contactNumber?: string
   status?: AccountStatus
+  nationalId?: string
+  residentialAddress?: string
 }
 
 export interface IBadge {
@@ -74,6 +76,8 @@ export interface ICourse {
   createdAt: string
   jupyterNotebookUrl?: string
   modules: IModule[]
+  enrollments?: number;
+  enrollmentHistory?: { month: string; students: number }[];
 }
 
 export interface IEnrollment {

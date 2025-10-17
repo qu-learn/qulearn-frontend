@@ -102,13 +102,6 @@ const initialMockCoursesData = {
   ],
 };
 
-type CourseWithMeta = ICourse & {
-  enrollments?: number;
-  category?: string;
-  // local mock/enrichment field used by this component
-  enrollmentHistory?: { month: string; students: number }[];
-};
-
 type SelectedCourseAnalytics = {
   id: string;
   title: string;
@@ -159,9 +152,9 @@ const CourseAdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
 
-  // State for mutable course data
-  const [courses, setCourses] = useState<CourseWithMeta[]>(initialMockCoursesData.courses as CourseWithMeta[]);
-  const [pendingCourses, setPendingCourses] = useState<CourseWithMeta[]>(initialMockCoursesData.pendingCourses as CourseWithMeta[]);
+  // State for mutable course data (use ICourse from shared types)
+  const [courses, setCourses] = useState<ICourse[]>(initialMockCoursesData.courses as ICourse[]);
+  const [pendingCourses, setPendingCourses] = useState<ICourse[]>(initialMockCoursesData.pendingCourses as ICourse[]);
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
@@ -183,12 +176,12 @@ const CourseAdminDashboard = () => {
   // --- NEW: fetch courses list for course-admin ---
   const { data: courseAdminCoursesData, isLoading: coursesLoading, isError: coursesError } = useGetCourseAdminCoursesQuery();
   
-  // When API data arrives map to local CourseWithMeta shape and replace local state
+  // When API data arrives map to ICourse shape and replace local state
   useEffect(() => {
     if (!courseAdminCoursesData?.courses) return;
-    const apiCourses: CourseWithMeta[] = courseAdminCoursesData.courses.map((c) => ({
+    const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((c) => ({
       ...c,
-      // API ICourse doesn't include these local-only fields; provide sensible defaults
+      // ensure optional enrichment fields exist with sensible defaults
       enrollments: (c as any).enrollments ?? 0,
       category: c.category ?? "Uncategorized",
       enrollmentHistory: (c as any).enrollmentHistory ?? [],
@@ -334,7 +327,7 @@ const CourseAdminDashboard = () => {
   };
 
 
-  const handleViewAnalytics = (course: CourseWithMeta) => {
+  const handleViewAnalytics = (course: ICourse) => {
     const { id, title, status, enrollmentHistory } = course;
     setSelectedCourseAnalytics({
       id,
@@ -403,18 +396,19 @@ const CourseAdminDashboard = () => {
         password: formData.password || "defaultPassword",
       }).unwrap();
 
-      // Add to local state
-      const newUser: User = {
-        id: newUser2.educator.id || newId, // Use the ID from the API response or the generated one
+      // Add to local state (conform to updated IUser type)
+      const newUser: IUser = {
+        id: newUser2.educator.id || newId, // use API id when available
         fullName: formData.fullName,
         email: formData.email,
+        role: "educator",
         contactNumber: formData.contactNumber,
         nationalId: formData.nationalId,
         residentialAddress: formData.residentialAddress,
         gender: formData.gender,
-        status: "Active",
-        createdAt: new Date(),
-        avatarUrl: null,
+        status: "active", // AccountStatus uses lowercase values
+        createdAt: new Date().toISOString(), // createdAt is a string in the updated types
+        // avatarUrl is optional; leave undefined when not provided by API
       };
 
       setUsers(prevUsers => {
