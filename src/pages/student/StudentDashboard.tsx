@@ -40,67 +40,124 @@ const StudentDashboard: React.FC = () => {
         <p className="text-cyan-600">Continue your quantum computing journey</p>
       </div>
 
-      {/* Stats Overview */}
+      {/* Stats Overview - compact icon tiles */}
       <div className="grid grid-cols-4 gap-6 mb-8">
-        <div className="bg-blue-200 rounded-xl shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Target className="w-6 h-6 text-blue-500" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Points</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.points.toLocaleString()}</p>
-            </div>
+        <div className="flex flex-col items-center py-4">
+          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
+            <Target className="w-6 h-6 text-cyan-600" />
           </div>
+          <p className="mt-2 text-sm text-gray-600">Total Points</p>
+          <p className="text-2xl font-bold text-cyan-700">{dashboardData.points.toLocaleString()}</p>
         </div>
 
-        <div className="bg-blue-200 rounded-xl shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Award className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Badges Earned</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.badges.length}</p>
-            </div>
+        <div className="flex flex-col items-center py-4">
+          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
+            <Award className="w-6 h-6 text-amber-500" />
           </div>
+          <p className="mt-2 text-sm text-gray-600">Badges Earned</p>
+          <p className="text-2xl font-bold text-cyan-700">{dashboardData.badges.length}</p>
         </div>
 
-        <div className="bg-blue-200 rounded-xl shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Learning Streak</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.learningStreak} days</p>
-            </div>
+        <div className="flex flex-col items-center py-4">
+          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
+            <TrendingUp className="w-6 h-6 text-orange-500" />
           </div>
+          <p className="mt-2 text-sm text-gray-600">Learning Streak</p>
+          <p className="text-2xl font-bold text-cyan-700">{dashboardData.learningStreak}d</p>
         </div>
 
-        <div className="bg-blue-200 rounded-xl shadow-lg p-6">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.enrolledCourses.length}</p>
-            </div>
+        <div className="flex flex-col items-center py-4">
+          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
+            <BookOpen className="w-6 h-6 text-purple-600" />
           </div>
+          <p className="mt-2 text-sm text-gray-600">Enrolled Courses</p>
+          <p className="text-2xl font-bold text-cyan-700">{dashboardData.enrolledCourses.length}</p>
         </div>
       </div>
+
+      {/* Circle badges with colored borders */}
+      {/* <div className="mb-8">
+        <div className="grid grid-cols-4 gap-6">
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-cyan-500">
+              <span className="text-xl font-bold text-cyan-600">{dashboardData.points.toLocaleString()}</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Total Points</p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-amber-500">
+              <span className="text-xl font-bold text-amber-600">{dashboardData.badges.length}</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Badges Earned</p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-orange-500">
+              <span className="text-xl font-bold text-orange-600">{dashboardData.learningStreak}d</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Learning Streak</p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-purple-600">
+              <span className="text-xl font-bold text-purple-600">{dashboardData.enrolledCourses.length}</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Enrolled Courses</p>
+          </div>
+        </div>
+      </div> */}
+
+      {/* Timer-style counters (professional) */}
+      {/* <div className="mb-12">
+        <h3 className="sr-only">Timer counters</h3>
+        <div className="grid grid-cols-4 gap-6">
+          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
+            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
+              <Target className="w-6 h-6 text-cyan-600" />
+            </div>
+            <div className="text-3xl font-mono font-semibold text-cyan-700">{dashboardData.points.toLocaleString()}</div>
+            <div className="text-sm text-gray-500 mt-1">Total Points</div>
+          </div>
+
+          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
+            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
+              <Award className="w-6 h-6 text-amber-500" />
+            </div>
+            <div className="text-3xl font-mono font-semibold text-amber-600">{dashboardData.badges.length}</div>
+            <div className="text-sm text-gray-500 mt-1">Badges Earned</div>
+          </div>
+
+          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
+            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
+              <Clock className="w-6 h-6 text-orange-500" />
+            </div>
+            <div className="text-3xl font-mono font-semibold text-orange-600">{dashboardData.learningStreak}</div>
+            <div className="text-sm text-gray-500 mt-1">Learning Streak (days)</div>
+          </div>
+
+          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
+            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
+              <BookOpen className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="text-3xl font-mono font-semibold text-purple-600">{dashboardData.enrolledCourses.length}</div>
+            <div className="text-sm text-gray-500 mt-1">Enrolled Courses</div>
+          </div>
+        </div>
+      </div> */}
+
+      {/* Comparative bar-style view removed per request */}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Current Courses */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        {/* Current Courses (use MyCourses layout: no extra white container) */}
+        <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-cyan-700">My Courses</h2>
             <Link to="/my-courses" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
               View All
             </Link>
           </div>
-          
+
           {dashboardData.enrolledCourses.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-16 h-16 text-blue-400 mx-auto mb-4" />
@@ -114,7 +171,7 @@ const StudentDashboard: React.FC = () => {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="flex flex-wrap gap-10 justify-center">
               {dashboardData.enrolledCourses.slice(0, 3).map((enrollment) => (
                 <Link
                   key={enrollment.course.id}
@@ -194,16 +251,13 @@ const StudentDashboard: React.FC = () => {
                       </div>
                     )}
                     
-                    <button className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-auto">
-                      Continue Learning
-                    </button>
+                    {/* Continue Learning button intentionally removed */}
                   </div>
                 </Link>
               ))}
             </div>
           )}
         </div>
-
         {/* Browse Courses Section */}
       <div className="mt-8 bg-blue-200 rounded-xl shadow-lg p-8">
         <div className="flex items-center justify-between">
@@ -213,7 +267,7 @@ const StudentDashboard: React.FC = () => {
           </div>
           <div className="ml-8">
               <Link
-                to="/recommended-courses"
+                to="/courses"
                 className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
               >
                 <BookOpen className="w-5 h-5" />
@@ -223,8 +277,8 @@ const StudentDashboard: React.FC = () => {
         </div>
       </div>
 
-        {/* Recent Achievements */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        {/* Recent Achievements (no white container, match MyCourses layout) */}
+        <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-cyan-700">Recent Achievements</h2>
             <Link to="/achievements" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
@@ -316,3 +370,5 @@ const StudentDashboard: React.FC = () => {
 }
 
 export default StudentDashboard
+
+
