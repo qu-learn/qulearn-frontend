@@ -252,11 +252,12 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { ArrowLeft, Save, User, Mail, MapPin, Phone, Lock, FileText, Award, Edit, Eye, EyeOff } from "lucide-react"
 import { useGetMyProfileQuery, useUpdateMyProfileMutation } from "../utils/api"
 import { useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
+import { Transition, Tab, Disclosure, Switch } from "@headlessui/react"
 
 interface ProfileSettingsProps {
   user: IUser
@@ -332,7 +333,15 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <Transition
+          show={true}
+          as={Fragment}
+          enter="transition-opacity duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+        >
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </Transition>
       </div>
     )
   }
@@ -350,323 +359,454 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <button
-        onClick={() => {
-          const dashboardPage = user.role === "student" 
-            ? "/dashboard" 
-            : user.role === "educator" 
-            ? "/educator" 
-            : "/admin"
-          navigate(dashboardPage)
-        }}
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+      <Transition
+        show={true}
+        as={Fragment}
+        enter="transition-all duration-500"
+        enterFrom="opacity-0 translate-y-4"
+        enterTo="opacity-100 translate-y-0"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Dashboard
-      </button>
-        <div>
-          <h1 className="text-3xl font-bold text-cyan-700 mb-2">My Profile</h1>
-          {/* <p className="text-cyan-600">Manage your account information</p> */}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Profile Header */}
-        <div className="bg-gradient-to-r from-cyan-800 to-cyan-500 px-8 py-12">
-          <div className="flex items-center">
-            <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center">
-              {profileData.user.avatarUrl ? (
-                <img
-                  src={profileData.user.avatarUrl || "/placeholder.svg"}
-                  alt={profileData.user.fullName}
-                  className="w-24 h-24 rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-3xl font-bold text-blue-600">
-                  {profileData.user.fullName.charAt(0).toUpperCase()}
-                </span>
-              )}
-              <button
-                type="button"
-                className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border-2 border-gray-200"
-                onClick={() => {
-                  // Handle profile photo change logic here
-                  console.log("Edit profile photo clicked")
-                }}
-              >
-                <Edit className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-            <div className="ml-6 text-white">
-              <h2 className="text-2xl font-bold">{profileData.user.fullName}</h2>
-              <p className="text-blue-100 capitalize">{profileData.user.role}</p>
-              <p className="text-blue-100">{profileData.user.email}</p>
-            </div>
+        <div className="mb-8">
+          <button
+            onClick={() => {
+              const dashboardPage = user.role === "student" 
+                ? "/dashboard" 
+                : user.role === "educator" 
+                ? "/educator" 
+                : "/admin"
+              navigate(dashboardPage)
+            }}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors duration-200"
+          >
+            {/* <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard */}
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-cyan-700 mb-2">My Profile</h1>
+            {/* <p className="text-cyan-600">Manage your account information</p> */}
           </div>
         </div>
+      </Transition>
 
-        {/* Profile Form */}
-        <form onSubmit={handleSubmit} className="p-8">
-          <div className="grid grid-cols-2 gap-20">
-            {/* First Column */}
-            <div className="space-y-6">
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 mr-2" />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
+      <Transition
+        show={true}
+        as={Fragment}
+        enter="transition-all duration-700 delay-100"
+        enterFrom="opacity-0 scale-95"
+        enterTo="opacity-100 scale-100"
+      >
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-cyan-800 to-cyan-500 px-8 py-12">
+            <div className="flex items-center">
+              <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center group">
+                {profileData.user.avatarUrl ? (
+                  <img
+                    src={profileData.user.avatarUrl || "/placeholder.svg"}
+                    alt={profileData.user.fullName}
+                    className="w-24 h-24 rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="text-3xl font-bold text-blue-600 transition-transform duration-300 group-hover:scale-110">
+                    {profileData.user.fullName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all duration-200 border-2 border-gray-200 hover:scale-110"
+                  onClick={() => {
+                    // Handle profile photo change logic here
+                    console.log("Edit profile photo clicked")
+                  }}
+                >
+                  <Edit className="w-4 h-4 text-gray-600" />
+                </button>
               </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Bio
-                </label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={(e) => setFormData(prev => ({...prev, bio: e.target.value}))}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Tell us about yourself"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Award className="w-4 h-4 mr-2" />
-                  Name for Certification
-                </label>
-                <input
-                  type="text"
-                  name="certificationName"
-                  value={formData.certificationName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Name as it should appear on certificates"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Country
-                </label>
-                <input
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your country"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  City
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your city"
-                />
+              <div className="ml-6 text-white">
+                <h2 className="text-2xl font-bold">{profileData.user.fullName}</h2>
+                <p className="text-blue-100 capitalize">{profileData.user.role}</p>
+                <p className="text-blue-100">{profileData.user.email}</p>
               </div>
             </div>
+          </div>
 
-            {/* Second Column */}
-            <div className="space-y-6">
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email address"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contact Number
-                </label>
-                <input
-                  type="tel"
-                  name="contactNumber"
-                  value={formData.contactNumber}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your contact number"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Password
-                </label>
-                
-                {!showPasswordEdit ? (
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="password"
-                      value="••••••••"
-                      readOnly
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
-                      placeholder="Current password"
-                    />
+          {/* Profile Form */}
+          <form onSubmit={handleSubmit} className="p-8">
+            <Tab.Group>
+              <Tab.List className="flex space-x-2 rounded-xl bg-blue-100 p-1 mb-6">
+                <Tab as={Fragment}>
+                  {({ selected }) => (
                     <button
                       type="button"
-                      onClick={() => setShowPasswordEdit(true)}
-                      className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
+                        ${
+                          selected
+                            ? "bg-white text-cyan-700 shadow"
+                            : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
+                        }`}
                     >
-                      <Edit className="w-4 h-4 text-gray-600" />
+                      Personal Information
                     </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <h4 className="font-medium text-gray-900 mb-3">Change Password</h4>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Old Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={passwordVisibility.old ? "text" : "password"}
-                          value={passwordForm.oldPassword}
-                          onChange={(e) => setPasswordForm(prev => ({...prev, oldPassword: e.target.value}))}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter current password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setPasswordVisibility(prev => ({...prev, old: !prev.old}))}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  )}
+                </Tab>
+                <Tab as={Fragment}>
+                  {({ selected }) => (
+                    <button
+                      type="button"
+                      className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
+                        ${
+                          selected
+                            ? "bg-white text-cyan-700 shadow"
+                            : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
+                        }`}
+                    >
+                      Security
+                    </button>
+                  )}
+                </Tab>
+              </Tab.List>
+
+              <Tab.Panels>
+                {/* Personal Information Tab */}
+                <Tab.Panel>
+                  <Transition
+                    show={true}
+                    as={Fragment}
+                    enter="transition-opacity duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                  >
+                    <div className="grid grid-cols-2 gap-20">
+                      {/* First Column */}
+                      <div className="space-y-6">
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-100"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
                         >
-                          {passwordVisibility.old ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <User className="w-4 h-4 mr-2" />
+                              Full Name
+                            </label>
+                            <input
+                              type="text"
+                              name="fullName"
+                              value={formData.fullName}
+                              onChange={handleChange}
+                              required
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your full name"
+                            />
+                          </div>
+                        </Transition>
+
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-150"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <FileText className="w-4 h-4 mr-2" />
+                              Bio
+                            </label>
+                            <textarea
+                              name="bio"
+                              value={formData.bio}
+                              onChange={(e) => setFormData(prev => ({...prev, bio: e.target.value}))}
+                              rows={4}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Tell us about yourself"
+                            />
+                          </div>
+                        </Transition>
+
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-200"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <Award className="w-4 h-4 mr-2" />
+                              Name for Certification
+                            </label>
+                            <input
+                              type="text"
+                              name="certificationName"
+                              value={formData.certificationName}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Name as it should appear on certificates"
+                            />
+                          </div>
+                        </Transition>
+
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-250"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <MapPin className="w-4 h-4 mr-2" />
+                              Country
+                            </label>
+                            <input
+                              type="text"
+                              name="country"
+                              value={formData.country}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your country"
+                            />
+                          </div>
+                        </Transition>
+
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-300"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <MapPin className="w-4 h-4 mr-2" />
+                              City
+                            </label>
+                            <input
+                              type="text"
+                              name="city"
+                              value={formData.city}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your city"
+                            />
+                          </div>
+                        </Transition>
+                      </div>
+
+                      {/* Second Column */}
+                      <div className="space-y-6">
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-100"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <Mail className="w-4 h-4 mr-2" />
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              required
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your email address"
+                            />
+                          </div>
+                        </Transition>
+
+                        <Transition
+                          show={true}
+                          as={Fragment}
+                          enter="transition-all duration-300 delay-150"
+                          enterFrom="opacity-0 translate-x-4"
+                          enterTo="opacity-100 translate-x-0"
+                        >
+                          <div>
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              <Phone className="w-4 h-4 mr-2" />
+                              Contact Number
+                            </label>
+                            <input
+                              type="tel"
+                              name="contactNumber"
+                              value={formData.contactNumber}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your contact number"
+                            />
+                          </div>
+                        </Transition>
                       </div>
                     </div>
+                  </Transition>
+                </Tab.Panel>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={passwordVisibility.new ? "text" : "password"}
-                          value={passwordForm.newPassword}
-                          onChange={(e) => setPasswordForm(prev => ({...prev, newPassword: e.target.value}))}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter new password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setPasswordVisibility(prev => ({...prev, new: !prev.new}))}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          {passwordVisibility.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
+                {/* Security Tab */}
+                <Tab.Panel>
+                  <Transition
+                    show={true}
+                    as={Fragment}
+                    enter="transition-opacity duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                  >
+                    <div className="max-w-2xl">
+                      <Disclosure>
+                        {({ open }) => (
+                          <>
+                            <Disclosure.Button className="flex w-full justify-between items-center rounded-lg bg-blue-50 px-4 py-4 text-left text-sm font-medium text-blue-900 hover:bg-blue-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 transition-all duration-200">
+                              <div className="flex items-center">
+                                <Lock className="w-5 h-5 mr-3" />
+                                <span>Password Settings</span>
+                              </div>
+                              <Edit className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 text-blue-500 transition-transform duration-200`} />
+                            </Disclosure.Button>
+                            <Transition
+                              enter="transition duration-300 ease-out"
+                              enterFrom="transform scale-95 opacity-0"
+                              enterTo="transform scale-100 opacity-100"
+                              leave="transition duration-200 ease-out"
+                              leaveFrom="transform scale-100 opacity-100"
+                              leaveTo="transform scale-95 opacity-0"
+                            >
+                              <Disclosure.Panel className="px-4 pt-4 pb-2">
+                                <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                  <h4 className="font-medium text-gray-900 mb-3">Change Password</h4>
+                                  
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      Old Password
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type={passwordVisibility.old ? "text" : "password"}
+                                        value={passwordForm.oldPassword}
+                                        onChange={(e) => setPasswordForm(prev => ({...prev, oldPassword: e.target.value}))}
+                                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Enter current password"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => setPasswordVisibility(prev => ({...prev, old: !prev.old}))}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                                      >
+                                        {passwordVisibility.old ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                      </button>
+                                    </div>
+                                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Confirm Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={passwordVisibility.confirm ? "text" : "password"}
-                          value={passwordForm.confirmPassword}
-                          onChange={(e) => setPasswordForm(prev => ({...prev, confirmPassword: e.target.value}))}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Confirm new password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setPasswordVisibility(prev => ({...prev, confirm: !prev.confirm}))}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          {passwordVisibility.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      New Password
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type={passwordVisibility.new ? "text" : "password"}
+                                        value={passwordForm.newPassword}
+                                        onChange={(e) => setPasswordForm(prev => ({...prev, newPassword: e.target.value}))}
+                                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Enter new password"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => setPasswordVisibility(prev => ({...prev, new: !prev.new}))}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                                      >
+                                        {passwordVisibility.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                      </button>
+                                    </div>
+                                  </div>
 
-                    <div className="flex justify-end space-x-3 mt-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowPasswordEdit(false)
-                          setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
-                          setPasswordVisibility({ old: false, new: false, confirm: false })
-                        }}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Handle password change logic here
-                          console.log("Password change:", passwordForm)
-                          setShowPasswordEdit(false)
-                          setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
-                          setPasswordVisibility({ old: false, new: false, confirm: false })
-                        }}
-                        className="px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors text-sm"
-                        disabled={!passwordForm.oldPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword}
-                      >
-                        Confirm
-                      </button>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      Confirm Password
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type={passwordVisibility.confirm ? "text" : "password"}
+                                        value={passwordForm.confirmPassword}
+                                        onChange={(e) => setPasswordForm(prev => ({...prev, confirmPassword: e.target.value}))}
+                                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Confirm new password"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => setPasswordVisibility(prev => ({...prev, confirm: !prev.confirm}))}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                                      >
+                                        {passwordVisibility.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex justify-end space-x-3 mt-4">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setShowPasswordEdit(false)
+                                        setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
+                                        setPasswordVisibility({ old: false, new: false, confirm: false })
+                                      }}
+                                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        // Handle password change logic here
+                                        console.log("Password change:", passwordForm)
+                                        setShowPasswordEdit(false)
+                                        setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
+                                        setPasswordVisibility({ old: false, new: false, confirm: false })
+                                      }}
+                                      className="px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                      disabled={!passwordForm.oldPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword}
+                                    >
+                                      Confirm
+                                    </button>
+                                  </div>
+                                </div>
+                              </Disclosure.Panel>
+                            </Transition>
+                          </>
+                        )}
+                      </Disclosure>
                     </div>
-                  </div>
-                )}
+                  </Transition>
+                </Tab.Panel>
+              </Tab.Panels>
+            </Tab.Group>
+
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
+                  <p className="text-sm text-gray-600">
+                    Member since {new Date(profileData.user.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="flex items-center px-6 py-3 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
-                <p className="text-sm text-gray-600">
-                  Member since {new Date(profileData.user.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="flex items-center px-6 py-3 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isUpdating ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      </Transition>
     </div>
   )
 }

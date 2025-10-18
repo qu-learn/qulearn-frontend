@@ -1,11 +1,11 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 import { LessonContent } from "../../components/LessonContent"
+import { Tab, Transition, Disclosure } from "@headlessui/react"
 
 interface CourseForm {
   title: string
@@ -426,16 +426,16 @@ const validateForm = (): boolean => {
   }//gamification function end
 
 
+  const tabLabels = [
+    "Course Details",
+    "Content & Modules",
+    "Gamification Settings",
+    "Preview"
+  ]
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        {/* <button
-          onClick={() => navigate("/educator")}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </button> */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-cyan-700">{courseId ? "Edit Course" : "Create New Course"}</h1>
@@ -467,761 +467,287 @@ const validateForm = (): boolean => {
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="mb-8">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab("details")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "details"
-              ? "border-blue-500 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            Course Details
-          </button>
-          <button
-            onClick={() => setActiveTab("content")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "content"
-              ? "border-blue-500 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            Content & Modules
-          </button>
-          {/* Gamification Tab */}
-          <button
-            onClick={() => setActiveTab("gamification")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "gamification"
-              ? "border-blue-500 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            Gamification Settings
-          </button>
-          <button
-            onClick={() => setActiveTab("preview")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "preview"
-              ? "border-blue-500 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            Preview
-          </button>
-        </nav>
-      </div>
-
-      {/* Course Details Tab */}
-      {activeTab === "details" && (
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
-                <input
-                  type="text"
-                  value={courseForm.title}
-                  onChange={(e) => handleFormChange("title", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.title 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="Enter course title"
-                />
-                <FieldError error={formErrors.title} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-                <input
-                  type="text"
-                  value={courseForm.subtitle}
-                  onChange={(e) => handleFormChange("subtitle", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.subtitle 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="Brief course subtitle"
-                />
-                <FieldError error={formErrors.subtitle} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={courseForm.description}
-                  onChange={(e) => handleFormChange("description", e.target.value)}
-                  rows={4}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.description 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="Detailed course description"
-                />
-                <FieldError error={formErrors.description} />
-              </div>
-
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <input
-                  type="text"
-                  value={courseForm.category}
-                  onChange={(e) => handleFormChange("category", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.category 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="e.g., Quantum Computing, Quantum Algorithms"
-                />
-                <FieldError error={formErrors.category} />
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
-                <select
-                  value={courseForm.difficultyLevel}
-                  onChange={(e) => handleFormChange("difficultyLevel", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail Image URL</label>
-                <input
-                  type="url"
-                  value={courseForm.thumbnailImageUrl}
-                  onChange={(e) => handleFormChange("thumbnailImageUrl", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.thumbnailImageUrl 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="https://example.com/image.jpg"
-                />
-                <FieldError error={formErrors.thumbnailImageUrl} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Jupyter Notebook URL (Optional)</label>
-                <input
-                  type="url"
-                  value={courseForm.jupyterNotebookUrl || ""}
-                  onChange={(e) => handleFormChange("jupyterNotebookUrl", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    formErrors.jupyterNotebookUrl 
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                  placeholder="https://example.com/notebook.ipynb"
-                />
-                <FieldError error={formErrors.jupyterNotebookUrl} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Prerequisites</label>
-                <div className="flex space-x-2 mb-2">
-                  <input
-                    type="text"
-                    value={newPrerequisite}
-                    onChange={(e) => setNewPrerequisite(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Add prerequisite"
-                    onKeyPress={(e) => e.key === "Enter" && addPrerequisite()}
-                  />
-                  <button
-                    onClick={addPrerequisite}
-                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {courseForm.prerequisites.map((prereq, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                    >
-                      {prereq}
-                      <button
-                        onClick={() => removePrerequisite(index)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <FieldError error={formErrors.prerequisites} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content & Modules Tab */}
-      {activeTab === "content" && (
-        <div className="grid grid-cols-[auto_1fr] gap-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Modules List */}
-            <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Modules</h3>
+      {/* Headless UI Tabs */}
+      <Tab.Group selectedIndex={tabLabels.indexOf(
+        activeTab === "details" ? "Course Details" :
+        activeTab === "content" ? "Content & Modules" :
+        activeTab === "gamification" ? "Gamification Settings" : "Preview"
+      )} onChange={i => setActiveTab([
+        "details", "content", "gamification", "preview"
+      ][i] as any)}>
+        <Tab.List className="flex space-x-8 mb-8 border-b">
+          {tabLabels.map((label, idx) => (
+            <Tab as={React.Fragment} key={label}>
+              {({ selected }) => (
                 <button
-                  onClick={addModule}
-                  className="flex items-center px-3 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors text-sm"
+                  className={`py-2 px-1 border-b-2 font-medium text-sm focus:outline-none transition-all duration-200 ${
+                    selected
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Module
+                  {label}
                 </button>
-              </div>
-
-              <div className="space-y-3">
-                {modules.map((module) => (
-                  <div
-                    key={module.id}
-                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                    onClick={() => setSelectedModule(module.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">{module.title}</h4>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deleteModule(module.id)
-                          }}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">{module.lessons.length} lessons</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Module Content */}
-            <div className="bg-white rounded-xl shadow-lg p-6 w-xs">
-              {selectedModuleData ? (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-gray-900">{selectedModuleData.title}</h3>
-                    <button
-                      onClick={() => addLesson(selectedModule!)}
-                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Lesson
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {selectedModuleData.lessons.map((lesson) => (
-                      <div
-                        key={lesson.id}
-                        className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedLesson === lesson.id
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                          }`}
-                        onClick={() => setSelectedLesson(lesson.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <h5 className="font-medium text-gray-900">{lesson.title}</h5>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              deleteLesson(selectedModule!, lesson.id)
-                            }}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-1">
-                          {lesson.quiz && (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Quiz</span>
-                          )}
-                          {lesson.circuitId && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
-                          )}
-                          {lesson.networkId && (
-                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Select a module to edit its content</p>
-                </div>
               )}
-            </div>
-          </div>
+            </Tab>
+          ))}
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            <Transition
+              show={activeTab === "details"}
+              as={React.Fragment}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+            >
+              {/* Course Details Tab Content */}
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="grid grid-cols-2 lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
+                      <input
+                        type="text"
+                        value={courseForm.title}
+                        onChange={(e) => handleFormChange("title", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.title 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="Enter course title"
+                      />
+                      <FieldError error={formErrors.title} />
+                    </div>
 
-          {/* Lesson Editor */}
-          <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl">
-            {selectedLessonData ? (
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lesson Title</label>
-                  <input
-                    type="text"
-                    value={selectedLessonData.title}
-                    onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                      <input
+                        type="text"
+                        value={courseForm.subtitle}
+                        onChange={(e) => handleFormChange("subtitle", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.subtitle 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="Brief course subtitle"
+                      />
+                      <FieldError error={formErrors.subtitle} />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Content (Markdown)</label>
-                  <textarea
-                    value={selectedLessonData.content}
-                    onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
-                    rows={8}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                    placeholder="Write your lesson content in Markdown..."
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <textarea
+                        value={courseForm.description}
+                        onChange={(e) => handleFormChange("description", e.target.value)}
+                        rows={4}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.description 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="Detailed course description"
+                      />
+                      <FieldError error={formErrors.description} />
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={selectedLessonData.circuitId || ""}
-                      onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Circuit simulator ID"
-                    />
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <input
+                        type="text"
+                        value={courseForm.category}
+                        onChange={(e) => handleFormChange("category", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.category 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="e.g., Quantum Computing, Quantum Algorithms"
+                      />
+                      <FieldError error={formErrors.category} />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Network ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={selectedLessonData.networkId || ""}
-                      onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Network simulator ID"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900">Quiz</h4>
-                    {!selectedLessonData.quiz ? (
-                      <button
-                        onClick={() => addQuizToLesson(selectedModule!, selectedLesson!)}
-                        className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
+                      <select
+                        value={courseForm.difficultyLevel}
+                        onChange={(e) => handleFormChange("difficultyLevel", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Quiz
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => addQuestionToQuiz(selectedModule!, selectedLesson!)}
-                        className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Question
-                      </button>
-                    )}
-                  </div>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </div>
 
-                  {selectedLessonData.quiz && (
-                    <div className="space-y-4">
-                      <div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail Image URL</label>
+                      <input
+                        type="url"
+                        value={courseForm.thumbnailImageUrl}
+                        onChange={(e) => handleFormChange("thumbnailImageUrl", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.thumbnailImageUrl 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <FieldError error={formErrors.thumbnailImageUrl} />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Jupyter Notebook URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={courseForm.jupyterNotebookUrl || ""}
+                        onChange={(e) => handleFormChange("jupyterNotebookUrl", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          formErrors.jupyterNotebookUrl 
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500" 
+                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        }`}
+                        placeholder="https://example.com/notebook.ipynb"
+                      />
+                      <FieldError error={formErrors.jupyterNotebookUrl} />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Prerequisites</label>
+                      <div className="flex space-x-2 mb-2">
                         <input
                           type="text"
-                          value={selectedLessonData.quiz.title}
-                          onChange={(e) => {
-                            const updatedQuiz = { ...selectedLessonData.quiz!, title: e.target.value }
-                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                          placeholder="Quiz title"
+                          value={newPrerequisite}
+                          onChange={(e) => setNewPrerequisite(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Add prerequisite"
+                          onKeyPress={(e) => e.key === "Enter" && addPrerequisite()}
                         />
+                        <button
+                          onClick={addPrerequisite}
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors"
+                        >
+                          Add
+                        </button>
                       </div>
-
-                      <div>
-                        <textarea
-                          value={selectedLessonData.quiz.description}
-                          onChange={(e) => {
-                            const updatedQuiz = { ...selectedLessonData.quiz!, description: e.target.value }
-                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                          }}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Quiz description"
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        {selectedLessonData.quiz.questions.map((question, qIndex) => (
-                          <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-gray-700">Question {qIndex + 1}</span>
-                              <select
-                                value={question.type}
-                                onChange={(e) => {
-                                  const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                    q.id === question.id ? { ...q, type: e.target.value as any } : q,
-                                  )
-                                  const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                  updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                }}
-                                className="text-sm border border-gray-300 rounded px-2 py-1"
-                              >
-                                <option value="single-choice">Single Choice</option>
-                                <option value="multiple-choice">Multiple Choice</option>
-                              </select>
-                            </div>
-
-                            <textarea
-                              value={question.text}
-                              onChange={(e) => {
-                                const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                  q.id === question.id ? { ...q, text: e.target.value } : q,
-                                )
-                                const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                              }}
-                              rows={2}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-                              placeholder="Question text"
-                            />
-
-                            <div className="space-y-2">
-                              {question.options.map((option, oIndex) => (
-                                <div key={oIndex} className="flex items-center space-x-2">
-                                  <input
-                                    type={question.type === "multiple-choice" ? "checkbox" : "radio"}
-                                    checked={question.answers.includes(option)}
-                                    onChange={(e) => {
-                                      let newAnswers: string[]
-                                      if (question.type === "multiple-choice") {
-                                        newAnswers = e.target.checked
-                                          ? [...question.answers, option]
-                                          : question.answers.filter((a) => a !== option)
-                                      } else {
-                                        newAnswers = e.target.checked ? [option] : []
-                                      }
-                                      const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                        q.id === question.id ? { ...q, answers: newAnswers } : q,
-                                      )
-                                      const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                      updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                    }}
-                                    className="w-4 h-4"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={option}
-                                    onChange={(e) => {
-                                      const updatedOptions = question.options.map((opt, i) =>
-                                        i === oIndex ? e.target.value : opt,
-                                      )
-                                      const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                        q.id === question.id ? { ...q, options: updatedOptions } : q,
-                                      )
-                                      const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                      updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                    }}
-                                    className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    placeholder={`Option ${oIndex + 1}`}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                      <div className="flex flex-wrap gap-2">
+                        {courseForm.prerequisites.map((prereq, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                          >
+                            {prereq}
+                            <button
+                              onClick={() => removePrerequisite(index)}
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                            >
+                              ×
+                            </button>
+                          </span>
                         ))}
                       </div>
+                      <FieldError error={formErrors.prerequisites} />
                     </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Select a lesson to edit its content</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Gamification Settings Tab */}
-      {activeTab === "gamification" && (
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="space-y-8">
-            {/* Badge Management */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">Badge Management</h3>
-
-              <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Badge Name</label>
-                  <input
-                    type="text"
-                    value={newBadgeName}
-                    onChange={(e) => setNewBadgeName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Quantum Explorer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Criteria</label>
-                  <input
-                    type="text"
-                    value={newBadgeCriteria}
-                    onChange={(e) => setNewBadgeCriteria(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Complete 5 lessons"
-                  />
-                </div>
-
-                <div className="flex items-end">
-                  <div className="flex-1 mr-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload Badge Icon</label>
-                    <input
-                      type="text"
-                      value={newBadgeIcon}
-                      onChange={(e) => setNewBadgeIcon(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Icon URL or upload"
-                    />
                   </div>
                 </div>
-                <button
-                  onClick={addBadge}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
-                >
-                  Add Badge
-                </button>
               </div>
+            </Transition>
+          </Tab.Panel>
+          <Tab.Panel>
+            <Transition
+              show={activeTab === "content"}
+              as={React.Fragment}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+            >
+              {/* Content & Modules Tab */}
+              <div className="grid grid-cols-[auto_1fr] gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Modules List */}
+                  <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-gray-900">Modules</h3>
+                      <button
+                        onClick={addModule}
+                        className="flex items-center px-3 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors text-sm"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Module
+                      </button>
+                    </div>
 
-              {/* Display existing badges */}
-              {gamificationSettings.badges.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Current Badges</h4>
-                  <div className="space-y-2">
-                    {gamificationSettings.badges.map((badge) => (
-                      <div key={badge.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                        <div>
-                          <span className="font-medium text-gray-900">{badge.name}</span>
-                          <span className="text-gray-500 ml-2">- {badge.criteria}</span>
-                        </div>
-                        <button
-                          onClick={() => removeBadge(badge.id)}
-                          className="text-red-600 hover:text-red-800"
+                    <div className="space-y-3">
+                      {modules.map((module) => (
+                        <div
+                          key={module.id}
+                          className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedModule === module.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
+                            }`}
+                          onClick={() => setSelectedModule(module.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Point System Rules */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">Point System Rules</h3>
-
-              <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Lesson</label>
-                  <input
-                    type="number"
-                    value={gamificationSettings.pointRules.lessonPoints}
-                    onChange={(e) => updatePointRules("lessonPoints", parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., 10"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Quiz</label>
-                  <input
-                    type="number"
-                    value={gamificationSettings.pointRules.quizPoints}
-                    onChange={(e) => updatePointRules("quizPoints", parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., 15"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Points per Simulation</label>
-                  <input
-                    type="number"
-                    value={gamificationSettings.pointRules.simulationPoints}
-                    onChange={(e) => updatePointRules("simulationPoints", parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., 20"
-                  />
-                </div>
-                <button
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
-                >
-                  Save Rules
-                </button>
-              </div>
-            </div>
-
-            {/* Milestone Configuration */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">Milestone Configuration</h3>
-
-              <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Milestone Name</label>
-                  <input
-                    type="text"
-                    value={newMilestoneName}
-                    onChange={(e) => setNewMilestoneName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Quantum Explorer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Points Required</label>
-                  <input
-                    type="number"
-                    value={newMilestonePoints}
-                    onChange={(e) => setNewMilestonePoints(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., 100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Reward Description</label>
-                  <input
-                    type="text"
-                    value={newMilestoneReward}
-                    onChange={(e) => setNewMilestoneReward(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Certificate of Achievement"
-                  />
-                </div>
-
-                <div className="flex items-end">
-                  <button
-                    onClick={addMilestone}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
-                  >
-                    Add Milestone
-                  </button>
-                </div>
-              </div>
-
-              {/* Display existing milestones */}
-              {gamificationSettings.milestones.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Current Milestones</h4>
-                  <div className="space-y-2">
-                    {gamificationSettings.milestones.map((milestone) => (
-                      <div key={milestone.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                        <div>
-                          <span className="font-medium text-gray-900">{milestone.name}</span>
-                          <span className="text-gray-500 ml-2">- {milestone.pointsRequired} points</span>
-                          <span className="text-gray-500 ml-2">- {milestone.rewardDescription}</span>
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-gray-900">{module.title}</h4>
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  deleteModule(module.id)
+                                }}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">{module.lessons.length} lessons</p>
                         </div>
-                        <button
-                          onClick={() => removeMilestone(milestone.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
+                  {/* Module Content */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 w-xs">
+                    {selectedModuleData ? (
+                      <>
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-lg font-bold text-gray-900">{selectedModuleData.title}</h3>
+                          <button
+                            onClick={() => addLesson(selectedModule!)}
+                            className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors text-sm"
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Lesson
+                          </button>
+                        </div>
 
-      {/* Preview Tab */}
-      {activeTab === "preview" && (
-
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <img
-                src={courseForm.thumbnailImageUrl || "/placeholder.svg"}
-                alt={courseForm.title}
-                className="w-full h-64 object-cover rounded-lg mb-6"
-              />
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${courseForm.difficultyLevel === "beginner"
-                  ? "bg-green-100 text-green-800"
-                  : courseForm.difficultyLevel === "intermediate"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
-                  }`}
-              >
-                {courseForm.difficultyLevel}
-              </span>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">{courseForm.title || "Course Title"}</h1>
-              <p className="text-xl text-gray-600 mb-6">{courseForm.subtitle || "Course subtitle"}</p>
-              <p className="text-gray-700 mb-8">{courseForm.description || "Course description"}</p>
-
-              {courseForm.prerequisites.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h3>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {courseForm.prerequisites.map((prereq, index) => (
-                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                        {prereq}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900">Course Content</h2>
-              {modules.map((module, moduleIndex) => (
-                <div key={module.id} className="border border-gray-200 rounded-lg">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Module {moduleIndex + 1}: {module.title}
-                    </h3>
-                  </div>
-                  <div className="p-4">
-                    {module.lessons.length === 0 ? (
-                      <p className="text-gray-500 italic">No lessons added yet</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <div key={lesson.id} className="flex flex-col justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center">
-                              <span className="text-sm text-gray-500 mr-3">{lessonIndex + 1}.</span>
-                              <span className="font-medium text-gray-900">{lesson.title}</span>
-                              <div className="flex items-center space-x-2 ml-4">
+                        <div className="space-y-3">
+                          {selectedModuleData.lessons.map((lesson) => (
+                            <div
+                              key={lesson.id}
+                              className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedLesson === lesson.id
+                                ? "border-green-500 bg-green-50"
+                                : "border-gray-200 hover:bg-gray-50"
+                                }`}
+                              onClick={() => setSelectedLesson(lesson.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <h5 className="font-medium text-gray-900">{lesson.title}</h5>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteLesson(selectedModule!, lesson.id)
+                                  }}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="flex items-center space-x-2 mt-1">
                                 {lesson.quiz && (
                                   <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Quiz</span>
                                 )}
@@ -1229,28 +755,483 @@ const validateForm = (): boolean => {
                                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
                                 )}
                                 {lesson.networkId && (
-                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                    Network
-                                  </span>
+                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
                                 )}
                               </div>
                             </div>
-                            <div>
-                              {lesson.content && (
-                                <LessonContent content={lesson.content} />
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">Select a module to edit its content</p>
                       </div>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
+                {/* Lesson Editor */}
+                <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl">
+                  {selectedLessonData ? (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Lesson Title</label>
+                        <input
+                          type="text"
+                          value={selectedLessonData.title}
+                          onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { title: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Content (Markdown)</label>
+                        <textarea
+                          value={selectedLessonData.content}
+                          onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
+                          rows={8}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                          placeholder="Write your lesson content in Markdown..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
+                          <input
+                            type="text"
+                            value={selectedLessonData.circuitId || ""}
+                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Circuit simulator ID"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Network ID (Optional)</label>
+                          <input
+                            type="text"
+                            value={selectedLessonData.networkId || ""}
+                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Network simulator ID"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-semibold text-gray-900">Quiz</h4>
+                          {!selectedLessonData.quiz ? (
+                            <button
+                              onClick={() => addQuizToLesson(selectedModule!, selectedLesson!)}
+                              className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Add Quiz
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => addQuestionToQuiz(selectedModule!, selectedLesson!)}
+                              className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Add Question
+                            </button>
+                          )}
+                        </div>
+
+                        {selectedLessonData.quiz && (
+                          <div className="space-y-4">
+                            <div>
+                              <input
+                                type="text"
+                                value={selectedLessonData.quiz.title}
+                                onChange={(e) => {
+                                  const updatedQuiz = { ...selectedLessonData.quiz!, title: e.target.value }
+                                  updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                                placeholder="Quiz title"
+                              />
+                            </div>
+
+                            <div>
+                              <textarea
+                                value={selectedLessonData.quiz.description}
+                                onChange={(e) => {
+                                  const updatedQuiz = { ...selectedLessonData.quiz!, description: e.target.value }
+                                  updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                }}
+                                rows={2}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Quiz description"
+                              />
+                            </div>
+
+                            <div className="space-y-3">
+                              {selectedLessonData.quiz.questions.map((question, qIndex) => (
+                                <div key={question.id} className="border border-gray-200 rounded-lg p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-medium text-gray-700">Question {qIndex + 1}</span>
+                                    <select
+                                      value={question.type}
+                                      onChange={(e) => {
+                                        const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                          q.id === question.id ? { ...q, type: e.target.value as any } : q,
+                                        )
+                                        const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                        updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                      }}
+                                      className="text-sm border border-gray-300 rounded px-2 py-1"
+                                    >
+                                      <option value="single-choice">Single Choice</option>
+                                      <option value="multiple-choice">Multiple Choice</option>
+                                    </select>
+                                  </div>
+
+                                  <textarea
+                                    value={question.text}
+                                    onChange={(e) => {
+                                      const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                        q.id === question.id ? { ...q, text: e.target.value } : q,
+                                      )
+                                      const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                      updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                    }}
+                                    rows={2}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                                    placeholder="Question text"
+                                  />
+
+                                  <div className="space-y-2">
+                                    {question.options.map((option, oIndex) => (
+                                      <div key={oIndex} className="flex items-center space-x-2">
+                                        <input
+                                          type={question.type === "multiple-choice" ? "checkbox" : "radio"}
+                                          checked={question.answers.includes(option)}
+                                          onChange={(e) => {
+                                            let newAnswers: string[]
+                                            if (question.type === "multiple-choice") {
+                                              newAnswers = e.target.checked
+                                                ? [...question.answers, option]
+                                                : question.answers.filter((a) => a !== option)
+                                            } else {
+                                              newAnswers = e.target.checked ? [option] : []
+                                            }
+                                            const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                              q.id === question.id ? { ...q, answers: newAnswers } : q,
+                                            )
+                                            const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                          }}
+                                          className="w-4 h-4"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={option}
+                                          onChange={(e) => {
+                                            const updatedOptions = question.options.map((opt, i) =>
+                                              i === oIndex ? e.target.value : opt,
+                                            )
+                                            const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                              q.id === question.id ? { ...q, options: updatedOptions } : q,
+                                            )
+                                            const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                          }}
+                                          className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                          placeholder={`Option ${oIndex + 1}`}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Select a lesson to edit its content</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Transition>
+          </Tab.Panel>
+          <Tab.Panel>
+            <Transition
+              show={activeTab === "gamification"}
+              as={React.Fragment}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+            >
+              {/* Gamification Settings Tab - Redesigned */}
+              <div className="bg-white rounded-2xl shadow-2xl p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* Badges */}
+                  <div className="col-span-1 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 shadow-md flex flex-col">
+                    <h3 className="text-xl font-bold text-cyan-800 mb-4 flex items-center gap-2">
+                      <span>🏅</span> Badges
+                    </h3>
+                    <div className="space-y-3 mb-4">
+                      <input
+                        type="text"
+                        value={newBadgeName}
+                        onChange={(e) => setNewBadgeName(e.target.value)}
+                        className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        placeholder="Badge Name (e.g., Quantum Explorer)"
+                      />
+                      <input
+                        type="text"
+                        value={newBadgeCriteria}
+                        onChange={(e) => setNewBadgeCriteria(e.target.value)}
+                        className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        placeholder="Criteria (e.g., Complete 5 lessons)"
+                      />
+                      <input
+                        type="text"
+                        value={newBadgeIcon}
+                        onChange={(e) => setNewBadgeIcon(e.target.value)}
+                        className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        placeholder="Icon URL (optional)"
+                      />
+                      <button
+                        onClick={addBadge}
+                        className="w-full py-2 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700 transition"
+                      >
+                        Add Badge
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                      {gamificationSettings.badges.length > 0 ? (
+                        <ul className="space-y-2">
+                          {gamificationSettings.badges.map((badge) => (
+                            <li key={badge.id} className="flex items-center justify-between bg-white border border-cyan-100 rounded-lg px-3 py-2 shadow-sm">
+                              <div className="flex items-center gap-2">
+                                {badge.iconUrl && <img src={badge.iconUrl} alt="icon" className="w-6 h-6 rounded-full" />}
+                                <span className="font-medium text-cyan-900">{badge.name}</span>
+                                <span className="text-xs text-cyan-600">({badge.criteria})</span>
+                              </div>
+                              <button
+                                onClick={() => removeBadge(badge.id)}
+                                className="text-red-500 hover:text-red-700"
+                                title="Remove badge"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-cyan-400 text-sm text-center">No badges added yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Points */}
+                  <div className="col-span-1 bg-gradient-to-br from-green-50 to-cyan-50 rounded-xl p-6 shadow-md flex flex-col">
+                    <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                      <span>⭐</span> Points
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-green-700 mb-1">Points per Lesson</label>
+                        <input
+                          type="number"
+                          value={gamificationSettings.pointRules.lessonPoints}
+                          onChange={(e) => updatePointRules("lessonPoints", parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-green-700 mb-1">Points per Quiz</label>
+                        <input
+                          type="number"
+                          value={gamificationSettings.pointRules.quizPoints}
+                          onChange={(e) => updatePointRules("quizPoints", parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                          placeholder="e.g., 15"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-green-700 mb-1">Points per Simulation</label>
+                        <input
+                          type="number"
+                          value={gamificationSettings.pointRules.simulationPoints}
+                          onChange={(e) => updatePointRules("simulationPoints", parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                          placeholder="e.g., 20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Milestones */}
+                  <div className="col-span-1 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-md flex flex-col">
+                    <h3 className="text-xl font-bold text-yellow-800 mb-4 flex items-center gap-2">
+                      <span>🎯</span> Milestones
+                    </h3>
+                    <div className="space-y-3 mb-4">
+                      <input
+                        type="text"
+                        value={newMilestoneName}
+                        onChange={(e) => setNewMilestoneName(e.target.value)}
+                        className="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                        placeholder="Milestone Name (e.g., Quantum Explorer)"
+                      />
+                      <input
+                        type="number"
+                        value={newMilestonePoints}
+                        onChange={(e) => setNewMilestonePoints(e.target.value)}
+                        className="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                        placeholder="Points Required (e.g., 100)"
+                      />
+                      <input
+                        type="text"
+                        value={newMilestoneReward}
+                        onChange={(e) => setNewMilestoneReward(e.target.value)}
+                        className="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                        placeholder="Reward Description (e.g., Certificate)"
+                      />
+                      <button
+                        onClick={addMilestone}
+                        className="w-full py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition"
+                      >
+                        Add Milestone
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                      {gamificationSettings.milestones.length > 0 ? (
+                        <ul className="space-y-2">
+                          {gamificationSettings.milestones.map((milestone) => (
+                            <li key={milestone.id} className="flex items-center justify-between bg-white border border-yellow-100 rounded-lg px-3 py-2 shadow-sm">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-yellow-900">{milestone.name}</span>
+                                <span className="text-xs text-yellow-700">{milestone.pointsRequired} points - {milestone.rewardDescription}</span>
+                              </div>
+                              <button
+                                onClick={() => removeMilestone(milestone.id)}
+                                className="text-red-500 hover:text-red-700"
+                                title="Remove milestone"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-yellow-400 text-sm text-center">No milestones added yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </Tab.Panel>
+          <Tab.Panel>
+            <Transition
+              show={activeTab === "preview"}
+              as={React.Fragment}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+            >
+              {/* Preview Tab */}
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="max-w-4xl mx-auto">
+                  <div className="text-center mb-8">
+                    <img
+                      src={courseForm.thumbnailImageUrl || "/placeholder.svg"}
+                      alt={courseForm.title}
+                      className="w-full h-64 object-cover rounded-lg mb-6"
+                    />
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${courseForm.difficultyLevel === "beginner"
+                        ? "bg-green-100 text-green-800"
+                        : courseForm.difficultyLevel === "intermediate"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                        }`}
+                    >
+                      {courseForm.difficultyLevel}
+                    </span>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">{courseForm.title || "Course Title"}</h1>
+                    <p className="text-xl text-gray-600 mb-6">{courseForm.subtitle || "Course subtitle"}</p>
+                    <p className="text-gray-700 mb-8">{courseForm.description || "Course description"}</p>
+
+                    {courseForm.prerequisites.length > 0 && (
+                      <div className="mb-8">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h3>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          {courseForm.prerequisites.map((prereq, index) => (
+                            <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                              {prereq}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Course Content</h2>
+                    {modules.map((module, moduleIndex) => (
+                      <div key={module.id} className="border border-gray-200 rounded-lg">
+                        <div className="p-4 bg-gray-50 border-b border-gray-200">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Module {moduleIndex + 1}: {module.title}
+                          </h3>
+                        </div>
+                        <div className="p-4">
+                          {module.lessons.length === 0 ? (
+                            <p className="text-gray-500 italic">No lessons added yet</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {module.lessons.map((lesson, lessonIndex) => (
+                                <div key={lesson.id} className="flex flex-col justify-between p-3 bg-gray-50 rounded-lg">
+                                  <div className="flex items-center">
+                                    <span className="text-sm text-gray-500 mr-3">{lessonIndex + 1}.</span>
+                                    <span className="font-medium text-gray-900">{lesson.title}</span>
+                                    <div className="flex items-center space-x-2 ml-4">
+                                      {lesson.quiz && (
+                                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Quiz</span>
+                                      )}
+                                      {lesson.circuitId && (
+                                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
+                                      )}
+                                      {lesson.networkId && (
+                                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                          Network
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    {lesson.content && (
+                                      <LessonContent content={lesson.content} />
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
     </div>
 
   )
