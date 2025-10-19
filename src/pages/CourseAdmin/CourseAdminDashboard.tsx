@@ -442,7 +442,7 @@ const handleCloseAnalyticsModal = () => {
       const newUserResponse = await addEducator({
         ...formData,
         password: formData.password || "defaultPassword",
-      } as any).unwrap?.().catch?.(() => null);
+      } as any).unwrap();
 
       const newUser: IUser = {
         id: newUserResponse?.educator?.id ?? newId,
