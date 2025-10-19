@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Users } from "lucide-react";
 import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation } from "../../utils/api";
 
@@ -10,11 +10,15 @@ const mockDashboardData = {
   totalUsers: 1250,
   activeCourses: 94,
   newRegistrationsThisMonth: 36,
-  pendingApprovals: 8
+  pendingApprovals: 8,
+  cpuUsage: 65,
+  ramUsage: 78,
+  diskUsage: 45,
+  activeConnections: 342
 };
 
 const SiteAdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [showAddUserForm, setShowAddUserForm] = useState(false); // New state for add user form visibility
   const { data: courseAdmins } = useGetCourseAdministratorsQuery()
   // local mutable admins array
@@ -278,8 +282,17 @@ const SiteAdminDashboard = () => {
         <div className="mb-6">
           <nav className="flex space-x-8">
             <button
+              onClick={() => setActiveTab("dashboard")}
+              className={`py-2 px-1 border-b-2 font-medium text-lg ${activeTab === "dashboard"
+                  ? "border-cyan-700 text-cyan-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+            >
+              Dashboard
+            </button>
+            <button
               onClick={() => setActiveTab("users")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "users"
+              className={`py-2 px-1 border-b-2 font-medium text-lg ${activeTab === "users"
                   ? "border-cyan-700 text-cyan-700"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
@@ -289,16 +302,178 @@ const SiteAdminDashboard = () => {
           </nav>
         </div>
 
+        {/* Dashboard Tab */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-8">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {/* CPU Usage Card */}
+              <div className="bg-white rounded-xl shadow-md p-4 md:p-6 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex-shrink-0">
+                    <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+                      <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="#8b5cf6" strokeWidth="5" fill="none"
+                          strokeDasharray={`${(mockDashboardData.cpuUsage / 100) * 163.4} 163.4`} 
+                          strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-purple-600">
+                        {mockDashboardData.cpuUsage}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center sm:text-right min-w-0 flex-1">
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.cpuUsage}%</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">CPU Usage</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* RAM Usage Card */}
+              <div className="bg-white rounded-xl shadow-md p-4 md:p-6 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex-shrink-0">
+                    <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+                      <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="#f97316" strokeWidth="5" fill="none"
+                          strokeDasharray={`${(mockDashboardData.ramUsage / 100) * 163.4} 163.4`}
+                          strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-orange-600">
+                        {mockDashboardData.ramUsage}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center sm:text-right min-w-0 flex-1">
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.ramUsage}%</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">RAM Usage</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Disk Usage Card */}
+              <div className="bg-white rounded-xl shadow-md p-4 md:p-6 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-cyan-100 rounded-full flex-shrink-0">
+                    <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+                      <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="#06b6d4" strokeWidth="5" fill="none"
+                          strokeDasharray={`${(mockDashboardData.diskUsage / 100) * 163.4} 163.4`}
+                          strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-cyan-600">
+                        {mockDashboardData.diskUsage}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center sm:text-right min-w-0 flex-1">
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.diskUsage}%</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">Disk Usage</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Connections Card */}
+              <div className="bg-white rounded-xl shadow-md p-4 md:p-6 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-indigo-100 rounded-full flex-shrink-0">
+                    <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+                      <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="#6366f1" strokeWidth="5" fill="none"
+                          strokeDasharray={`${(mockDashboardData.activeConnections / 500) * 163.4} 163.4`}
+                          strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-indigo-600">
+                        {Math.round((mockDashboardData.activeConnections / 500) * 100)}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center sm:text-right min-w-0 flex-1">
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.activeConnections}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">Active Connections</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Chart Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Monthly Activity Report</h3>
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2"></div>
+                    <span className="text-gray-600">Registrations</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                    <span className="text-gray-600">Courses</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-indigo-600 rounded-full mr-2"></div>
+                    <span className="text-gray-600">Active Users</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Simple Bar Chart */}
+              <div className="flex items-end justify-around h-64 space-x-8">
+                {/* January */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
+                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '60%'}}></div>
+                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '80%'}}></div>
+                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '55%'}}></div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3">January</p>
+                </div>
+                
+                {/* February */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
+                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '95%'}}></div>
+                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '70%'}}></div>
+                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '50%'}}></div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3">February</p>
+                </div>
+                
+                {/* March */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
+                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '75%'}}></div>
+                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '60%'}}></div>
+                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '90%'}}></div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3">March</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                <span>10k</span>
+                <span>20k</span>
+                <span>30k</span>
+                <span>40k</span>
+                <span>50k</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* User Management Tab */}
         {activeTab === "users" && (
           <div className="bg-white rounded-lg shadow-sm p-6">
             {/* Header with Title and Add Button - Only show when form is not open */}
             {!showAddUserForm && (
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Course Administrator Management</h3>
+                <h3 className="text-xl font-bold text-gray-900">Course Administrator Management</h3>
                 <button
                   onClick={handleAddUserClick}
-                  className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
+                  className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
                 >
                   Add New Course Administrator
                 </button>
@@ -311,7 +486,7 @@ const SiteAdminDashboard = () => {
                 <input
                   type="text"
                   placeholder="Search by name or email"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -328,110 +503,154 @@ const SiteAdminDashboard = () => {
               </div>
             )}
 
-            {/* Add New Course Administrator Form */}
-            {showAddUserForm && (
-              <div className="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Add New Course Administrator</h4>
-                <form onSubmit={handleSaveNewUser} className="space-y-4">
-                  <div>
-                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Full Name"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, fullName: e.target.value }))}
-                      required
-                    />
-                    {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Email"
-                      value={formData.email}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, email: e.target.value }))}
-                      required
-                    />
-                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
-                    <input
-                      type="text"
-                      id="contactNumber"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Contact Number"
-                      value={formData.contactNumber}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
-                      required
-                    />
-                    {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
-                    <input
-                      type="text"
-                      id="nationalId"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter National ID"
-                      value={formData.nationalId}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
-                      required
-                    />
-                    {formErrors.nationalId && <p className="text-red-500 text-xs mt-1">{formErrors.nationalId}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
-                    <input
-                      type="text"
-                      id="residentialAddress"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Enter Residential Address"
-                      value={formData.residentialAddress}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
-                      required
-                    />
-                    {formErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{formErrors.residentialAddress}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-                    <select
-                      id="gender"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      value={formData.gender}
-                      onChange={(e) => setFormData((prevData) => ({ ...prevData, gender: e.target.value }))}
-                      required
+            {/* ✅ Headless UI Modal for Add Course Administrator Form */}
+            <Transition appear show={showAddUserForm} as={Fragment}>
+              <Dialog as="div" className="relative z-50" onClose={handleCancelAddUser}>
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-200"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-150"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full items-center justify-center p-4">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-200"
+                      enterFrom="opacity-0 scale-95"
+                      enterTo="opacity-100 scale-100"
+                      leave="ease-in duration-150"
+                      leaveFrom="opacity-100 scale-100"
+                      leaveTo="opacity-0 scale-95"
                     >
-                      <option value="">Select Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                    {formErrors.gender && <p className="text-red-500 text-xs mt-1">{formErrors.gender}</p>}
+                      <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <DialogTitle as="h3" className="text-lg font-semibold text-gray-900 mb-4">
+                          Add New Course Administrator
+                        </DialogTitle>
+
+                        <form onSubmit={handleSaveNewUser} className="space-y-4">
+                          {/* Full Name */}
+                          <div>
+                            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input
+                              type="text"
+                              id="fullName"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter Full Name"
+                              value={formData.fullName}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, fullName: e.target.value }))}
+                              required
+                            />
+                            {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
+                          </div>
+
+                          {/* Email */}
+                          <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                            <input
+                              type="email"
+                              id="email"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter Email"
+                              value={formData.email}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, email: e.target.value }))}
+                              required
+                            />
+                            {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                          </div>
+
+                          {/* Contact Number */}
+                          <div>
+                            <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
+                            <input
+                              type="text"
+                              id="contactNumber"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter Contact Number"
+                              value={formData.contactNumber}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, contactNumber: e.target.value }))}
+                              required
+                            />
+                            {formErrors.contactNumber && <p className="text-red-500 text-xs mt-1">{formErrors.contactNumber}</p>}
+                          </div>
+
+                          {/* National ID */}
+                          <div>
+                            <label htmlFor="nationalId" className="block text-sm font-medium text-gray-700">National ID</label>
+                            <input
+                              type="text"
+                              id="nationalId"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter National ID"
+                              value={formData.nationalId}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, nationalId: e.target.value }))}
+                              required
+                            />
+                            {formErrors.nationalId && <p className="text-red-500 text-xs mt-1">{formErrors.nationalId}</p>}
+                          </div>
+
+                          {/* Residential Address */}
+                          <div>
+                            <label htmlFor="residentialAddress" className="block text-sm font-medium text-gray-700">Residential Address</label>
+                            <input
+                              type="text"
+                              id="residentialAddress"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter Residential Address"
+                              value={formData.residentialAddress}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, residentialAddress: e.target.value }))}
+                              required
+                            />
+                            {formErrors.residentialAddress && <p className="text-red-500 text-xs mt-1">{formErrors.residentialAddress}</p>}
+                          </div>
+
+                          {/* Gender */}
+                          <div>
+                            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                            <select
+                              id="gender"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              value={formData.gender}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, gender: e.target.value }))}
+                              required
+                            >
+                              <option value="">Select Gender</option>
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                              <option value="other">Other</option>
+                            </select>
+                            {formErrors.gender && <p className="text-red-500 text-xs mt-1">{formErrors.gender}</p>}
+                          </div>
+
+                          {/* Buttons */}
+                          <div className="flex justify-end space-x-3 mt-6">
+                            <button
+                              type="button"
+                              onClick={handleCancelAddUser}
+                              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-md hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                            >
+                              Add Course Administrator
+                            </button>
+                          </div>
+                        </form>
+                      </DialogPanel>
+                    </Transition.Child>
                   </div>
-                  <div className="flex justify-end space-x-3 mt-6">
-                    <button
-                      type="button"
-                      onClick={handleCancelAddUser}
-                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 py-3 px-4 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
-                    >
-                      Add Course Administrator
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
+                </div>
+              </Dialog>
+            </Transition>
 
             {/* User Table and Loading/Error States - Only show when form is not open */}
             {!showAddUserForm && (
