@@ -304,7 +304,7 @@ const CourseAdminDashboard = () => {
 
     filtered = filtered.filter((user) => {
       const userStatus = (user.status || "active").toLowerCase();
-      return userStatusFilter === "all" || userStatus === userStatusFilter;
+      return userStatusFilter.toLowerCase() === "all" || userStatus === userStatusFilter.toLowerCase();
     });
 
     return filtered;
