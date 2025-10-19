@@ -10,9 +10,10 @@ interface EnrollButtonProps {
   courseId: string;
   isLoggedIn: boolean;
   userRole?: string;
+  onEnrolled?: (courseId: string) => void;
 }
 
-const CourseCatalogEnrollButton: React.FC<EnrollButtonProps> = ({ courseId, isLoggedIn, userRole }) => {
+const CourseCatalogEnrollButton: React.FC<EnrollButtonProps> = ({ courseId, isLoggedIn, userRole, onEnrolled }) => {
   const navigate = useNavigate();
   const [enrollInCourse, { isLoading }] = useEnrollInCourseMutation();
 
@@ -58,6 +59,9 @@ const CourseCatalogEnrollButton: React.FC<EnrollButtonProps> = ({ courseId, isLo
 
     try {
       await enrollInCourse({ courseId }).unwrap();
+      if (onEnrolled) {
+        onEnrolled(courseId);
+      }
       navigate(`/student/courses/${courseId}`);
     } catch (error) {
       // Optionally show error

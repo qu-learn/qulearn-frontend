@@ -170,22 +170,22 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
               {/* <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard */}
             </button>
-            <h1 className="text-3xl font-bold text-cyan-700 mb-2">My Profile</h1>
+            <h1 className="text-4xl font-bold text-cyan-700 mb-2">My Profile</h1>
           </div>
         </Transition>
 
         <div className="flex flex-row gap-12 items-start">
           {/* Left: Profile Info Only (1/3) */}
           <div className="flex flex-col items-center justify-start w-1/3 min-w-[280px] max-w-sm py-8">
-            <div className="relative w-100 h-100 rounded-full flex items-center justify-center group mb-6 shadow-xl overflow-hidden">
+            <div className="relative w-90 h-90 rounded-full flex items-center justify-center group mb-6 shadow-xl overflow-hidden">
               {profileData.user.avatarUrl ? (
                 <img
                   src={profileData.user.avatarUrl || "/placeholder.svg"}
                   alt={profileData.user.fullName}
-                  className="w-100 h-100 rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="w-90 h-90 rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-100 h-100 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <div className="w-90 h-90 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
                   <span className="text-7xl font-bold text-white transition-transform duration-300 group-hover:scale-110">
                     {profileData.user.fullName.charAt(0).toUpperCase()}
                   </span>
@@ -202,7 +202,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                 <Edit className="w-5 h-5 text-gray-600" />
               </button>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1 text-center break-words">{profileData.user.fullName}</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-1 text-center break-words">{profileData.user.fullName}</h2>
             <p className="text-gray-500 capitalize mb-1 text-center">{profileData.user.role}</p>
             <p className="text-gray-500 text-center break-words">{profileData.user.email}</p>
           </div>

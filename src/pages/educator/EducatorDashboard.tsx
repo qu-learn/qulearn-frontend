@@ -18,7 +18,7 @@ type StatRingProps = {
 
 const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingProps) => {
   // Ring geometry
-  const size = 160;
+  const size = 120;
   const stroke = 12;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -99,7 +99,6 @@ const EducatorDashboard: React.FC = () => {
   const filteredCourses = useMemo(() => {
     if (!coursesData?.courses) return []
     if (!searchQuery.trim()) return coursesData.courses
-    
     const query = searchQuery.toLowerCase()
     return coursesData.courses.filter(course =>
       course.title.toLowerCase().includes(query) ||
@@ -173,7 +172,7 @@ const EducatorDashboard: React.FC = () => {
           <div className="mb-9 opacity-80"></div>
         </div>
 
-        {/* Stats Overview - Ring Shape, Large, Wide, Headless UI */}
+        {/* Stats Overview */}
         <Transition
           show={true}
           as={Fragment}
@@ -205,11 +204,8 @@ const EducatorDashboard: React.FC = () => {
             />
           </div>
         </Transition>
-       {/* <div className="w-full flex justify-center">
-          <div className="mb-3 opacity-80"></div>
-        </div> */}
 
-        {/* My Courses with Tab Group */}
+        {/* My Courses */}
         <Transition
           show={true}
           as={Fragment}
@@ -218,70 +214,14 @@ const EducatorDashboard: React.FC = () => {
           enterTo="opacity-100 translate-y-0"
         >
           <div className="pt-7 pb-7">
-            <div className="flex items-center justify-between mb-5">
+            {/* Title row */}
+            <div className="mb-3">
               <h2 className="text-4xl font-bold text-cyan-700 tracking-tight">My Courses</h2>
-              <button
-                onClick={() => navigate("/educator/courses/new")}
-                className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 shadow-lg"
-              >
-                Create New Course
-              </button>
             </div>
 
-            {/* Search + Tabs Row */}
-            <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-6">
-              {/* Tabs */}
-              {coursesData.courses.length > 0 && (
-                <div className="w-full md:w-auto flex-1 min-w-[260px]">
-                  <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
-                    <Tab.List className="flex flex-wrap gap-12 rounded-xl bg-blue-100 p-2">
-                      <Tab as={Fragment}>
-                        {({ selected }) => (
-                          <button
-                            className={`rounded-xl px-10 py-2.5 text-base font-semibold leading-6 transition-all duration-200
-                              ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
-                          >
-                            All Courses
-                          </button>
-                        )}
-                      </Tab>
-                      <Tab as={Fragment}>
-                        {({ selected }) => (
-                          <button
-                            className={`rounded-xl px-10 py-2.5 text-base font-semibold leading-6 transition-all duration-200
-                              ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
-                          >
-                            Published Courses
-                          </button>
-                        )}
-                      </Tab>
-                      <Tab as={Fragment}>
-                        {({ selected }) => (
-                          <button
-                            className={`rounded-xl px-10 py-2.5 text-base font-semibold leading-6 transition-all duration-200
-                              ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
-                          >
-                            Draft Courses
-                          </button>
-                        )}
-                      </Tab>
-                      <Tab as={Fragment}>
-                        {({ selected }) => (
-                          <button
-                            className={`rounded-xl px-10 py-2.5 text-base font-semibold leading-6 transition-all duration-200
-                              ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
-                          >
-                            Under Review Courses
-                          </button>
-                        )}
-                      </Tab>
-                    </Tab.List>
-                  </Tab.Group>
-                </div>
-              )}
-
-              {/* Search */}
-              <div className="relative w-full sm:max-w-md">
+            {/* Controls row: Search left, Create right */}
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="relative w-full sm:max-w-xl">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
@@ -301,7 +241,63 @@ const EducatorDashboard: React.FC = () => {
                   </button>
                 )}
               </div>
+              <button
+                onClick={() => navigate("/educator/courses/new")}
+                className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-8 py-3 rounded-2xl text-base md:text-lg font-bold hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 shadow-lg whitespace-nowrap"
+              >
+                Create New Course
+              </button>
             </div>
+
+            {/* Tabs - Full Width */}
+            {coursesData.courses.length > 0 && (
+              <div className="w-full mb-6">
+                <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+                  <Tab.List className="flex w-full space-x-2 rounded-xl bg-blue-100 p-1">
+                    <Tab as={Fragment}>
+                      {({ selected }) => (
+                        <button
+                          className={`w-full rounded-lg py-2.5 text-base font-semibold leading-6 transition-all duration-200
+                            ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
+                        >
+                          All Courses
+                        </button>
+                      )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                      {({ selected }) => (
+                        <button
+                          className={`w-full rounded-lg py-2.5 text-base font-semibold leading-6 transition-all duration-200
+                            ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
+                        >
+                          Published Courses
+                        </button>
+                      )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                      {({ selected }) => (
+                        <button
+                          className={`w-full rounded-lg py-2.5 text-base font-semibold leading-6 transition-all duration-200
+                            ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
+                        >
+                          Draft Courses
+                        </button>
+                      )}
+                    </Tab>
+                    <Tab as={Fragment}>
+                      {({ selected }) => (
+                        <button
+                          className={`w-full rounded-lg py-2.5 text-base font-semibold leading-6 transition-all duration-200
+                            ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
+                        >
+                          Under Review Courses
+                        </button>
+                      )}
+                    </Tab>
+                  </Tab.List>
+                </Tab.Group>
+              </div>
+            )}
 
             {coursesData.courses.length === 0 ? (
               <Transition
@@ -330,11 +326,7 @@ const EducatorDashboard: React.FC = () => {
                     {({ selected }) => (
                       <button
                         className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
-                          ${
-                            selected
-                              ? "bg-white text-cyan-700 shadow"
-                              : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
-                          }`}
+                          ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
                       >
                         All Courses
                       </button>
@@ -344,11 +336,7 @@ const EducatorDashboard: React.FC = () => {
                     {({ selected }) => (
                       <button
                         className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
-                          ${
-                            selected
-                              ? "bg-white text-cyan-700 shadow"
-                              : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
-                          }`}
+                          ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
                       >
                         Published
                       </button>
@@ -358,11 +346,7 @@ const EducatorDashboard: React.FC = () => {
                     {({ selected }) => (
                       <button
                         className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
-                          ${
-                            selected
-                              ? "bg-white text-cyan-700 shadow"
-                              : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
-                          }`}
+                          ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
                       >
                         Draft
                       </button>
@@ -372,11 +356,7 @@ const EducatorDashboard: React.FC = () => {
                     {({ selected }) => (
                       <button
                         className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
-                          ${
-                            selected
-                              ? "bg-white text-cyan-700 shadow"
-                              : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
-                          }`}
+                          ${selected ? "bg-white text-cyan-700 shadow" : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"}`}
                       >
                         Under Review
                       </button>

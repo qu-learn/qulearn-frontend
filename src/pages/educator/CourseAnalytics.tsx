@@ -17,7 +17,7 @@ interface StatRingProps {
   progress?: number;
 }
 const StatRing: React.FC<StatRingProps> = ({ icon, value, label, colorGrad, progress = 100 }) => {
-  const size = 160;
+  const size = 140;
   const stroke = 12;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -30,7 +30,7 @@ const StatRing: React.FC<StatRingProps> = ({ icon, value, label, colorGrad, prog
   const dashOffset = circumference * (1 - (typeof progress === 'number' ? progress : 100) / 100);
   let iconNode = icon;
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-row items-center justify-center">
       <div className="relative flex items-center justify-center mb-2 bg-white rounded-full shadow-xl" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
           <defs>
@@ -65,9 +65,9 @@ const StatRing: React.FC<StatRingProps> = ({ icon, value, label, colorGrad, prog
           <span className="text-4xl font-extrabold text-cyan-700 leading-none drop-shadow-lg">{value}</span>
         </span>
       </div>
-      <div className="flex flex-col items-center mt-1">
+      <div className="flex flex-col items-start ml-4">
         <span className="mb-1">{iconNode}</span>
-        <span className="text-base font-semibold text-cyan-700 tracking-tight text-center">{label}</span>
+        <span className="text-base font-semibold text-cyan-700 tracking-tight">{label}</span>
       </div>
     </div>
   );
@@ -131,8 +131,9 @@ const CourseAnalytics: React.FC = () => {
     { quizName: 'Quiz 5: Applications', averageScore: 78 },
   ]
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="w-full max-w-[1500px] mx-auto px-10 py-10">
       <Transition
         show={true}
         as={Fragment}
@@ -141,15 +142,8 @@ const CourseAnalytics: React.FC = () => {
         enterTo="opacity-100 translate-y-0"
       >
         <div className="mb-8">
-          {/* <button
-            onClick={() => navigate("/educator")}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </button> */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Course Analytics</h1>
+            <h1 className="text-4xl font-bold text-cyan-700 mb-2">Course Analytics</h1>
             <p className="text-gray-600">{courseData.course.title}</p>
           </div>
         </div>
@@ -163,28 +157,26 @@ const CourseAnalytics: React.FC = () => {
         enterFrom="opacity-0 scale-95"
         enterTo="opacity-100 scale-100"
       >
-        <div className="w-full flex justify-center mb-12">
-          <div className="grid grid-cols-3 gap-20 w-full max-w-5xl items-center">
-            <StatRing
-              icon={<Users />}
-              value={analyticsData.enrollmentCount}
-              label="Total Enrollments"
-              colorGrad={["#38bdf8", "#0ea5e9"]}
-            />
-            <StatRing
-              icon={<TrendingUp />}
-              value={`${analyticsData.completionRate.toFixed(1)}%`}
-              label="Completion Rate"
-              colorGrad={["#34d399", "#10b981"]}
-              progress={analyticsData.completionRate}
-            />
-            <StatRing
-              icon={<BarChart3 />}
-              value={analyticsData.studentProgress.filter((s) => s.progress > 0 && s.progress < 100).length}
-              label="Active Students"
-              colorGrad={["#a78bfa", "#6366f1"]}
-            />
-          </div>
+        <div className="grid grid-cols-3 gap-12 mb-12 w-full max-w-[1600px] mx-auto">
+          <StatRing
+            icon={<Users className="w-9 h-9 text-blue-600" />}
+            value={analyticsData.enrollmentCount}
+            label="Total Enrollments"
+            colorGrad={["#38bdf8", "#0ea5e9"]}
+          />
+          <StatRing
+            icon={<TrendingUp className="w-9 h-9 text-blue-600" />}
+            value={`${analyticsData.completionRate.toFixed(1)}%`}
+            label="Completion Rate"
+            colorGrad={["#34d399", "#10b981"]}
+            progress={analyticsData.completionRate}
+          />
+          <StatRing
+            icon={<BarChart3 className="w-9 h-9 text-blue-600" />}
+            value={analyticsData.studentProgress.filter((s) => s.progress > 0 && s.progress < 100).length}
+            label="Active Students"
+            colorGrad={["#a78bfa", "#6366f1"]}
+          />
         </div>
       </Transition>
 
@@ -374,6 +366,7 @@ const CourseAnalytics: React.FC = () => {
           </Tab.Panels>
         </Tab.Group>
       </Transition>
+      </div>
     </div>
   )
 }

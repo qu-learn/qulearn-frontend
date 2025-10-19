@@ -669,7 +669,7 @@ const validateForm = (): boolean => {
             >
               {/* Content & Modules Tab */}
               <div className="grid grid-cols-[auto_1fr] gap-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-w-0">
                   {/* Modules List */}
                   <div className="bg-white rounded-xl shadow-xl p-6 w-xs">
                     <div className="flex items-center justify-between mb-6">
@@ -772,8 +772,8 @@ const validateForm = (): boolean => {
                 </div>
 
                 {/* Lesson Editor */}
-                <div className="space-y-6 max-w-4xl">
-                  <div className="bg-white rounded-xl shadow-lg p-6 w-[900px]">
+                <div className="space-y-6 w-full">
+                  <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-full">
                     {selectedLessonData ? (
                       <div className="space-y-6">
                         <h3 className="text-2xl font-bold text-cyan-700 border-b pb-3">Lesson Details</h3>
@@ -831,7 +831,7 @@ const validateForm = (): boolean => {
 
                   {/* Quiz Section - Separate Card */}
                   {selectedLessonData && (
-                    <div className="bg-white rounded-xl shadow-lg p-6 w-[900px] max-h-[500px] overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-full max-h-[500px] overflow-y-auto">
                       <div className="space-y-6">
                         <div className="flex items-center justify-between border-b pb-3">
                           <h3 className="text-2xl font-bold text-cyan-700">Quiz</h3>
