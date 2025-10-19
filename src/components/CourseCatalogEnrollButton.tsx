@@ -74,7 +74,7 @@ const CourseCatalogEnrollButton: React.FC<EnrollButtonProps> = ({ courseId, isLo
     ? "Enrolling..."
     : "Enroll to the course";
 
-  const titleAttr = hasUnmetPrereq ? `Unmet prerequisite: ${unmetPrereq?.title ?? unmetPrereq?.id}` : undefined;
+  const titleAttr = hasUnmetPrereq ? `Unmet prerequisite:` : undefined;
 
   return (
     <button
