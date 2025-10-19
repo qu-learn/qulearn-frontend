@@ -154,7 +154,7 @@ const CourseAdminDashboard = () => {
 
   // State for mutable course data (use ICourse from shared types)
   const [courses, setCourses] = useState<ICourse[]>(initialMockCoursesData.courses as ICourse[]);
-  const [pendingCourses, setPendingCourses] = useState<ICourse[]>(initialMockCoursesData.pendingCourses as ICourse[]);
+  const [pendingCourses, setPendingCourses] = useState<ICourse[]>();
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
@@ -295,9 +295,9 @@ const CourseAdminDashboard = () => {
           const updatedCourses = prevCourses.map(course => {
             if (course.id === courseId) {
               if (action === "approve") {
-                return { ...course, status: "published" };
+                return { ...course, status: "published" as CourseStatus };
               } else if (action === "reject") {
-                return { ...course, status: "rejected" };
+                return { ...course, status: "rejected" as CourseStatus };
               }
             }
             return course;
@@ -307,13 +307,14 @@ const CourseAdminDashboard = () => {
 
         // Logic to handle courses in the 'pendingCourses' list
         setPendingCourses(prevPending => {
-          const updatedPending = prevPending.filter(course => course.id !== courseId);
-          const movedCourse = prevPending.find(course => course.id === courseId);
+          const safePrev = prevPending ?? [];
+          const updatedPending = safePrev.filter(course => course.id !== courseId);
+          const movedCourse = safePrev.find(course => course.id === courseId);
 
           if (movedCourse && action === "approve") {
             setCourses(prevCourses => [
               ...prevCourses,
-              { ...movedCourse, status: "published", enrollments: 0, category: movedCourse.category || "Uncategorized" }
+              { ...movedCourse, status: "published" as CourseStatus, enrollments: 0, category: movedCourse.category || "Uncategorized" }
             ]);
           }
           return updatedPending;
