@@ -434,27 +434,28 @@ const validateForm = (): boolean => {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-cyan-700">{courseId ? "Edit Course" : "Create New Course"}</h1>
-            <p className="text-cyan-900">Build engaging quantum computing courses</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="w-full max-w-[1500px] mx-auto px-10 py-10">
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+            <h1 className="text-4xl font-bold text-cyan-700">{courseId ? "Edit Course" : "Create New Course"}</h1>
+            <p className="text-lg text-cyan-900">Build engaging quantum computing courses</p>
           </div>
           <div className="flex space-x-4">
             <button
               onClick={() => setActiveTab("preview")}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center px-5 py-3 text-base border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <Eye className="w-4 h-4 mr-2" />
+              <Eye className="w-5 h-5 mr-2" />
               Preview
             </button>
             <button
               onClick={handleSave}
               disabled={isCreating || isUpdating || !isFormValid}
-              className="flex items-center px-6 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-7 py-3 text-base bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-5 h-5 mr-2" />
               {isCreating || isUpdating ? "Saving..." : "Save Course"}
             </button>
           </div>
@@ -463,7 +464,7 @@ const validateForm = (): boolean => {
 
       {formErrors.submit && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
-          <p className="text-sm text-red-600">{formErrors.submit}</p>
+          <p className="text-base text-red-600">{formErrors.submit}</p>
         </div>
       )}
 
@@ -480,7 +481,7 @@ const validateForm = (): boolean => {
             <Tab as={React.Fragment} key={label}>
               {({ selected }) => (
                 <button
-                  className={`py-2 px-1 border-b-2 font-medium text-sm focus:outline-none transition-all duration-200 ${
+                  className={`py-3 px-2 border-b-2 font-semibold text-base focus:outline-none transition-all duration-200 ${
                     selected
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -771,125 +772,142 @@ const validateForm = (): boolean => {
                 </div>
 
                 {/* Lesson Editor */}
-                <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl">
-                  {selectedLessonData ? (
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Lesson Title</label>
-                        <input
-                          type="text"
-                          value={selectedLessonData.title}
-                          onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { title: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Content (Markdown)</label>
-                        <textarea
-                          value={selectedLessonData.content}
-                          onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
-                          rows={8}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                          placeholder="Write your lesson content in Markdown..."
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-6 max-w-4xl">
+                  <div className="bg-white rounded-xl shadow-lg p-6 w-[900px]">
+                    {selectedLessonData ? (
+                      <div className="space-y-6">
+                        <h3 className="text-2xl font-bold text-cyan-700 border-b pb-3">Lesson Details</h3>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
+                          <label className="block text-base font-medium text-gray-700 mb-2">Lesson Title</label>
                           <input
                             type="text"
-                            value={selectedLessonData.circuitId || ""}
-                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Circuit simulator ID"
+                            value={selectedLessonData.title}
+                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { title: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Network ID (Optional)</label>
-                          <input
-                            type="text"
-                            value={selectedLessonData.networkId || ""}
-                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Network simulator ID"
+                          <label className="block text-base font-medium text-gray-700 mb-2">Content (Markdown)</label>
+                          <textarea
+                            value={selectedLessonData.content}
+                            onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
+                            rows={8}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-base"
+                            placeholder="Write your lesson content in Markdown..."
                           />
                         </div>
-                      </div>
 
-                      <div className="border-t pt-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-semibold text-gray-900">Quiz</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-base font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
+                            <input
+                              type="text"
+                              value={selectedLessonData.circuitId || ""}
+                              onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Circuit simulator ID"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-base font-medium text-gray-700 mb-2">Network ID (Optional)</label>
+                            <input
+                              type="text"
+                              value={selectedLessonData.networkId || ""}
+                              onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Network simulator ID"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">Select a lesson to edit its content</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quiz Section - Separate Card */}
+                  {selectedLessonData && (
+                    <div className="bg-white rounded-xl shadow-lg p-6 w-[900px] max-h-[500px] overflow-y-auto">
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between border-b pb-3">
+                          <h3 className="text-2xl font-bold text-cyan-700">Quiz</h3>
                           {!selectedLessonData.quiz ? (
                             <button
                               onClick={() => addQuizToLesson(selectedModule!, selectedLesson!)}
-                              className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Add Quiz
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => addQuestionToQuiz(selectedModule!, selectedLesson!)}
-                              className="flex items-center px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Add Question
-                            </button>
-                          )}
-                        </div>
+                              className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-base font-semibold"
+                          >
+                            <Plus className="w-5 h-5 mr-2" />
+                            Add Quiz
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => addQuestionToQuiz(selectedModule!, selectedLesson!)}
+                            className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-base font-semibold"
+                          >
+                            <Plus className="w-5 h-5 mr-2" />
+                            Add Question
+                          </button>
+                        )}
+                      </div>
 
-                        {selectedLessonData.quiz && (
-                          <div className="space-y-4">
-                            <div>
-                              <input
-                                type="text"
-                                value={selectedLessonData.quiz.title}
-                                onChange={(e) => {
-                                  const updatedQuiz = { ...selectedLessonData.quiz!, title: e.target.value }
-                                  updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
-                                placeholder="Quiz title"
-                              />
-                            </div>
+                      {selectedLessonData.quiz ? (
+                        <div className="space-y-6">
+                          <div>
+                            <label className="block text-base font-medium text-gray-700 mb-2">Quiz Title</label>
+                            <input
+                              type="text"
+                              value={selectedLessonData.quiz.title}
+                              onChange={(e) => {
+                                const updatedQuiz = { ...selectedLessonData.quiz!, title: e.target.value }
+                                updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                              }}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                              placeholder="Quiz title"
+                            />
+                          </div>
 
-                            <div>
-                              <textarea
-                                value={selectedLessonData.quiz.description}
-                                onChange={(e) => {
-                                  const updatedQuiz = { ...selectedLessonData.quiz!, description: e.target.value }
-                                  updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                }}
-                                rows={2}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Quiz description"
-                              />
-                            </div>
+                          <div>
+                            <label className="block text-base font-medium text-gray-700 mb-2">Quiz Description</label>
+                            <textarea
+                              value={selectedLessonData.quiz.description}
+                              onChange={(e) => {
+                                const updatedQuiz = { ...selectedLessonData.quiz!, description: e.target.value }
+                                updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                              }}
+                              rows={2}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Quiz description"
+                            />
+                          </div>
 
-                            <div className="space-y-3">
-                              {selectedLessonData.quiz.questions.map((question, qIndex) => (
-                                <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                                  <div className="flex items-center justify-between mb-3">
-                                    <span className="text-sm font-medium text-gray-700">Question {qIndex + 1}</span>
-                                    <select
-                                      value={question.type}
-                                      onChange={(e) => {
-                                        const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                          q.id === question.id ? { ...q, type: e.target.value as any } : q,
-                                        )
-                                        const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                        updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                      }}
-                                      className="text-sm border border-gray-300 rounded px-2 py-1"
-                                    >
-                                      <option value="single-choice">Single Choice</option>
-                                      <option value="multiple-choice">Multiple Choice</option>
-                                    </select>
-                                  </div>
+                          <div className="space-y-8">
+                            <h4 className="font-semibold text-lg text-gray-800">Questions</h4>
+                            {selectedLessonData.quiz.questions.map((question, qIndex) => (
+                              <div key={question.id}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-base font-semibold text-gray-700">Question {qIndex + 1}</span>
+                                  <select
+                                    value={question.type}
+                                    onChange={(e) => {
+                                      const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                        q.id === question.id ? { ...q, type: e.target.value as any } : q,
+                                      )
+                                      const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                      updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                    }}
+                                    className="text-base border border-gray-300 rounded px-3 py-2"
+                                  >
+                                    <option value="single-choice">Single Choice</option>
+                                    <option value="multiple-choice">Multiple Choice</option>
+                                  </select>
+                                </div>
 
+                                <div className="mb-2">
+                                  <label className="block text-base font-medium text-gray-700 mb-1">Question Text</label>
                                   <textarea
                                     value={question.text}
                                     onChange={(e) => {
@@ -900,66 +918,83 @@ const validateForm = (): boolean => {
                                       updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
                                     }}
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-                                    placeholder="Question text"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter your question here..."
                                   />
-
-                                  <div className="space-y-2">
-                                    {question.options.map((option, oIndex) => (
-                                      <div key={oIndex} className="flex items-center space-x-2">
-                                        <input
-                                          type={question.type === "multiple-choice" ? "checkbox" : "radio"}
-                                          checked={question.answers.includes(option)}
-                                          onChange={(e) => {
-                                            let newAnswers: string[]
-                                            if (question.type === "multiple-choice") {
-                                              newAnswers = e.target.checked
-                                                ? [...question.answers, option]
-                                                : question.answers.filter((a) => a !== option)
-                                            } else {
-                                              newAnswers = e.target.checked ? [option] : []
-                                            }
-                                            const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                              q.id === question.id ? { ...q, answers: newAnswers } : q,
-                                            )
-                                            const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                          }}
-                                          className="w-4 h-4"
-                                        />
-                                        <input
-                                          type="text"
-                                          value={option}
-                                          onChange={(e) => {
-                                            const updatedOptions = question.options.map((opt, i) =>
-                                              i === oIndex ? e.target.value : opt,
-                                            )
-                                            const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
-                                              q.id === question.id ? { ...q, options: updatedOptions } : q,
-                                            )
-                                            const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
-                                            updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
-                                          }}
-                                          className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                          placeholder={`Option ${oIndex + 1}`}
-                                        />
-                                      </div>
-                                    ))}
-                                  </div>
                                 </div>
-                              ))}
-                            </div>
+
+                                <div className="space-y-2">
+                                  <label className="block text-base font-medium text-gray-700">Answer Options</label>
+                                  {question.options.map((option, oIndex) => (
+                                    <div key={oIndex} className="flex items-center gap-3 border-b border-gray-200 pb-2 last:border-b-0">
+                                      <input
+                                        type={question.type === "multiple-choice" ? "checkbox" : "radio"}
+                                        checked={question.answers.includes(option)}
+                                        onChange={(e) => {
+                                          let newAnswers: string[]
+                                          if (question.type === "multiple-choice") {
+                                            newAnswers = e.target.checked
+                                              ? [...question.answers, option]
+                                              : question.answers.filter((a) => a !== option)
+                                          } else {
+                                            newAnswers = e.target.checked ? [option] : []
+                                          }
+                                          const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                            q.id === question.id ? { ...q, answers: newAnswers } : q,
+                                          )
+                                          const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                          updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                        }}
+                                        className="w-5 h-5"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={option}
+                                        onChange={(e) => {
+                                          const updatedOptions = question.options.map((opt, i) =>
+                                            i === oIndex ? e.target.value : opt,
+                                          )
+                                          const updatedQuestions = selectedLessonData.quiz!.questions.map((q) =>
+                                            q.id === question.id ? { ...q, options: updatedOptions } : q,
+                                          )
+                                          const updatedQuiz = { ...selectedLessonData.quiz!, questions: updatedQuestions }
+                                          updateLesson(selectedModule!, selectedLesson!, { quiz: updatedQuiz })
+                                        }}
+                                        className="flex-1 px-3 py-1 border-none focus:outline-none focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        placeholder={`Option ${oIndex + 1}`}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                                {/* Add Question button after last question */}
+                                {selectedLessonData.quiz && selectedLessonData.quiz.questions && qIndex === selectedLessonData.quiz.questions.length - 1 && (
+                                  <div className="flex justify-end mt-6">
+                                    <button
+                                      onClick={() => addQuestionToQuiz(selectedModule!, selectedLesson!)}
+                                      className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-base font-semibold"
+                                    >
+                                      <Plus className="w-5 h-5 mr-2" />
+                                      Add Another Question
+                                    </button>
+                                  </div>
+                                )}
+                                {selectedLessonData.quiz && selectedLessonData.quiz.questions && qIndex !== selectedLessonData.quiz.questions.length - 1 && (
+                                  <hr className="my-6 border-gray-300" />
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 text-gray-500">
+                          <p className="text-lg">No quiz added yet. Click "Add Quiz" to create one.</p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">Select a lesson to edit its content</p>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
+            </div>
             </Transition>
           </Tab.Panel>
           <Tab.Panel>
@@ -971,11 +1006,10 @@ const validateForm = (): boolean => {
               enterTo="opacity-100"
             >
               {/* Gamification Settings Tab - Redesigned */}
-              <div className="bg-white rounded-2xl shadow-2xl p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {/* Badges */}
-                  <div className="col-span-1 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 shadow-md flex flex-col">
-                    <h3 className="text-xl font-bold text-cyan-800 mb-4 flex items-center gap-2">
+              <div className="flex flex-row gap-8 justify-center items-start py-8 max-w-[1400px] mx-auto">
+                {/* Badges */}
+                <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 shadow-lg flex flex-col flex-1 max-w-[450px]">
+                  <h3 className="text-xl font-bold text-cyan-800 mb-4 flex items-center gap-2">
                       <span>🏅</span> Badges
                     </h3>
                     <div className="space-y-3 mb-4">
@@ -986,13 +1020,25 @@ const validateForm = (): boolean => {
                         className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
                         placeholder="Badge Name (e.g., Quantum Explorer)"
                       />
-                      <input
-                        type="text"
+                      <select
                         value={newBadgeCriteria}
                         onChange={(e) => setNewBadgeCriteria(e.target.value)}
                         className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        placeholder="Criteria (e.g., Complete 5 lessons)"
-                      />
+                      >
+                        <option value="">Select Criteria</option>
+                        <option value="Complete 3 lessons">Complete 3 lessons</option>
+                        <option value="Complete 5 lessons">Complete 5 lessons</option>
+                        <option value="Complete 10 lessons">Complete 10 lessons</option>
+                        <option value="Complete all lessons">Complete all lessons</option>
+                        <option value="Pass 3 quizzes">Pass 3 quizzes</option>
+                        <option value="Pass 5 quizzes">Pass 5 quizzes</option>
+                        <option value="Pass all quizzes">Pass all quizzes</option>
+                        <option value="Complete 3 simulations">Complete 3 simulations</option>
+                        <option value="Complete 5 simulations">Complete 5 simulations</option>
+                        <option value="Complete course">Complete course</option>
+                        <option value="Score 90% or higher">Score 90% or higher</option>
+                        <option value="Perfect quiz score">Perfect quiz score</option>
+                      </select>
                       <input
                         type="text"
                         value={newBadgeIcon}
@@ -1031,11 +1077,11 @@ const validateForm = (): boolean => {
                         <p className="text-cyan-400 text-sm text-center">No badges added yet.</p>
                       )}
                     </div>
-                  </div>
+                </div>
 
-                  {/* Points */}
-                  <div className="col-span-1 bg-gradient-to-br from-green-50 to-cyan-50 rounded-xl p-6 shadow-md flex flex-col">
-                    <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                {/* Points */}
+                <div className="bg-gradient-to-br from-green-50 to-cyan-50 rounded-xl p-6 shadow-lg flex flex-col flex-1 max-w-[450px]">
+                  <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
                       <span>⭐</span> Points
                     </h3>
                     <div className="space-y-4">
@@ -1070,11 +1116,11 @@ const validateForm = (): boolean => {
                         />
                       </div>
                     </div>
-                  </div>
+                </div>
 
-                  {/* Milestones */}
-                  <div className="col-span-1 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-md flex flex-col">
-                    <h3 className="text-xl font-bold text-yellow-800 mb-4 flex items-center gap-2">
+                {/* Milestones */}
+                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-lg flex flex-col flex-1 max-w-[450px]">
+                  <h3 className="text-xl font-bold text-yellow-800 mb-4 flex items-center gap-2">
                       <span>🎯</span> Milestones
                     </h3>
                     <div className="space-y-3 mb-4">
@@ -1129,7 +1175,6 @@ const validateForm = (): boolean => {
                         <p className="text-yellow-400 text-sm text-center">No milestones added yet.</p>
                       )}
                     </div>
-                  </div>
                 </div>
               </div>
             </Transition>
@@ -1232,6 +1277,7 @@ const validateForm = (): boolean => {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+      </div>
     </div>
 
   )
