@@ -60,6 +60,8 @@ import type {
     IGetCourseAdministratorsResponse,
     IChangePasswordRequest,
     IChangePasswordResponse,
+    IMarkLessonCompleteRequest,
+    IMarkLessonCompleteResponse,
 } from "./types"
 
 // RTK Query API
@@ -135,7 +137,6 @@ export const api = createApi({
             providesTags: ["Course"],
         }),
 
-        // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
                 url: "/students/enrollments",
@@ -376,6 +377,19 @@ export const api = createApi({
             }),
             invalidatesTags: ["User"],
         }),
+        
+        markLessonComplete: builder.mutation<IMarkLessonCompleteResponse, IMarkLessonCompleteRequest>({
+            query: ({ courseId, moduleId, lessonId, ...body }) => ({
+                url: `/students/enrollments/${courseId}/modules/${moduleId}/lessons/${lessonId}/complete`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Enrollment", "User"],
+        }),
+        getEnrolledCourseById: builder.query<IGetCourseByIdResponse, string>({
+            query: (courseId) => `/students/courses/${courseId}`,
+            providesTags: ["Course"],
+        }),
     }),
 })
 
@@ -427,4 +441,6 @@ export const {
     useGetCourseAdministratorQuery,
     useUpdateCourseAdministratorMutation,
     useChangePasswordMutation,
+    useMarkLessonCompleteMutation,
+    useGetEnrolledCourseByIdQuery,
 } = api

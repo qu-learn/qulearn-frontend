@@ -82,10 +82,34 @@ export interface ICourse {
   enrollmentHistory?: { month: string; students: number }[];
 }
 
+export interface IQuizAnswer {
+  questionId: string
+  selectedOptions: string[]
+}
+
+export interface IQuizAttempt {
+  quizId: string
+  answers: IQuizAnswer[]
+  score?: number
+  attemptedAt?: string | Date
+}
+
+export interface ILessonCompletion {
+  lessonId: string
+  completedAt?: string | Date
+}
+
+export interface IModuleCompletion {
+  moduleId: string
+  lessonIds: ILessonCompletion[]
+}
+
 export interface IEnrollment {
   course: ICourse
-  progressPercentage: number
-  completedAt?: string
+  progressPercentage?: number
+  completedAt?: string | Date
+  completions?: IModuleCompletion[]
+  QuizAttempts?: IQuizAttempt[]
 }
 
 export type ICircuitConfiguration = {
@@ -192,8 +216,13 @@ export interface IGetCoursesResponse {
   courses: ICourse[]
 }
 
+export interface IGetCoursesNoModulesResponse {
+  courses: ICourse[]
+}
+
 export interface IGetCourseByIdResponse {
   course: ICourse
+  completion?: IEnrollment | null
 }
 
 export interface IEnrollInCourseRequest {
@@ -452,4 +481,15 @@ export interface IDeleteCourseAdministratorRequest {
 
 export interface IDeleteCourseAdministratorResponse {
   success: boolean
+}
+
+export interface IMarkLessonCompleteRequest {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedAt?: string | Date
+}
+
+export interface IMarkLessonCompleteResponse {
+  enrollment: IEnrollment
 }
