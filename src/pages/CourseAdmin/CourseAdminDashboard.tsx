@@ -501,8 +501,8 @@ const handleCloseAnalyticsModal = () => {
       };
       if (updatedData.password) payload.password = updatedData.password;
 
-      const res = await updateEducator({ educatorId: userId, educator: payload } as any).unwrap?.().catch?.(() => null);
-      const updatedUser = res?.educator ?? { id: userId, ...payload };
+      const res = await updateEducator({ educatorId: userId, educator: payload } as any).unwrap();
+      const updatedUser = res.educator;
       setUsers(prev => prev.map(u => (u.id === updatedUser.id ? ({ ...u, ...updatedUser } as any) : u)));
       setModalMessage("User updated successfully!");
       setEditFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
