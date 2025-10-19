@@ -91,14 +91,6 @@ const initialMockCoursesData = {
     },
   ],
   pendingCourses: [
-    {
-      id: "c4",
-      title: "Quantum Machine Learning",
-      instructor: { fullName: "Dr. Brown" },
-      createdAt: "2024-03-25T11:45:00Z",
-      category: "Quantum Basics", // Added category for pending course for consistency
-      enrollmentHistory: [], // Pending courses likely have no enrollment history yet
-    },
   ],
 };
 
@@ -154,7 +146,7 @@ const CourseAdminDashboard = () => {
 
   // State for mutable course data (use ICourse from shared types)
   const [courses, setCourses] = useState<ICourse[]>(initialMockCoursesData.courses as ICourse[]);
-  const [pendingCourses, setPendingCourses] = useState<ICourse[]>();
+  const [pendingCourses, setPendingCourses] = useState<ICourse[]>(initialMockCoursesData.pendingCourses as ICourse[]);
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
