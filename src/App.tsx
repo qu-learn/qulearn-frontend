@@ -7,7 +7,7 @@ import { ApiProvider } from "@reduxjs/toolkit/query/react"
 import { api } from "./utils/api"
 import type { IUser } from "./utils/types"
 import LandingPage from "./pages/landing/LandingPage"
-import CourseCatalogL from "./pages/landing/CourseCatalogL"
+// import CourseCatalogL from "./pages/landing/CourseCatalogL"
 import AboutPage from './pages/landing/AboutPage'
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
@@ -21,7 +21,6 @@ import CourseQuiz from "./pages/student/CourseQuiz"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import SiteAdminDashboard from "./pages/SiteAdmin/SiteAdminDashboard"
-//import CourseCatalog from "./pages/educator/CourseCatalog"
 //import CourseDetail from "./pages/educator/CourseDetail"
 import CourseDetail from "./pages/student/CourseDetail"
 import LessonDetail from "./pages/student/LessonDetail"
@@ -121,7 +120,7 @@ function AppContent() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/courses-landing" element={<CourseCatalogL />} />
+          <Route path="/courses-landing" element={<CourseCatalog user={appState.user} />} />
           <Route path="/about" element={<AboutPage />} />
           <Route
             path="/login"

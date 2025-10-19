@@ -562,17 +562,17 @@ const handleCloseAnalyticsModal = () => {
   const averageEnrollments = totalEnrollments / enrollmentData.length || 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 font-inter">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-blue p-4 sm:p-6 lg:p-8 font-inter">
+      <div className="w-full px-4 sm:px-6 lg:px-62 py-8">
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-12">
           <h1 className="text-3xl font-bold text-cyan-900 mb-2">Course Administrator Dashboard</h1>
           <p className="text-gray-600 text-lg">Manage courses, users, and platform settings</p>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="w-full">
           {/* Welcome Message */}
-          <div className="mb-8">
+          <div className="mb-10">
             <h1 className="text-3xl font-bold text-cyan-700 mb-2 text-center">
               Welcome back, {loggedInUser?.fullName || "Administrator"}!
             </h1>
@@ -601,7 +601,7 @@ const handleCloseAnalyticsModal = () => {
                     <div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-6">System Overview</h3>
                       <div className="grid grid-cols-4 gap-6 mb-8">
-                        <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
+                        <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
                           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <Users className="w-8 h-8 text-blue-600" />
                           </div>
@@ -610,7 +610,7 @@ const handleCloseAnalyticsModal = () => {
                             <p className="text-2xl font-bold text-gray-900">{totalUsersCount}</p>
                           </div>
                         </div>
-                        <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
+                        <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
                           <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                             <BookOpen className="w-8 h-8 text-green-600" />
                           </div>
@@ -619,7 +619,7 @@ const handleCloseAnalyticsModal = () => {
                             <p className="text-2xl font-bold text-gray-900">{activeCoursesCount}</p>
                           </div>
                         </div>
-                        <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
+                        <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
                           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <TrendingUp className="w-8 h-8 text-purple-600" />
                           </div>
@@ -628,7 +628,7 @@ const handleCloseAnalyticsModal = () => {
                             <p className="text-2xl font-bold text-gray-900">{newRegistrationsThisMonthCount}</p>
                           </div>
                         </div>
-                        <div className="bg-blue-200 rounded-lg shadow-sm p-6 flex items-center">
+                        <div className="bg-white rounded-lg shadow-sm p-6 flex items-center">
                           <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                             <CheckCircle className="w-8 h-8 text-yellow-600" />
                           </div>
@@ -894,7 +894,7 @@ const handleCloseAnalyticsModal = () => {
                     {/* Header with Title and Add Button - Only show when form is not open */}
                     {!showAddUserForm && (
                       <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-gray-900">Educator Management</h3>
+                        <h3 className="text-2xl font-bold text-gray-900">Educator Management</h3>
                         <button
                           onClick={handleAddUserClick}
                           className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-medium shadow"
@@ -1401,7 +1401,7 @@ const handleCloseAnalyticsModal = () => {
               <Dialog.Panel className="w-full max-w-2xl min-h-[700px] transform overflow-hidden rounded-2xl bg-white px-12 py-10 shadow-xl transition-all my-20 ml-10">
                 <Dialog.Title className="text-xl font-medium text-gray-900 mb-3">Add New Educator</Dialog.Title>
 
-                <form onSubmit={handleSaveNewUser} className="space-y-3">
+                <form onSubmit={handleSaveNewUser} className="space-y-1">
                   {/* 2-column compact grid on md+ */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
