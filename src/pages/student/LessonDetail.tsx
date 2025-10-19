@@ -125,7 +125,7 @@ const LessonDetail: React.FC = () => {
       await refetchEnrolled?.()
     } catch (e) {
       // ignore here — APIError is handled globally by existing error middleware
-      console.error('Mark complete failed', e)
+      console.error("Mark complete failed", e)
     }
   }
 
