@@ -453,3 +453,10 @@ export interface IDeleteCourseAdministratorRequest {
 export interface IDeleteCourseAdministratorResponse {
   success: boolean
 }
+
+export interface IGetSystemMetricsResponse {
+    cpuUsage: number;
+    ramUsage: number;
+    diskUsage: number;
+    activeConnections: number;
+}

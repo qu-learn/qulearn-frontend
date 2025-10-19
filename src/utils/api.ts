@@ -60,6 +60,7 @@ import type {
     IGetCourseAdministratorsResponse,
     IChangePasswordRequest,
     IChangePasswordResponse,
+    IGetSystemMetricsResponse, // Add this import
 } from "./types"
 
 // RTK Query API
@@ -376,6 +377,12 @@ export const api = createApi({
             }),
             invalidatesTags: ["User"],
         }),
+
+        // Add this new endpoint for system metrics
+        getSystemMetrics: builder.query<IGetSystemMetricsResponse, void>({
+            query: () => "/sys-admin/system-metrics",
+            keepUnusedDataFor: 30, // Keep data for 30 seconds
+        }),
     }),
 })
 
@@ -427,4 +434,5 @@ export const {
     useGetCourseAdministratorQuery,
     useUpdateCourseAdministratorMutation,
     useChangePasswordMutation,
+    useGetSystemMetricsQuery, //New hook
 } = api
