@@ -6,6 +6,11 @@ import remarkMath from "remark-math"
 import rehypeMathjax from "rehype-mathjax"
 import rehypeRaw from "rehype-raw"
 
+export function hasJavaScriptCode(content: string): boolean {
+  const jsCodeBlockRegex = /```(javascript|js)\s/i
+  return jsCodeBlockRegex.test(content)
+}
+
 export function LessonContent({ content }: { content: string }) {
   return (
     <Markdown

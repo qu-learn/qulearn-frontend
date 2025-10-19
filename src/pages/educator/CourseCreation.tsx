@@ -5,8 +5,8 @@ import { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2, X, Maximize2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
-import { LessonContent } from "../../components/LessonContent"
-import { CircuitSimulator, NetworkSimulator } from "../../components/QCNS"
+import { LessonContent, hasJavaScriptCode } from "../../components/LessonContent"
+import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 
 interface CourseForm {
   title: string
@@ -97,6 +97,7 @@ const CourseCreation: React.FC = () => {
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
   const [showCircuitModal, setShowCircuitModal] = useState(false)
   const [showNetworkModal, setShowNetworkModal] = useState(false)
+  const [showJSSandboxModal, setShowJSSandboxModal] = useState(false)
 
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId })
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
@@ -897,6 +898,23 @@ const validateForm = (): boolean => {
                   </div>
                 </div>
 
+                {/* JS Sandbox Section */}
+                {selectedLessonData.content && hasJavaScriptCode(selectedLessonData.content) && (
+                  <div className="border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <label className="block text-sm font-medium text-gray-700">JavaScript Sandbox</label>
+                      <button
+                        onClick={() => setShowJSSandboxModal(true)}
+                        className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      >
+                        <Maximize2 className="w-4 h-4 mr-1" />
+                        Open Sandbox
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600">JavaScript code detected. Open the sandbox to test the code.</p>
+                  </div>
+                )}
+
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="font-semibold text-gray-900">Quiz</h4>
@@ -1306,6 +1324,9 @@ const validateForm = (): boolean => {
                                 {lesson.networkId && (
                                   <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
                                 )}
+                                {lesson.content && hasJavaScriptCode(lesson.content) && (
+                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">JS Sandbox</span>
+                                )}
                               </div>
                             </div>
                             <div className="space-y-3">
@@ -1314,7 +1335,7 @@ const validateForm = (): boolean => {
                               )}
                               
                               {/* Interactive Elements */}
-                              {(lesson.circuitId || lesson.networkId) && (
+                              {(lesson.circuitId || lesson.networkId || (lesson.content && hasJavaScriptCode(lesson.content))) && (
                                 <div className="flex items-center space-x-3 pt-3 border-t">
                                   {lesson.circuitId && (
                                     <button
@@ -1338,6 +1359,18 @@ const validateForm = (): boolean => {
                                       className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
                                     >
                                       View Network Simulator
+                                    </button>
+                                  )}
+                                  {lesson.content && hasJavaScriptCode(lesson.content) && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedModule(module.id)
+                                        setSelectedLesson(lesson.id)
+                                        setShowJSSandboxModal(true)
+                                      }}
+                                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                    >
+                                      View JS Sandbox
                                     </button>
                                   )}
                                 </div>
@@ -1406,6 +1439,26 @@ const validateForm = (): boolean => {
                 onNetworkDeleted={activeTab === "preview" ? undefined : handleNetworkDeleted}
                 isModal={activeTab !== "preview"}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JS Sandbox Modal */}
+      {showJSSandboxModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">JavaScript Sandbox</h3>
+              <button
+                onClick={() => setShowJSSandboxModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <JSSandbox />
             </div>
           </div>
         </div>

@@ -6,8 +6,8 @@ import { ArrowLeft, BookOpen, Download, FileText, Video, ExternalLink, Play, Clo
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useGetCourseByIdQuery } from "../../utils/api"
 import type { ILesson, IModule } from "../../utils/types"
-import { LessonContent } from "../../components/LessonContent"
-import { CircuitSimulator, NetworkSimulator } from "../../components/QCNS"
+import { LessonContent, hasJavaScriptCode } from "../../components/LessonContent"
+import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 
 const LessonDetail: React.FC = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
@@ -15,6 +15,7 @@ const LessonDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview")
   const [showCircuitModal, setShowCircuitModal] = useState(false)
   const [showNetworkModal, setShowNetworkModal] = useState(false)
+  const [showJSSandboxModal, setShowJSSandboxModal] = useState(false)
 
   const { data: courseData, isLoading, error } = useGetCourseByIdQuery(courseId!)
 
@@ -252,6 +253,21 @@ const LessonDetail: React.FC = () => {
                     <p className="text-gray-600">Click the button above to interact with the network simulator.</p>
                   </div>
                 )}
+
+                {currentLesson.content && hasJavaScriptCode(currentLesson.content) && (
+                  <div className="border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold text-gray-900">JavaScript Sandbox</h3>
+                      <button
+                        onClick={() => setShowJSSandboxModal(true)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Open JS Sandbox
+                      </button>
+                    </div>
+                    <p className="text-gray-600">Click the button above to interact with the JavaScript sandbox.</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -409,6 +425,26 @@ const LessonDetail: React.FC = () => {
                 lessonTitle={currentLesson.title}
                 isModal={false}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JS Sandbox Modal */}
+      {showJSSandboxModal && currentLesson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">JavaScript Sandbox</h3>
+              <button
+                onClick={() => setShowJSSandboxModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <JSSandbox />
             </div>
           </div>
         </div>
