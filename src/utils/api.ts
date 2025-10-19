@@ -136,7 +136,7 @@ export const api = createApi({
         // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
-                url: "/enrollments",
+                url: "/students/enrollments",
                 method: "POST",
                 body,
             }),
