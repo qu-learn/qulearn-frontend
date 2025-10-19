@@ -4,13 +4,15 @@ import type React from "react"
 import { useState } from "react"
 import { ArrowLeft,Search, BookOpen, Clock, Users } from "lucide-react"
 import { Link } from "react-router-dom"
+import { Tab } from "@headlessui/react"
+import CourseCatalogEnrollButton from "./CourseCatalogEnrollButton"
 import { useGetCoursesQuery } from "../utils/api"
 // import { useEnrollInCourseMutation } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 import { type IUser } from "../utils/types"
 
 interface CourseCatalogProps {
-  user: IUser
+  user: IUser | null
 }
 
 
@@ -142,72 +144,76 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
      
 
       {/* Course Grid */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {filteredCourses.map((course) => (
-          <Link
-            key={course.id}
-            to={`/courses/${course.id}`}
-            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer block"
-          >
-            <img
-              src={course.thumbnailUrl || "/placeholder.svg"}
-              alt={course.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    course.difficultyLevel === "beginner"
-                      ? "bg-green-100 text-green-800"
-                      : course.difficultyLevel === "intermediate"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                  }`}
+      <Tab.Group>
+        <Tab.Panels>
+          <Tab.Panel>
+            <div className="grid grid-cols-3 gap-8 mb-8">
+              {filteredCourses.map((course) => (
+                <div
+                  key={course.id}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow cursor-pointer flex flex-col h-full border border-blue-100"
                 >
-                  {course.difficultyLevel}
-                </span>
-                <span className="text-xs text-gray-500">{course.category}</span>
-              </div>
-
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-2">{course.subtitle}</p>
-
-              <div className="flex items-center text-sm text-gray-500 mb-4">
-                <Users className="w-4 h-4 mr-1" />
-                <span className="mr-4">By {course.instructor.fullName}</span>
-                <Clock className="w-4 h-4 mr-1" />
-                <span>{new Date(course.createdAt).toLocaleDateString()}</span>
-              </div>
-
-              {course.prerequisites.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-1">Prerequisites:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {course.prerequisites.slice(0, 2).map((prereq, index) => (
-                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                        {prereq}
+                  <Link to={`/courses/${course.id}`} className="block">
+                    <img
+                      src={course.thumbnailUrl || "/placeholder.svg"}
+                      alt={course.title}
+                      className="w-full h-48 object-cover rounded-t-2xl"
+                    />
+                  </Link>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm backdrop-blur-sm ${
+                          course.difficultyLevel === "beginner"
+                            ? "bg-green-100/90 text-green-800"
+                            : course.difficultyLevel === "intermediate"
+                              ? "bg-yellow-100/90 text-yellow-800"
+                              : "bg-red-100/90 text-red-800"
+                        }`}
+                      >
+                        {course.difficultyLevel.charAt(0).toUpperCase() + course.difficultyLevel.slice(1)}
                       </span>
-                    ))}
-                    {course.prerequisites.length > 2 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                        +{course.prerequisites.length - 2} more
-                      </span>
+                      <span className="text-xs text-gray-500">{course.category}</span>
+                    </div>
+                    <h3 className="font-bold text-xl text-blue-900 mb-2 line-clamp-1">{course.title}</h3>
+                    <p className="text-base text-blue-700 mb-4 line-clamp-2 min-h-[40px]">{course.subtitle}</p>
+                    <div className="flex items-center text-sm text-blue-600 mb-4 pb-4 border-b border-blue-100">
+                      <Users className="w-4 h-4 mr-1" />
+                      <span className="mr-4">By {course.instructor.fullName}</span>
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span>{new Date(course.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {course.prerequisites.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-gray-700 mb-1">Prerequisites:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {course.prerequisites.slice(0, 2).map((prereq, index) => (
+                            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              {prereq}
+                            </span>
+                          ))}
+                          {course.prerequisites.length > 2 && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              +{course.prerequisites.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
+                    <div className="mt-auto">
+                      <CourseCatalogEnrollButton
+                        courseId={course.id}
+                        isLoggedIn={!!user?.id}
+                        userRole={user?.role}
+                      />
+                    </div>
                   </div>
                 </div>
-              )}
-
-              {/* <button
-                onClick={(e) => handleEnroll(course.id, e)}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Enroll Now
-              </button> */}
+              ))}
             </div>
-          </Link>
-        ))}
-      </div>
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
 
       {filteredCourses.length === 0 && (
         <div className="text-center py-12">

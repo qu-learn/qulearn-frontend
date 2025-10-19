@@ -74,6 +74,12 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
   />
   <span className="text-white text-3xl font-bold">QuLearn</span>
 </div>
+    <Link
+      to="/login"
+      className="bg-blue-400 hover:bg-blue-500 text-blue-900 px-6 py-2 rounded-lg font-semibold transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg transform"
+    >
+      Login
+    </Link>
   </nav>
 
   {/* Main content */}

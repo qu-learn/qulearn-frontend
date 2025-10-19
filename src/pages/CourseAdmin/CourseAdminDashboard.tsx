@@ -21,115 +21,6 @@ import {
   useGetCourseAdminCoursesQuery,
 } from "../../utils/api";
 
-// Mock courses data (initial data, will be moved to state for mutability)
-const initialMockCoursesData = {
-  courses: [
-    {
-      id: "c1",
-      title: "Quantum Foundations",
-      instructor: { fullName: "Dr. Smith" },
-      status: "published",
-      createdAt: "2024-01-15T10:30:00Z",
-      enrollments: 450,
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [
-        { month: 'Jan', students: 50 }, { month: 'Feb', students: 70 },
-        { month: 'Mar', students: 120 }, { month: 'Apr', students: 150 },
-        { month: 'May', students: 200 }, { month: 'Jun', students: 250 },
-        { month: 'Jul', students: 450 },
-      ],
-    },
-    {
-      id: "c2",
-      title: "Advanced Quantum Algorithms",
-      instructor: { fullName: "Prof. Johnson" },
-      status: "under-review",
-      createdAt: "2024-02-20T14:20:00Z",
-      enrollments: 0,
-      category: "Advanced Algorithms",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [
-        { month: 'Feb', students: 0 }, { month: 'Mar', students: 0 },
-        { month: 'Apr', students: 0 }, { month: 'May', students: 0 },
-        { month: 'Jun', students: 0 }, { month: 'Jul', students: 0 },
-      ],
-    },
-    {
-      id: "c3",
-      title: "Quantum Computing Basics",
-      instructor: { fullName: "Dr. Williams" },
-      status: "published",
-      createdAt: "2024-03-10T09:15:00Z",
-      enrollments: 320,
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [
-        { month: 'Mar', students: 80 }, { month: 'Apr', students: 120 },
-        { month: 'May', students: 200 }, { month: 'Jun', students: 280 },
-        { month: 'Jul', students: 320 },
-      ],
-    },
-    {
-      id: "c5",
-      title: "Introduction to AI",
-      instructor: { fullName: "Dr. Alice" },
-      status: "published",
-      createdAt: "2024-04-01T10:00:00Z",
-      enrollments: 600,
-      category: "Artificial Intelligence",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [
-        { month: 'Apr', students: 100 }, { month: 'May', students: 250 },
-        { month: 'Jun', students: 400 }, { month: 'Jul', students: 600 },
-      ],
-    },
-    {
-      id: "c6",
-      title: "Machine Learning Fundamentals",
-      instructor: { fullName: "Dr. Bob" },
-      status: "rejected",
-      createdAt: "2024-04-10T11:00:00Z",
-      enrollments: 0,
-      category: "Artificial Intelligence",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [], // No enrollments as it's rejected
-    },
-    {
-      id: "c7",
-      title: "Data Science with Python",
-      instructor: { fullName: "Prof. Carol" },
-      status: "published",
-      createdAt: "2024-05-05T13:00:00Z",
-      enrollments: 720,
-      category: "Data Science",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [
-        { month: 'May', students: 150 }, { month: 'Jun', students: 400 },
-        { month: 'Jul', students: 720 },
-      ],
-    },
-  ],
-  pendingCourses: [
-    {
-      id: "c4",
-      title: "Quantum Machine Learning",
-      instructor: { fullName: "Dr. Brown" },
-      createdAt: "2024-03-25T11:45:00Z",
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      enrollmentHistory: [],
-    },
-  ],
-};
-
 type SelectedCourseAnalytics = {
   id: string;
   title: string;
@@ -188,8 +79,8 @@ const CourseAdminDashboard = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
 
   // State for mutable course data (use ICourse from shared types)
-  const [courses, setCourses] = useState<ICourse[]>(initialMockCoursesData.courses as ICourse[]);
-  const [pendingCourses, setPendingCourses] = useState<ICourse[]>(initialMockCoursesData.pendingCourses as ICourse[]);
+  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [pendingCourses, setPendingCourses] = useState<ICourse[]>([]);
 
   // State variables for User Management Tab
   const [showAddUserForm, setShowAddUserForm] = useState(false);
@@ -323,8 +214,11 @@ const CourseAdminDashboard = () => {
         setCourses(prevCourses => {
           const updatedCourses = prevCourses.map(course => {
             if (course.id === courseId) {
-              if (action === "approve") return { ...course, status: "published" as CourseStatus };
-              if (action === "reject") return { ...course, status: "rejected" as CourseStatus };
+              if (action === "approve") {
+                return { ...course, status: "published" as CourseStatus };
+              } else if (action === "reject") {
+                return { ...course, status: "rejected" as CourseStatus };
+              }
             }
             return course;
           }).filter(course => !(action === "delete" && course.id === courseId));
@@ -332,13 +226,14 @@ const CourseAdminDashboard = () => {
         });
 
         setPendingCourses(prevPending => {
-          const updatedPending = prevPending.filter(course => course.id !== courseId);
-          const movedCourse = prevPending.find(course => course.id === courseId);
+          const safePrev = prevPending ?? [];
+          const updatedPending = safePrev.filter(course => course.id !== courseId);
+          const movedCourse = safePrev.find(course => course.id === courseId);
 
           if (movedCourse && action === "approve") {
             setCourses(prevCourses => [
               ...prevCourses,
-              { ...movedCourse, status: "published", enrollments: 0, category: movedCourse.category || "Uncategorized" }
+              { ...movedCourse, status: "published" as CourseStatus, enrollments: 0, category: movedCourse.category || "Uncategorized" }
             ]);
           }
           return updatedPending;
