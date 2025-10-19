@@ -98,17 +98,11 @@ const CourseAdminDashboard = () => {
   // When API data arrives map to ICourse shape and replace local state
   useEffect(() => {
     if (!courseAdminCoursesData?.courses) return;
-    const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((c: any) => ({
-      // map and provide sensible defaults for fields that ICourse requires
-      id: c.id,
-      title: c.title,
-      instructor: c.instructor ?? { fullName: "Unknown" },
-      status: (c.status ?? "draft") as CourseStatus,
-      createdAt: c.createdAt ?? new Date().toISOString(),
+    const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((c) => ({
+      ...c,
+      // ensure optional enrichment fields exist with sensible defaults
       enrollments: (c as any).enrollments ?? 0,
       category: c.category ?? "Uncategorized",
-      subtitle: c.subtitle ?? "",
-      description: c.description ?? "",
       enrollmentHistory: (c as any).enrollmentHistory ?? [],
     }));
     setCourses(apiCourses);
