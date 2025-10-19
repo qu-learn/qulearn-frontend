@@ -522,7 +522,7 @@ const handleCloseAnalyticsModal = () => {
       return;
     }
     try {
-      await deleteEducator(userToDelete.id).unwrap?.().catch?.(() => null);
+      await deleteEducator(userToDelete.id).unwrap();
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
       setModalMessage(`User "${userToDelete.fullName}" deleted successfully!`);
       setUserToDelete(null);
