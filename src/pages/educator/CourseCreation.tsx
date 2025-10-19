@@ -90,17 +90,19 @@ const CourseCreation: React.FC = () => {
     thumbnailImageUrl: "",
     jupyterNotebookUrl: "",
   })
-  const [modules, setModules] = useState<Module[]>([])
-  const [newPrerequisite, setNewPrerequisite] = useState("")
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
-  const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
 
-  const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId })
-  const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
-  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
+  const [modules, setModules] = useState<Module[]>([]);
+  const [newPrerequisite, setNewPrerequisite] = useState("");
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
-  const [isFormValid, setIsFormValid] = useState(true)
+  const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId });
+  const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
+  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [isFormValid, setIsFormValid] = useState(true);
+
 
   // Add URL validation helper function
   const isValidUrl = (string: string): boolean => {
@@ -199,17 +201,18 @@ const validateForm = (): boolean => {
   }, [existingCourse])
 
   const handleFormChange = (field: keyof CourseForm, value: any) => {
-  setCourseForm((prev) => ({ ...prev, [field]: value }))
-  
-  // Clear specific field error when user starts typing
-  if (formErrors[field]) {
-    setFormErrors(prev => {
-      const newErrors = { ...prev }
-      delete newErrors[field]
-      return newErrors
-    })
+    setCourseForm((prev) => ({ ...prev, [field]: value }))
+    // Clear specific field error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
+    // Always re-validate form on change
+    // validateForm(); // Not needed, handled by useEffect
   }
-}
 
   const addPrerequisite = () => {
     if (newPrerequisite.trim()) {
@@ -330,28 +333,28 @@ const validateForm = (): boolean => {
   }
 
   const handleSave = async () => {
-  if (!validateForm()) {
-    return
-  }
-
-  try {
-    const courseData = {
-      ...courseForm,
-      gamificationSettings,
-      modules
+    if (!validateForm()) {
+      setIsFormValid(false);
+      return;
     }
-    
-    if (courseId) {
-      await updateCourse({ courseId, course: courseData }).unwrap()
-    } else {
-      const result = await createCourse(courseData).unwrap()
-      navigate(`/courses/${result.course.id}`)
+    try {
+      const courseData = {
+        ...courseForm,
+        gamificationSettings,
+        modules
+      }
+      if (courseId) {
+        await updateCourse({ courseId, course: courseData }).unwrap()
+      } else {
+        const result = await createCourse(courseData).unwrap()
+        navigate(`/courses/${result.course.id}`)
+      }
+    } catch (error) {
+      console.error("Failed to save course:", error)
+      setFormErrors((prev) => ({ ...prev, submit: "Failed to save course. Please try again." }))
+      setIsFormValid(true); // Re-enable button after error
     }
-  } catch (error) {
-    console.error("Failed to save course:", error)
-    setFormErrors({ submit: "Failed to save course. Please try again." })
   }
-}
 
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
   const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
