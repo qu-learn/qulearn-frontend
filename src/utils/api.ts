@@ -264,7 +264,7 @@ export const api = createApi({
 
         // Course Analytics
         getCourseAnalytics: builder.query<IGetCourseAnalyticsResponse, string>({
-            query: (courseId) => `/courses/${courseId}/analytics`,
+            query: (courseId) => `/educators/courses/${courseId}/analytics`,
         }),
         updateGamificationSettings: builder.mutation<
             IUpdateGamificationSettingsResponse,
