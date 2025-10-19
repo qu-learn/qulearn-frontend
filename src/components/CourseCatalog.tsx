@@ -6,7 +6,7 @@ import { ArrowLeft, Search, BookOpen, Clock, Users, X } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Tab, Dialog, Transition } from "@headlessui/react"
 import CourseCatalogEnrollButton from "./CourseCatalogEnrollButton"
-import { useGetCoursesQuery } from "../utils/api"
+import { useGetCoursesQuery, useGetMyEnrollmentsQuery } from "../utils/api"
 // import { useEnrollInCourseMutation } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 import { type IUser } from "../utils/types"
@@ -23,8 +23,12 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState("all")
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [showCourseDialog, setShowCourseDialog] = useState(false)
+  const [hiddenCourseIds, setHiddenCourseIds] = useState<Set<string>>(new Set())
 
   const { data: coursesData, isLoading, error } = useGetCoursesQuery()
+  const { data: enrollmentsData } = useGetMyEnrollmentsQuery(undefined, {
+    skip: !user?.id || user?.role !== "student",
+  })
 //   const [enrollInCourse] = useEnrollInCourseMutation()
 
 //   const handleEnroll = async (courseId: string, e: React.MouseEvent) => {
@@ -61,6 +65,11 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
     return null
   }
 
+  const enrolledIds = new Set<string>([
+    ...((enrollmentsData?.enrollments || []).map((e) => e.course.id)),
+    ...Array.from(hiddenCourseIds),
+  ])
+
   const filteredCourses = coursesData.courses.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,7 +77,10 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
     const matchesCategory = selectedCategory === "all" || course.category === selectedCategory
     const matchesDifficulty = selectedDifficulty === "all" || course.difficultyLevel === selectedDifficulty
 
-    return matchesSearch && matchesCategory && matchesDifficulty && course.status === "published"
+    const isPublished = course.status === "published"
+    const isUnenrolled = user?.role === "student" ? !enrolledIds.has(course.id) : true
+
+    return matchesSearch && matchesCategory && matchesDifficulty && isPublished && isUnenrolled
   })
 
   const categories = Array.from(new Set(coursesData.courses.map((course) => course.category)))
@@ -76,6 +88,15 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
   const handleCourseClick = (course: any) => {
     setSelectedCourse(course)
     setShowCourseDialog(true)
+  }
+
+  const handleEnrolled = (courseId: string) => {
+    setHiddenCourseIds((prev) => {
+      const next = new Set(prev)
+      next.add(courseId)
+      return next
+    })
+    setShowCourseDialog(false)
   }
 
   return (
@@ -361,6 +382,7 @@ const CourseCatalog: React.FC<CourseCatalogProps> = ({ user }) => {
                               courseId={selectedCourse.id}
                               isLoggedIn={!!user?.id}
                               userRole={user?.role}
+                              onEnrolled={handleEnrolled}
                             />
                           </div>
                           <button
