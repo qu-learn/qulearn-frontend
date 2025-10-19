@@ -1293,7 +1293,7 @@ const validateForm = (): boolean => {
                       <div className="space-y-3">
                         {module.lessons.map((lesson, lessonIndex) => (
                           <div key={lesson.id} className="flex flex-col justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center">
+                            <div className="flex items-center mb-3">
                               <span className="text-sm text-gray-500 mr-3">{lessonIndex + 1}.</span>
                               <span className="font-medium text-gray-900">{lesson.title}</span>
                               <div className="flex items-center space-x-2 ml-4">
@@ -1304,15 +1304,43 @@ const validateForm = (): boolean => {
                                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Circuit</span>
                                 )}
                                 {lesson.networkId && (
-                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                    Network
-                                  </span>
+                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Network</span>
                                 )}
                               </div>
                             </div>
-                            <div>
+                            <div className="space-y-3">
                               {lesson.content && (
                                 <LessonContent content={lesson.content} />
+                              )}
+                              
+                              {/* Interactive Elements */}
+                              {(lesson.circuitId || lesson.networkId) && (
+                                <div className="flex items-center space-x-3 pt-3 border-t">
+                                  {lesson.circuitId && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedModule(module.id)
+                                        setSelectedLesson(lesson.id)
+                                        setShowCircuitModal(true)
+                                      }}
+                                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                      View Circuit Simulator
+                                    </button>
+                                  )}
+                                  {lesson.networkId && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedModule(module.id)
+                                        setSelectedLesson(lesson.id)
+                                        setShowNetworkModal(true)
+                                      }}
+                                      className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                                    >
+                                      View Network Simulator
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1333,7 +1361,7 @@ const validateForm = (): boolean => {
           <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h3 className="text-xl font-bold text-gray-900">
-                {selectedLessonData?.circuitId ? "Edit Circuit" : "Create Circuit"}
+                {selectedLessonData?.circuitId ? "View Circuit" : "Create Circuit"}
               </h3>
               <button
                 onClick={() => setShowCircuitModal(false)}
@@ -1346,9 +1374,9 @@ const validateForm = (): boolean => {
               <CircuitSimulator 
                 circuitId={selectedLessonData?.circuitId}
                 lessonTitle={selectedLessonData?.title}
-                onCircuitCreated={handleCircuitCreated}
-                onCircuitDeleted={handleCircuitDeleted}
-                isModal={true}
+                onCircuitCreated={activeTab === "preview" ? undefined : handleCircuitCreated}
+                onCircuitDeleted={activeTab === "preview" ? undefined : handleCircuitDeleted}
+                isModal={activeTab !== "preview"}
               />
             </div>
           </div>
@@ -1361,7 +1389,7 @@ const validateForm = (): boolean => {
           <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h3 className="text-xl font-bold text-gray-900">
-                {selectedLessonData?.networkId ? "Edit Network" : "Create Network"}
+                {selectedLessonData?.networkId ? "View Network" : "Create Network"}
               </h3>
               <button
                 onClick={() => setShowNetworkModal(false)}
@@ -1374,9 +1402,9 @@ const validateForm = (): boolean => {
               <NetworkSimulator 
                 networkId={selectedLessonData?.networkId}
                 lessonTitle={selectedLessonData?.title}
-                onNetworkCreated={handleNetworkCreated}
-                onNetworkDeleted={handleNetworkDeleted}
-                isModal={true}
+                onNetworkCreated={activeTab === "preview" ? undefined : handleNetworkCreated}
+                onNetworkDeleted={activeTab === "preview" ? undefined : handleNetworkDeleted}
+                isModal={activeTab !== "preview"}
               />
             </div>
           </div>
