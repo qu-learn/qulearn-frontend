@@ -2,10 +2,11 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Eye, Plus, Trash2, X, Maximize2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 import { LessonContent } from "../../components/LessonContent"
+import { CircuitSimulator, NetworkSimulator } from "../../components/QCNS"
 
 interface CourseForm {
   title: string
@@ -94,10 +95,15 @@ const CourseCreation: React.FC = () => {
   const [newPrerequisite, setNewPrerequisite] = useState("")
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
+  const [showCircuitModal, setShowCircuitModal] = useState(false)
+  const [showNetworkModal, setShowNetworkModal] = useState(false)
 
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId })
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
+
+  const selectedModuleData = modules.find((m) => m.id === selectedModule)
+  const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
 
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
   const [isFormValid, setIsFormValid] = useState(true)
@@ -353,8 +359,31 @@ const validateForm = (): boolean => {
   }
 }
 
-  const selectedModuleData = modules.find((m) => m.id === selectedModule)
-  const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
+  const handleCircuitCreated = (circuitId: string) => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { circuitId })
+      setShowCircuitModal(false)
+    }
+  }
+
+  const handleCircuitDeleted = () => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { circuitId: undefined })
+    }
+  }
+
+  const handleNetworkCreated = (networkId: string) => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { networkId })
+      setShowNetworkModal(false)
+    }
+  }
+
+  const handleNetworkDeleted = () => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { networkId: undefined })
+    }
+  }
 
 
   const FieldError: React.FC<{ error?: string }> = ({ error }) => {
@@ -798,27 +827,73 @@ const validateForm = (): boolean => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={selectedLessonData.circuitId || ""}
-                      onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Circuit simulator ID"
-                    />
+                {/* Circuit Section */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Circuit Simulator</label>
+                    <div className="flex items-center space-x-2">
+                      {selectedLessonData.circuitId ? (
+                        <>
+                          <button
+                            onClick={handleCircuitDeleted}
+                            className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setShowCircuitModal(true)}
+                            className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                          >
+                            <Maximize2 className="w-4 h-4 mr-1" />
+                            Maximize
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setShowCircuitModal(true)}
+                          className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Circuit
+                        </button>
+                      )}
+                    </div>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Network ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={selectedLessonData.networkId || ""}
-                      onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Network simulator ID"
-                    />
+                {/* Network Section */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Network Simulator</label>
+                    <div className="flex items-center space-x-2">
+                      {selectedLessonData.networkId ? (
+                        <>
+                          <button
+                            onClick={handleNetworkDeleted}
+                            className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setShowNetworkModal(true)}
+                            className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                          >
+                            <Maximize2 className="w-4 h-4 mr-1" />
+                            Maximize
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setShowNetworkModal(true)}
+                          className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Network
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1247,6 +1322,62 @@ const validateForm = (): boolean => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Circuit Modal */}
+      {showCircuitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">
+                {selectedLessonData?.circuitId ? "Edit Circuit" : "Create Circuit"}
+              </h3>
+              <button
+                onClick={() => setShowCircuitModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <CircuitSimulator 
+                circuitId={selectedLessonData?.circuitId}
+                lessonTitle={selectedLessonData?.title}
+                onCircuitCreated={handleCircuitCreated}
+                onCircuitDeleted={handleCircuitDeleted}
+                isModal={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Network Modal */}
+      {showNetworkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">
+                {selectedLessonData?.networkId ? "Edit Network" : "Create Network"}
+              </h3>
+              <button
+                onClick={() => setShowNetworkModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <NetworkSimulator 
+                networkId={selectedLessonData?.networkId}
+                lessonTitle={selectedLessonData?.title}
+                onNetworkCreated={handleNetworkCreated}
+                onNetworkDeleted={handleNetworkDeleted}
+                isModal={true}
+              />
             </div>
           </div>
         </div>
