@@ -6,7 +6,7 @@ import { ArrowLeft, BookOpen, Download, FileText, Video, ExternalLink, Play, Clo
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useGetCourseByIdQuery } from "../../utils/api"
 import type { ILesson, IModule } from "../../utils/types"
-import { LessonContent, hasJavaScriptCode } from "../../components/LessonContent"
+import { LessonContent, hasJavaScriptCode, extractJavaScriptCode } from "../../components/LessonContent"
 import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 
 const LessonDetail: React.FC = () => {
@@ -444,7 +444,10 @@ const LessonDetail: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-hidden pt-4">
-              <JSSandbox />
+              <JSSandbox 
+                code={extractJavaScriptCode(currentLesson.content || '') || ''}
+                isModal={false}
+              />
             </div>
           </div>
         </div>

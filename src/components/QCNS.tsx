@@ -23,6 +23,12 @@ interface NetworkSimulatorProps {
   isModal?: boolean
 }
 
+interface JSSandboxProps {
+  code?: string
+  onSave?: (code: string) => void
+  isModal?: boolean
+}
+
 function QCNS({ tab, state, iframeRef }: QCNSProps) {
   const [initialized, setInitialized] = useState(false)
 
@@ -229,23 +235,43 @@ export function NetworkSimulator({
   )
 }
 
-export function JSSandbox() {
-  const dummyMutation = [() => Promise.resolve(), { isLoading: false }]
-  
+export function JSSandbox({ code, onSave, isModal = false }: JSSandboxProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+
+  const handleSave = async () => {
+    if (onSave) {
+      try {
+        const window = iframeRef.current?.contentWindow as any
+        const currentState = window?.qulearn?.getState()
+        
+        // Extract the JavaScript code from the sandbox state
+        // The sandbox state should contain the code
+        const savedCode = currentState?.code || currentState || ''
+        onSave(savedCode)
+      } catch (error) {
+        console.error('Failed to save JS code:', error)
+      }
+    }
+  }
+
   return (
-    <SimulatorWrapper
-      tab='sandbox'
-      itemId={undefined}
-      lessonTitle={undefined}
-      data={null}
-      isModal={false}
-      createMutation={dummyMutation}
-      updateMutation={dummyMutation}
-      deleteMutation={dummyMutation}
-      onItemCreated={undefined}
-      onItemDeleted={undefined}
-      saveButtonColor='blue'
-    />
+    <div className="h-full flex flex-col">
+      <QCNS
+        tab='sandbox'
+        state={code || null}
+        iframeRef={iframeRef}
+      />
+      {isModal && onSave && (
+        <div className="flex justify-end space-x-2 px-4 py-3 border-t bg-white">
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save Code
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 

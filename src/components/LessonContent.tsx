@@ -11,6 +11,16 @@ export function hasJavaScriptCode(content: string): boolean {
   return jsCodeBlockRegex.test(content)
 }
 
+export function extractJavaScriptCode(content: string): string | null {
+  const jsCodeBlockRegex = /```(?:javascript|js)\s*\n([\s\S]*?)```/i
+  const match = content.match(jsCodeBlockRegex)
+  return match ? match[1].trim() : null
+}
+
+export function injectJavaScriptCode(code: string): string {
+  return `\`\`\`javascript\n${code}\n\`\`\``
+}
+
 export function LessonContent({ content }: { content: string }) {
   return (
     <Markdown

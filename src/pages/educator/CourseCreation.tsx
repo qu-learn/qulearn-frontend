@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2, X, Maximize2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
-import { LessonContent, hasJavaScriptCode } from "../../components/LessonContent"
+import { LessonContent, hasJavaScriptCode, extractJavaScriptCode, injectJavaScriptCode } from "../../components/LessonContent"
 import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 
 interface CourseForm {
@@ -818,9 +818,27 @@ const validateForm = (): boolean => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Content (Markdown)</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">Content (Markdown)</label>
+                    <button
+                      onClick={() => {
+                        // If no JS code exists, create a template
+                        if (!hasJavaScriptCode(selectedLessonData.content || '')) {
+                          const defaultCode = '// Write your JavaScript code here\nconsole.log("Hello, World!");'
+                          updateLesson(selectedModule!, selectedLesson!, { 
+                            content: injectJavaScriptCode(defaultCode)
+                          })
+                        }
+                        setShowJSSandboxModal(true)
+                      }}
+                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {hasJavaScriptCode(selectedLessonData.content || '') ? 'Edit' : 'Add'} JS Code
+                    </button>
+                  </div>
                   <textarea
-                    value={selectedLessonData.content}
+                    value={selectedLessonData.content || ''}
                     onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
                     rows={8}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
@@ -897,23 +915,6 @@ const validateForm = (): boolean => {
                     </div>
                   </div>
                 </div>
-
-                {/* JS Sandbox Section */}
-                {selectedLessonData.content && hasJavaScriptCode(selectedLessonData.content) && (
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <label className="block text-sm font-medium text-gray-700">JavaScript Sandbox</label>
-                      <button
-                        onClick={() => setShowJSSandboxModal(true)}
-                        className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                      >
-                        <Maximize2 className="w-4 h-4 mr-1" />
-                        Open Sandbox
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-600">JavaScript code detected. Open the sandbox to test the code.</p>
-                  </div>
-                )}
 
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
@@ -1445,7 +1446,7 @@ const validateForm = (): boolean => {
       )}
 
       {/* JS Sandbox Modal */}
-      {showJSSandboxModal && (
+      {showJSSandboxModal && selectedLessonData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -1458,7 +1459,16 @@ const validateForm = (): boolean => {
               </button>
             </div>
             <div className="flex-1 overflow-hidden pt-4">
-              <JSSandbox />
+              <JSSandbox 
+                code={extractJavaScriptCode(selectedLessonData.content || '') || ''}
+                onSave={(code) => {
+                  updateLesson(selectedModule!, selectedLesson!, { 
+                    content: injectJavaScriptCode(code)
+                  })
+                  setShowJSSandboxModal(false)
+                }}
+                isModal={activeTab !== "preview"}
+              />
             </div>
           </div>
         </div>
