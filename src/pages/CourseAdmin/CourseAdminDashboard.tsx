@@ -918,13 +918,19 @@ const handleCloseAnalyticsModal = () => {
                           <Listbox value={userStatusFilter} onChange={setUserStatusFilter}>
                             <div className="relative">
                               <Listbox.Button className="w-full px-3 py-2 border border-gray-300 rounded-lg text-medium text-left focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                {userStatusFilter === "all" ? "Filter by Status" : userStatusFilter}
+                                {userStatusFilter === "all"
+                                  ? "Filter by Status"
+                                  : userStatusFilter.charAt(0).toUpperCase() + userStatusFilter.slice(1)}
                               </Listbox.Button>
                               <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
                                 <Listbox.Options className="absolute mt-1 w-full bg-white shadow-lg rounded-md z-10">
-                                  {["All", "Active", "Suspended", "Deactivated"].map((opt) => (
+                                  {["all", "active", "suspended", "deactivated"].map((opt) => (
                                     <Listbox.Option key={opt} value={opt}>
-                                      {({ active }) => <div className={`${active ? "bg-gray-100" : ""} px-3 py-2 text-medium`}>{opt === 'all' ? 'Filter by Status' : opt}</div>}
+                                      {({ active }) => (
+                                        <div className={`${active ? "bg-gray-100" : ""} px-3 py-2 text-medium`}>
+                                          {opt === 'all' ? 'Filter by Status' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                        </div>
+                                      )}
                                     </Listbox.Option>
                                   ))}
                                 </Listbox.Options>
