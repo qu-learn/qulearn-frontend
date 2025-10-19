@@ -68,71 +68,89 @@ function QCNS({ tab, state, iframeRef }: QCNSProps) {
   )
 }
 
-export function CircuitSimulator({
-  circuitId,
-  lessonTitle,
-  onCircuitCreated,
-  onCircuitDeleted,
-  isModal = false
-}: CircuitSimulatorProps) {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+interface SimulatorWrapperProps {
+  tab: 'circuit' | 'network' | 'sandbox'
+  itemId?: string
+  lessonTitle?: string
+  data?: any
+  isModal: boolean
+  createMutation: any
+  updateMutation: any
+  deleteMutation: any
+  onItemCreated: ((id: string) => void) | undefined
+  onItemDeleted: (() => void) | undefined
+  saveButtonColor: string
+}
 
-  const { data: circuitData } = useGetCircuitQuery(circuitId || "", { skip: !circuitId })
-  const [createCircuit, { isLoading: isCreating }] = useCreateCircuitMutation()
-  const [updateCircuit, { isLoading: isUpdating }] = useUpdateCircuitMutation()
-  const [deleteCircuit] = useDeleteCircuitMutation()
+function SimulatorWrapper({
+  tab,
+  itemId,
+  lessonTitle,
+  data,
+  isModal,
+  createMutation,
+  updateMutation,
+  deleteMutation,
+  onItemCreated,
+  onItemDeleted,
+  saveButtonColor
+}: SimulatorWrapperProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
 
   const handleSave = async () => {
     try {
       const window = iframeRef.current?.contentWindow as any
       const currentState = window?.qulearn?.getState()
 
-      if (circuitId) {
-        // Update existing circuit
-        await updateCircuit({
-          circuitId,
-          name: `Circuit for ${lessonTitle || 'lesson'}`,
-          configuration: currentState || circuitData?.circuit.configuration
+      if (itemId) {
+        const [update] = updateMutation
+        await update({
+          [`${tab}Id`]: itemId,
+          name: `${tab.charAt(0).toUpperCase() + tab.slice(1)} for ${lessonTitle || 'lesson'}`,
+          configuration: currentState || data
         }).unwrap()
       } else {
-        // Create new circuit
-        const result = await createCircuit({
-          name: `Circuit for ${lessonTitle || 'lesson'}`,
+        const [create] = createMutation
+        const result = await create({
+          name: `${tab.charAt(0).toUpperCase() + tab.slice(1)} for ${lessonTitle || 'lesson'}`,
           configuration: currentState
         }).unwrap()
 
-        if (onCircuitCreated) {
-          onCircuitCreated(result.circuit.id)
+        if (onItemCreated) {
+          onItemCreated(result[tab].id)
         }
       }
     } catch (error) {
-      console.error("Failed to save circuit:", error)
+      console.error(`Failed to save ${tab}:`, error)
     }
   }
 
   const handleDelete = async () => {
-    if (circuitId) {
+    if (itemId) {
       try {
-        await deleteCircuit(circuitId).unwrap()
-        if (onCircuitDeleted) {
-          onCircuitDeleted()
+        const [deleteItem] = deleteMutation
+        await deleteItem(itemId).unwrap()
+        if (onItemDeleted) {
+          onItemDeleted()
         }
       } catch (error) {
-        console.error("Failed to delete circuit:", error)
+        console.error(`Failed to delete ${tab}:`, error)
       }
     }
   }
 
+  const isSaving = createMutation[1].isLoading || updateMutation[1].isLoading
+
   return (
     <div className="h-full flex flex-col">
       <QCNS
-        tab='circuit'
-        state={circuitData?.circuit.configuration}
+        tab={tab}
+        state={data}
         iframeRef={iframeRef}
       />
       {isModal && (
         <div className="flex justify-end space-x-2 px-4 py-3 border-t bg-white">
-          {circuitId && (
+          {itemId && (
             <button
               onClick={handleDelete}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -142,14 +160,43 @@ export function CircuitSimulator({
           )}
           <button
             onClick={handleSave}
-            disabled={isCreating || isUpdating}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            disabled={isSaving}
+            className={`px-4 py-2 bg-${saveButtonColor}-600 text-white rounded-lg hover:bg-${saveButtonColor}-700 transition-colors disabled:opacity-50`}
           >
-            {isCreating || isUpdating ? "Saving..." : "Save"}
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       )}
     </div>
+  )
+}
+
+export function CircuitSimulator({
+  circuitId,
+  lessonTitle,
+  onCircuitCreated,
+  onCircuitDeleted,
+  isModal = false
+}: CircuitSimulatorProps) {
+  const { data: circuitData } = useGetCircuitQuery(circuitId || "", { skip: !circuitId })
+  const createMutation = useCreateCircuitMutation()
+  const updateMutation = useUpdateCircuitMutation()
+  const deleteMutation = useDeleteCircuitMutation()
+
+  return (
+    <SimulatorWrapper
+      tab='circuit'
+      itemId={circuitId}
+      lessonTitle={lessonTitle}
+      data={circuitData?.circuit.configuration}
+      isModal={isModal}
+      createMutation={createMutation}
+      updateMutation={updateMutation}
+      deleteMutation={deleteMutation}
+      onItemCreated={onCircuitCreated}
+      onItemDeleted={onCircuitDeleted}
+      saveButtonColor='blue'
+    />
   )
 }
 
@@ -160,91 +207,44 @@ export function NetworkSimulator({
   onNetworkDeleted,
   isModal = false
 }: NetworkSimulatorProps) {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
-
   const { data: networkData } = useGetNetworkQuery(networkId || "", { skip: !networkId })
-  const [createNetwork, { isLoading: isCreating }] = useCreateNetworkMutation()
-  const [updateNetwork, { isLoading: isUpdating }] = useUpdateNetworkMutation()
-  const [deleteNetwork] = useDeleteNetworkMutation()
-
-  const handleSave = async () => {
-    try {
-      const window = iframeRef.current?.contentWindow as any
-      const currentState = window?.qulearn?.getState()
-
-      if (networkId) {
-        // Update existing network
-        await updateNetwork({
-          networkId,
-          name: `Network for ${lessonTitle || 'lesson'}`,
-          configuration: currentState || networkData?.network.configuration
-        }).unwrap()
-      } else {
-        // Create new network
-        const result = await createNetwork({
-          name: `Network for ${lessonTitle || 'lesson'}`,
-          configuration: currentState
-        }).unwrap()
-
-        if (onNetworkCreated) {
-          onNetworkCreated(result.network.id)
-        }
-      }
-    } catch (error) {
-      console.error("Failed to save network:", error)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (networkId) {
-      try {
-        await deleteNetwork(networkId).unwrap()
-        if (onNetworkDeleted) {
-          onNetworkDeleted()
-        }
-      } catch (error) {
-        console.error("Failed to delete network:", error)
-      }
-    }
-  }
+  const createMutation = useCreateNetworkMutation()
+  const updateMutation = useUpdateNetworkMutation()
+  const deleteMutation = useDeleteNetworkMutation()
 
   return (
-    <div className="h-full flex flex-col">
-      <QCNS
-        tab='network'
-        state={networkData?.network.configuration}
-        iframeRef={iframeRef}
-      />
-      {isModal && (
-        <div className="flex justify-end space-x-2 px-4 py-3 border-t bg-white">
-          {networkId && (
-            <button
-              onClick={handleDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Delete
-            </button>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={isCreating || isUpdating}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-          >
-            {isCreating || isUpdating ? "Saving..." : "Save"}
-          </button>
-        </div>
-      )}
-    </div>
+    <SimulatorWrapper
+      tab='network'
+      itemId={networkId}
+      lessonTitle={lessonTitle}
+      data={networkData?.network.configuration}
+      isModal={isModal}
+      createMutation={createMutation}
+      updateMutation={updateMutation}
+      deleteMutation={deleteMutation}
+      onItemCreated={onNetworkCreated}
+      onItemDeleted={onNetworkDeleted}
+      saveButtonColor='purple'
+    />
   )
 }
 
 export function JSSandbox() {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const dummyMutation = [() => Promise.resolve(), { isLoading: false }]
+  
   return (
-    <QCNS
+    <SimulatorWrapper
       tab='sandbox'
-      state={null}
-      iframeRef={iframeRef}
+      itemId={undefined}
+      lessonTitle={undefined}
+      data={null}
+      isModal={false}
+      createMutation={dummyMutation}
+      updateMutation={dummyMutation}
+      deleteMutation={dummyMutation}
+      onItemCreated={undefined}
+      onItemDeleted={undefined}
+      saveButtonColor='blue'
     />
   )
 }
