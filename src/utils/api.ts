@@ -61,6 +61,8 @@ import type {
     IChangePasswordRequest,
     IChangePasswordResponse,
     IGetSystemMetricsResponse, // Add this import
+    IMarkLessonCompleteRequest,
+    IMarkLessonCompleteResponse,
 } from "./types"
 
 // RTK Query API
@@ -136,7 +138,6 @@ export const api = createApi({
             providesTags: ["Course"],
         }),
 
-        // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
                 url: "/students/enrollments",
@@ -383,6 +384,19 @@ export const api = createApi({
             query: () => "/sys-admin/system-metrics",
             keepUnusedDataFor: 30, // Keep data for 30 seconds
         }),
+        
+        markLessonComplete: builder.mutation<IMarkLessonCompleteResponse, IMarkLessonCompleteRequest>({
+            query: ({ courseId, moduleId, lessonId, ...body }) => ({
+                url: `/students/enrollments/${courseId}/modules/${moduleId}/lessons/${lessonId}/complete`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Enrollment", "User"],
+        }),
+        getEnrolledCourseById: builder.query<IGetCourseByIdResponse, string>({
+            query: (courseId) => `/students/courses/${courseId}`,
+            providesTags: ["Course"],
+        }),
     }),
 })
 
@@ -435,4 +449,6 @@ export const {
     useUpdateCourseAdministratorMutation,
     useChangePasswordMutation,
     useGetSystemMetricsQuery, //New hook
+    useMarkLessonCompleteMutation,
+    useGetEnrolledCourseByIdQuery,
 } = api
