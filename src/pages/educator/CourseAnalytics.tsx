@@ -1,13 +1,77 @@
 "use client"
 
-import type React from "react"
-import { useState, Fragment } from "react"
+import React, { useState, Fragment, useRef, useEffect, isValidElement, cloneElement } from "react"
 import { ArrowLeft, Users, TrendingUp, Award, BarChart3, ChevronDown } from "lucide-react"
 import { useGetCourseAnalyticsQuery, useGetCourseByIdQuery } from "../../utils/api"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { useNavigate, useParams } from "react-router-dom"
 import { Tab, Transition, Disclosure, Menu } from "@headlessui/react"
 
+
+// StatRing: round stat card with icon, large value, and label
+interface StatRingProps {
+  icon: React.ReactNode;
+  value: number | string;
+  label: string;
+  colorGrad: [string, string];
+  progress?: number;
+}
+const StatRing: React.FC<StatRingProps> = ({ icon, value, label, colorGrad, progress = 100 }) => {
+  const size = 160;
+  const stroke = 12;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const circleRef = useRef<SVGCircleElement>(null);
+  useEffect(() => {
+    if (circleRef.current) {
+      circleRef.current.style.transition = "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)";
+    }
+  }, [progress]);
+  const dashOffset = circumference * (1 - (typeof progress === 'number' ? progress : 100) / 100);
+  let iconNode = icon;
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div className="relative flex items-center justify-center mb-2 bg-white rounded-full shadow-xl" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
+          <defs>
+            <linearGradient id={`statRingGrad-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={colorGrad[0]} />
+              <stop offset="100%" stopColor={colorGrad[1]} />
+            </linearGradient>
+          </defs>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#f3f4f6"
+            strokeWidth={stroke}
+          />
+          <circle
+            ref={circleRef}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={`url(#statRingGrad-${label})`}
+            strokeWidth={stroke}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)" }}
+          />
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="text-4xl font-extrabold text-cyan-700 leading-none drop-shadow-lg">{value}</span>
+        </span>
+      </div>
+      <div className="flex flex-col items-center mt-1">
+        <span className="mb-1">{iconNode}</span>
+        <span className="text-base font-semibold text-cyan-700 tracking-tight text-center">{label}</span>
+      </div>
+    </div>
+  );
+}
 
 const CourseAnalytics: React.FC = () => {
   const navigate = useNavigate()
@@ -58,6 +122,15 @@ const CourseAnalytics: React.FC = () => {
     { name: "In Progress", value: 100 - analyticsData.completionRate, color: "#F59E0B" },
   ]
 
+  // --- Hardcoded quiz score data for histogram demo ---
+  const quizScores = [
+    { quizName: 'Quiz 1: Basics', averageScore: 85 },
+    { quizName: 'Quiz 2: Circuits', averageScore: 72 },
+    { quizName: 'Quiz 3: Algorithms', averageScore: 90 },
+    { quizName: 'Quiz 4: Entanglement', averageScore: 65 },
+    { quizName: 'Quiz 5: Applications', averageScore: 78 },
+  ]
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Transition
@@ -90,55 +163,27 @@ const CourseAnalytics: React.FC = () => {
         enterFrom="opacity-0 scale-95"
         enterTo="opacity-100 scale-100"
       >
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-blue-200 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Enrollments</p>
-                <p className="text-2xl font-bold text-gray-900">{analyticsData.enrollmentCount}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-200 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{analyticsData.completionRate.toFixed(1)}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-200 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Average Quiz Score</p>
-                <p className="text-2xl font-bold text-gray-900">{analyticsData.averageQuizScore.toFixed(1)}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-200 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Students</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {analyticsData.studentProgress.filter((s) => s.progress > 0 && s.progress < 100).length}
-                </p>
-              </div>
-            </div>
+        <div className="w-full flex justify-center mb-12">
+          <div className="grid grid-cols-3 gap-20 w-full max-w-5xl items-center">
+            <StatRing
+              icon={<Users />}
+              value={analyticsData.enrollmentCount}
+              label="Total Enrollments"
+              colorGrad={["#38bdf8", "#0ea5e9"]}
+            />
+            <StatRing
+              icon={<TrendingUp />}
+              value={`${analyticsData.completionRate.toFixed(1)}%`}
+              label="Completion Rate"
+              colorGrad={["#34d399", "#10b981"]}
+              progress={analyticsData.completionRate}
+            />
+            <StatRing
+              icon={<BarChart3 />}
+              value={analyticsData.studentProgress.filter((s) => s.progress > 0 && s.progress < 100).length}
+              label="Active Students"
+              colorGrad={["#a78bfa", "#6366f1"]}
+            />
           </div>
         </div>
       </Transition>
@@ -177,14 +222,28 @@ const CourseAnalytics: React.FC = () => {
                         : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
                     }`}
                 >
+                  Average Quiz Score
+                </button>
+              )}
+            </Tab>
+            <Tab as={Fragment}>
+              {({ selected }) => (
+                <button
+                  className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200
+                    ${
+                      selected
+                        ? "bg-white text-cyan-700 shadow"
+                        : "text-blue-700 hover:bg-white/[0.12] hover:text-cyan-600"
+                    }`}
+                >
                   Student Details
                 </button>
               )}
             </Tab>
           </Tab.List>
-          
+
           <Tab.Panels>
-            {/* Overview Tab */}
+            {/* Overview Tab: Student Progress Distribution as Line Chart */}
             <Tab.Panel>
               <Transition
                 show={selectedTab === 0}
@@ -193,62 +252,24 @@ const CourseAnalytics: React.FC = () => {
                 enterFrom="opacity-0"
                 enterTo="opacity-100"
               >
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  {/* Student Progress Chart */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Student Progress Distribution</h3>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={progressData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                          <YAxis domain={[0, 100]} />
-                          <Tooltip formatter={(value) => [`${value}%`, "Progress"]} />
-                          <Bar dataKey="progress" fill="#3B82F6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Completion Rate Pie Chart */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Course Completion Overview</h3>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={completionData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={120}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {completionData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `${value}%`} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex justify-center space-x-6 mt-4">
-                      {completionData.map((entry, index) => (
-                        <div key={index} className="flex items-center">
-                          <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: entry.color }}></div>
-                          <span className="text-sm text-gray-600">
-                            {entry.name}: {entry.value.toFixed(1)}%
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                  <h3 className="text-lg font-bold text-gray-900 mb-6">Student Progress Distribution</h3>
+                  <div className="h-96 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={progressData} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0} height={80} />
+                        <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                        <Tooltip formatter={(value) => [`${value}%`, "Progress"]} />
+                        <Bar dataKey="progress" fill="#3B82F6" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </Transition>
             </Tab.Panel>
 
-            {/* Student Details Tab */}
+            {/* Average Quiz Score Tab: Histogram of Quiz Scores */}
             <Tab.Panel>
               <Transition
                 show={selectedTab === 1}
@@ -257,8 +278,41 @@ const CourseAnalytics: React.FC = () => {
                 enterFrom="opacity-0"
                 enterTo="opacity-100"
               >
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                  <h3 className="text-lg font-bold text-gray-900 mb-6">Quiz Score Distribution</h3>
+                  <div className="h-96 flex items-center justify-center">
+                    {quizScores.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={quizScores} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="quizName" angle={-45} textAnchor="end" interval={0} height={80} />
+                          <YAxis domain={[0, 100]} tickFormatter={(v) => `${v.toFixed(0)}%`} />
+                          <Tooltip formatter={(value) => [
+                            typeof value === 'number' ? `${value.toFixed(1)}%` : `${value}%`,
+                            "Average Score"
+                          ]} />
+                          <Bar dataKey="averageScore" fill="#F59E0B" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <span className="text-gray-400">No quiz score data available.</span>
+                    )}
+                  </div>
+                </div>
+              </Transition>
+            </Tab.Panel>
+
+            {/* Student Details Tab: Student Access/Activity Table */}
+            <Tab.Panel>
+              <Transition
+                show={selectedTab === 2}
+                as={Fragment}
+                enter="transition-opacity duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+              >
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-6">Detailed Student Progress</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-6">Student Access & Activity</h3>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -278,7 +332,7 @@ const CourseAnalytics: React.FC = () => {
                         {analyticsData.studentProgress.map((student, index) => (
                           <Transition
                             key={student.studentId}
-                            show={selectedTab === 1}
+                            show={selectedTab === 2}
                             as={Fragment}
                             enter={`transition-all duration-300 delay-${index * 50}`}
                             enterFrom="opacity-0 translate-x-4"
