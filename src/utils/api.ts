@@ -58,6 +58,8 @@ import type {
     IGetCourseAdministratorResponse,
     IDeleteCourseAdministratorResponse,
     IGetCourseAdministratorsResponse,
+    IChangePasswordRequest,
+    IChangePasswordResponse,
 } from "./types"
 
 // RTK Query API
@@ -136,7 +138,7 @@ export const api = createApi({
         // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
-                url: "/enrollments",
+                url: "/students/enrollments",
                 method: "POST",
                 body,
             }),
@@ -366,6 +368,14 @@ export const api = createApi({
                 body: cAdmin,
             }),
         }),
+        changePassword: builder.mutation<IChangePasswordResponse, IChangePasswordRequest>({
+            query: (body) => ({
+                url: "/users/me/change-password",
+                method: "PATCH",
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
     }),
 })
 
@@ -416,4 +426,5 @@ export const {
     useDeleteCourseAdministratorMutation,
     useGetCourseAdministratorQuery,
     useUpdateCourseAdministratorMutation,
+    useChangePasswordMutation,
 } = api

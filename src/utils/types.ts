@@ -10,6 +10,8 @@ export interface IUser {
   email: string
   role: Role
   avatarUrl?: string
+  bio?: string
+  certName?: string
   country?: string
   city?: string
   createdAt: string
@@ -167,10 +169,23 @@ export interface IUpdateMyProfileRequest {
   email: string
   country?: string
   city?: string
+  bio?: string
+  certName?: string
+  contactNumber?: string
 }
 
 export interface IUpdateMyProfileResponse {
   user: IUser
+}
+
+export interface IChangePasswordRequest {
+  oldPassword: string
+  newPassword: string
+}
+
+export interface IChangePasswordResponse {
+  success: boolean
+  reason?: string
 }
 
 export interface IGetCoursesResponse {
