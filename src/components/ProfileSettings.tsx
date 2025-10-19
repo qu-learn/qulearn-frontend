@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, Fragment } from "react"
+import { useState, useEffect, Fragment, useRef } from "react"
 import { ArrowLeft, Save, User, Mail, MapPin, Phone, Lock, FileText, Award, Edit, Eye, EyeOff } from "lucide-react"
-import { useGetMyProfileQuery, useUpdateMyProfileMutation } from "../utils/api"
+import { useGetMyProfileQuery, useUpdateMyProfileMutation, useChangePasswordMutation } from "../utils/api"
 import { useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
 import { Transition, Tab, Disclosure, Switch } from "@headlessui/react"
@@ -15,13 +15,16 @@ interface ProfileSettingsProps {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   const navigate = useNavigate()
+  const disclosureBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [changePassword, { isLoading: isChanging }] = useChangePasswordMutation()
+  const [toast, setToast] = useState<{ show: boolean; message: string; success: boolean }>({ show: false, message: "", success: true })
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     country: "",
     city: "",
     bio: "",
-    certificationName: "",
+    certName: "",
     contactNumber: "",
     password: "",
   })
@@ -50,7 +53,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
         country: profileData.user.country || "",
         city: profileData.user.city || "",
         bio: (profileData.user as any).bio || "",
-        certificationName: (profileData.user as any).certificationName || "",
+        certName: (profileData.user as any).certName || "",
         contactNumber: (profileData.user as any).contactNumber || "",
         password: "",
       })
@@ -76,6 +79,42 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
       }
     } catch (error) {
       console.error("Profile update failed:", error)
+    }
+  }
+
+  // map backend reason codes to friendly messages
+  const reasonToMessage = (reason?: string) => {
+    switch (reason) {
+      case "missing_passwords": return "Please provide both current and new passwords."
+      case "user_not_found": return "User not found."
+      case "incorrect_old_password": return "Current password is incorrect."
+      case "new_password_same_as_old": return "New password must be different from the current one."
+      default: return "Failed to change password. Please try again."
+    }
+  }
+
+  // auto-hide toast
+  useEffect(() => {
+    if (!toast.show) return
+    const t = setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3500)
+    return () => clearTimeout(t)
+  }, [toast.show])
+
+  const handleChangePassword = async () => {
+    try {
+      const res = await changePassword({ oldPassword: passwordForm.oldPassword, newPassword: passwordForm.newPassword }).unwrap()
+      if (res?.success) {
+        // collapse panel, reset form
+        disclosureBtnRef.current?.click()
+        setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
+        setPasswordVisibility({ old: false, new: false, confirm: false })
+        setToast({ show: true, message: "Password changed successfully.", success: true })
+      } else {
+        setToast({ show: true, message: reasonToMessage((res as any)?.reason), success: false })
+      }
+    } catch (err: any) {
+      const reason = err?.data?.reason || err?.message
+      setToast({ show: true, message: reasonToMessage(reason), success: false })
     }
   }
 
@@ -278,8 +317,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                               </label>
                               <input
                                 type="text"
-                                name="certificationName"
-                                value={formData.certificationName}
+                                name="certName"
+                                value={formData.certName}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Name as it should appear on certificates"
@@ -400,24 +439,27 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                         <Disclosure>
                           {({ open }) => (
                             <>
-                              <Disclosure.Button className="flex w-full justify-between items-center rounded-lg bg-blue-50 px-4 py-4 text-left text-sm font-medium text-blue-900 hover:bg-blue-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 transition-all duration-200">
-                                <div className="flex items-center">
-                                  <Lock className="w-5 h-5 mr-3" />
-                                  <span>Password Settings</span>
-                                </div>
-                                <Edit className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 text-blue-500 transition-transform duration-200`} />
-                              </Disclosure.Button>
-                              <Transition
-                                enter="transition duration-300 ease-out"
-                                enterFrom="transform scale-95 opacity-0"
-                                enterTo="transform scale-100 opacity-100"
-                                leave="transition duration-200 ease-out"
-                                leaveFrom="transform scale-100 opacity-100"
-                                leaveTo="transform scale-95 opacity-0"
+                              <Disclosure.Button
+                                ref={disclosureBtnRef}
+                                className="flex w-full justify-between items-center rounded-lg bg-blue-50 px-4 py-4 text-left text-sm font-medium text-blue-900 hover:bg-blue-100 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 transition-all duration-200"
                               >
-                                <Disclosure.Panel className="px-4 pt-4 pb-2">
-                                  <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                                    <h4 className="font-medium text-gray-900 mb-3">Change Password</h4>
+                                 <div className="flex items-center">
+                                   <Lock className="w-5 h-5 mr-3" />
+                                   <span>Password Settings</span>
+                                 </div>
+                                 <Edit className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 text-blue-500 transition-transform duration-200`} />
+                               </Disclosure.Button>
+                               <Transition
+                                 enter="transition duration-300 ease-out"
+                                 enterFrom="transform scale-95 opacity-0"
+                                 enterTo="transform scale-100 opacity-100"
+                                 leave="transition duration-200 ease-out"
+                                 leaveFrom="transform scale-100 opacity-100"
+                                 leaveTo="transform scale-95 opacity-0"
+                               >
+                                 <Disclosure.Panel className="px-4 pt-4 pb-2">
+                                   <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                     <h4 className="font-medium text-gray-900 mb-3">Change Password</h4>
                                     
                                     <div>
                                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -489,6 +531,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                                       <button
                                         type="button"
                                         onClick={() => {
+                                          // programmatically click the Disclosure button to collapse the panel
+                                          disclosureBtnRef.current?.click()
                                           setShowPasswordEdit(false)
                                           setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
                                           setPasswordVisibility({ old: false, new: false, confirm: false })
@@ -499,17 +543,17 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => {
-                                          // Handle password change logic here
-                                          console.log("Password change:", passwordForm)
-                                          setShowPasswordEdit(false)
-                                          setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
-                                          setPasswordVisibility({ old: false, new: false, confirm: false })
-                                        }}
+                                        onClick={handleChangePassword}
                                         className="px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-900 transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                        disabled={!passwordForm.oldPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword}
+                                        disabled={
+                                          !passwordForm.oldPassword ||
+                                          !passwordForm.newPassword ||
+                                          passwordForm.newPassword !== passwordForm.confirmPassword ||
+                                          passwordForm.oldPassword === passwordForm.newPassword ||
+                                          isChanging
+                                        }
                                       >
-                                        Confirm
+                                        {isChanging ? "Changing..." : "Confirm"}
                                       </button>
                                     </div>
                                   </div>
@@ -545,6 +589,29 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
           </div>
         </div>
       </div>
+
+      {/* Toast (bottom-right) */}
+      <Transition
+        show={toast.show}
+        as={Fragment}
+        appear={true}
+        enter="transform transition duration-200"
+        enterFrom="opacity-0 translate-y-4"
+        enterTo="opacity-100 translate-y-0"
+        leave="transform transition duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-4"
+      >
+        <div
+          aria-live="polite"
+          role="status"
+          className="fixed bottom-6 right-6 z-[9999] pointer-events-auto"
+        >
+          <div className={`max-w-sm w-full px-4 py-3 rounded-lg shadow-lg ${toast.success ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+            <div className="text-sm">{toast.message}</div>
+          </div>
+        </div>
+      </Transition>
     </div>
   )
 }
