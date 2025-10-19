@@ -24,7 +24,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
     country: "",
     city: "",
     bio: "",
-    certificationName: "",
+    certName: "",
     contactNumber: "",
     password: "",
   })
@@ -53,7 +53,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
         country: profileData.user.country || "",
         city: profileData.user.city || "",
         bio: (profileData.user as any).bio || "",
-        certificationName: (profileData.user as any).certificationName || "",
+        certName: (profileData.user as any).certName || "",
         contactNumber: (profileData.user as any).contactNumber || "",
         password: "",
       })
@@ -317,8 +317,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                               </label>
                               <input
                                 type="text"
-                                name="certificationName"
-                                value={formData.certificationName}
+                                name="certName"
+                                value={formData.certName}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Name as it should appear on certificates"
