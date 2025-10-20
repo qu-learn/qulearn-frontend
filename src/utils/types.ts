@@ -1,3 +1,4 @@
+import { Star } from 'lucide-react';
 // Types
 export type Role = "student" | "educator" | "course-administrator" | "system-administrator"
 export type CourseStatus = "draft" | "under-review" | "published" | "rejected"
@@ -412,6 +413,7 @@ export interface IAddEducatorRequest {
   nationalId: string
   residentialAddress: string
   gender: string
+  status?: AccountStatus
 }
 
 export interface IAddEducatorResponse {
