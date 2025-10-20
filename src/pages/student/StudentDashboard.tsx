@@ -172,87 +172,61 @@ const StudentDashboard: React.FC = () => {
               </Link>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-10 justify-center">
+            <div className="flex flex-wrap gap-22 justify-center">
               {dashboardData.enrolledCourses.slice(0, 3).map((enrollment) => (
                 <Link
                   key={enrollment.course.id}
-                    to={`/courses/${enrollment.course.id}/dashboard`}
-                    className="flex-none w-96 h-[600px] bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
+                  to={`/courses/${enrollment.course.id}/dashboard`}
+                  className="w-96 h-[600px] bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col self-start"
                 >
                   <div className="relative">
                     <img
                       src={enrollment.course.thumbnailUrl || "/1.png"}
                       alt={enrollment.course.title}
-                      className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300 rounded-t-2xl"
                     />
-                    <div className="absolute top-4 left-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold shadow-md ${
-                          enrollment.course.difficultyLevel === "beginner"
-                            ? "bg-green-500 text-white"
-                            : enrollment.course.difficultyLevel === "intermediate"
-                              ? "bg-yellow-500 text-white"
-                              : "bg-red-500 text-white"
-                        }`}
-                      >
-                        {enrollment.course.difficultyLevel}
-                      </span>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-md">
-                        {enrollment.course.category}
-                      </span>
-                    </div>
                   </div>
-                  
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 group-hover:text-cyan-700 transition-colors duration-200 line-clamp-1">
-                      {enrollment.course.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 text-base line-clamp-2 leading-relaxed">
-                      {enrollment.course.subtitle}
-                    </p>
 
-                    <div className="flex items-center text-sm text-gray-500 mb-4">
-                      <Users className="w-4 h-4 mr-1" />
-                      <span className="mr-3 truncate">By {enrollment.course.instructor.fullName}</span>
-                      <Clock className="w-4 h-4 mr-1" />
-                      <span>{new Date(enrollment.course.createdAt).toLocaleDateString()}</span>
+                  <div className="p-8 flex flex-col flex-grow">
+                    <h3 className="font-bold text-2xl text-gray-900 mb-3 line-clamp-1 group-hover:text-cyan-700">{enrollment.course.title}</h3>
+                    <p className="text-lg text-gray-600 mb-6 line-clamp-2 min-h-[40px]">{enrollment.course.subtitle}</p>
+
+                    <div className="flex items-center justify-between text-base text-gray-600 mb-4 pb-4 border-b border-gray-100">
+                      <span className="font-semibold">By {enrollment.course.instructor.fullName}</span>
+                      <span className="text-gray-500">{new Date(enrollment.course.createdAt).toLocaleDateString()}</span>
                     </div>
 
-                    {/* Progress Bar */}
-                      <div className="mb-6">
+                    {/* Progress */}
+                    <div className="mb-4">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-base font-medium text-cyan-700">Progress</span>
-                        <span className="text-base text-cyan-600">{enrollment.progressPercentage}%</span>
+                        <span className="text-sm font-medium text-cyan-700">Progress</span>
+                        <span className="text-sm font-medium text-cyan-600">{enrollment.progressPercentage}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-cyan-500 h-2 rounded-full"
-                          style={{ width: `${enrollment.progressPercentage}%` }}
-                        ></div>
+                        <div className="bg-cyan-500 h-2 rounded-full" style={{ width: `${enrollment.progressPercentage}%` }} />
                       </div>
                     </div>
 
-                    {enrollment.course.prerequisites && enrollment.course.prerequisites.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs font-semibold text-gray-700 mb-2">Prerequisites:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {enrollment.course.prerequisites.slice(0, 2).map((prereq: string, index: number) => (
-                            <span key={index} className="px-2 py-1 bg-cyan-50 text-cyan-600 text-xs rounded-md font-medium">
-                              {prereq}
-                            </span>
-                          ))}
-                          {enrollment.course.prerequisites.length > 2 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-medium">
-                              +{enrollment.course.prerequisites.length - 2} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Continue Learning button intentionally removed */}
+                    <div className="flex gap-3 mb-4 items-center">
+                      <span
+                        className={`px-4 py-2 rounded-full text-sm font-bold shadow-sm backdrop-blur-sm ${
+                          enrollment.course.difficultyLevel === "beginner"
+                            ? "bg-green-100/90 text-green-800"
+                            : enrollment.course.difficultyLevel === "intermediate"
+                              ? "bg-yellow-100/90 text-yellow-800"
+                              : "bg-red-100/90 text-red-800"
+                        }`}
+                      >
+                        {enrollment.course.difficultyLevel?.charAt(0).toUpperCase() + enrollment.course.difficultyLevel?.slice(1) || 'Beginner'}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{enrollment.course.category}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 mt-auto">
+                      <button className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-6 rounded-xl text-lg font-bold hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 flex items-center justify-center">
+                        Continue Learning
+                      </button>
+                    </div>
                   </div>
                 </Link>
               ))}
