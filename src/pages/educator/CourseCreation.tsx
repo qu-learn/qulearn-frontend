@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react"
 import { ArrowLeft, Save, Eye, Plus, Trash2, X, Maximize2 } from "lucide-react"
-import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
+import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery, useUpdateGamificationSettingsMutation } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
 import { LessonContent, hasJavaScriptCode, extractJavaScriptCode, injectJavaScriptCode } from "../../components/LessonContent"
 import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 import { Tab, Transition, Disclosure } from "@headlessui/react"
+import type { BadgeCriteriaType, IUpdateGamificationSettingsRequest } from "../../utils/types"
 
 interface CourseForm {
   title: string
@@ -102,6 +103,7 @@ const CourseCreation: React.FC = () => {
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId });
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
+  const [updateGamificationSettings] = useUpdateGamificationSettingsMutation();
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [isFormValid, setIsFormValid] = useState(true);
@@ -337,6 +339,49 @@ const validateForm = (): boolean => {
     )
   }
 
+  function mapCriteria(criteria: string): { type: BadgeCriteriaType; threshold: number } {
+    if (criteria.startsWith("Complete ")) {
+      if (criteria.includes("lessons")) {
+        const num = parseInt(criteria.match(/\d+/)?.[0] || "0", 10);
+        return { type: "courses-completed", threshold: num || (criteria === "Complete all lessons" ? -1 : 0) };
+      }
+      if (criteria.includes("simulations")) {
+        const num = parseInt(criteria.match(/\d+/)?.[0] || "0", 10);
+        return { type: "simulations-run", threshold: num || (criteria === "Complete course" ? -1 : 0) };
+      }
+      if (criteria === "Complete course") {
+        return { type: "courses-completed", threshold: -1 };
+      }
+    }
+    if (criteria.startsWith("Pass ")) {
+      const num = parseInt(criteria.match(/\d+/)?.[0] || "0", 10);
+      return { type: "quizzes-answered", threshold: num || (criteria === "Pass all quizzes" ? -1 : 0) };
+    }
+    if (criteria === "Score 90% or higher") {
+      return { type: "quizzes-answered", threshold: 90 };
+    }
+    if (criteria === "Perfect quiz score") {
+      return { type: "quizzes-answered", threshold: 100 };
+    }
+    // fallback
+    return { type: "courses-completed", threshold: 0 };
+  }
+
+  function convertGamificationSettingsToUpdateRequest(
+    settings: GamificationSettings
+  ): IUpdateGamificationSettingsRequest {
+    return {
+      pointsPerLesson: settings.pointRules.lessonPoints,
+      pointsPerQuiz: settings.pointRules.quizPoints,
+      pointsPerSimulation: settings.pointRules.simulationPoints,
+      badges: settings.badges.map(badge => ({
+        name: badge.name,
+        criteria: mapCriteria(badge.criteria),
+        iconUrl: badge.iconUrl
+      }))
+    };
+  }
+  
   const handleSave = async () => {
     if (!validateForm()) {
       setIsFormValid(false);
@@ -345,13 +390,15 @@ const validateForm = (): boolean => {
     try {
       const courseData = {
         ...courseForm,
-        gamificationSettings,
         modules
       }
+      const req = convertGamificationSettingsToUpdateRequest(gamificationSettings);
       if (courseId) {
         await updateCourse({ courseId, course: courseData }).unwrap()
+        await updateGamificationSettings({ courseId, ...req }).unwrap()
       } else {
         const result = await createCourse(courseData).unwrap()
+        await updateGamificationSettings({ courseId: result.course.id, ...req }).unwrap()
         navigate(`/courses/${result.course.id}`)
       }
     } catch (error) {
