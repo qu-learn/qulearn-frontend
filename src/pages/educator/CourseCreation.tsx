@@ -1403,7 +1403,7 @@ const validateForm = (): boolean => {
                                     )}
                                   </div>
                                 </div>
-                              ))
+                              ))}
                             </div>
                           )}
                         </div>
