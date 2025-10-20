@@ -35,7 +35,7 @@ function QCNS({ tab, state, iframeRef }: QCNSProps) {
   useEffect(() => {
     console.log("Reloading iframe due to tab/state change")
     const id = crypto.randomUUID()
-    iframeRef.current!.src = `/QCNS/ui/qcns-simulator.html?id=${id}`
+    iframeRef.current!.src = `/QCNS/app/index.html?id=${id}`
   }, [tab, state])
 
   const handleMessage = useMemo(() => {
@@ -75,7 +75,7 @@ function QCNS({ tab, state, iframeRef }: QCNSProps) {
 }
 
 interface SimulatorWrapperProps {
-  tab: 'circuit' | 'network' | 'sandbox'
+  tab: 'circuit' | 'network'
   itemId?: string
   lessonTitle?: string
   data?: any
