@@ -19,6 +19,7 @@ import {
   useDeleteEducatorMutation,
   useGetCourseAdminDashboardQuery,
   useGetCourseAdminCoursesQuery,
+  useUpdateCourseStatusMutation,
   useDeleteCourseAdminMutation
 } from "../../utils/api";
 
@@ -77,6 +78,7 @@ const CourseAdminDashboard = () => {
   const [addEducator, { isLoading: isAddingEducator }] = useAddEducatorMutation();
   const [updateEducator, { isLoading: isUpdatingEducator }] = useUpdateEducatorMutation();
   const [deleteEducator, { isLoading: isDeletingEducator }] = useDeleteEducatorMutation();
+  const [updateCourseStatus, { isLoading: isUpdatingCourseStatus }] = useUpdateCourseStatusMutation();
   const [deleteCourseAdmin, { isLoading: isDeletingCourse }] = useDeleteCourseAdminMutation();
 
 
@@ -268,12 +270,17 @@ const CourseAdminDashboard = () => {
     try {
       if (action === "approve" || action === "reject" || action === "delete") {
         if (action === "delete") {
-        const confirmDelete = window.confirm("Are you sure you want to delete this course?");
-        if (!confirmDelete) return;
+          const confirmDelete = window.confirm("Are you sure you want to delete this course?");
+          if (!confirmDelete) return;
 
-        // ✅ Call backend API
-        await deleteCourseAdmin(courseId).unwrap();
-      }
+          // ✅ Call backend API to delete
+          await deleteCourseAdmin(courseId).unwrap();
+        } else {
+          // approve/reject -> call updateCourseStatus mutation
+          const status = action === "approve" ? "published" : "rejected";
+          await updateCourseStatus({ courseId, status }).unwrap();
+        }
+
         setCourses(prevCourses => {
           const updatedCourses = prevCourses.map(course => {
             if (course.id === courseId) {
@@ -301,7 +308,7 @@ const CourseAdminDashboard = () => {
       setModalMessage(`Course ${action}d successfully!`);
     } catch (error: any) {
       console.error(`Failed to ${action} course:`, error);
-      setModalMessage(`Failed to ${action} course: ${error?.message ?? String(error)}`);
+      setModalMessage(`Failed to ${action} course: ${error?.data?.message ?? error?.message ?? "Likely a server error."}`);
     }
   };
 
