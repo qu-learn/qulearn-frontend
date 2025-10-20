@@ -315,7 +315,7 @@ const CourseAdminDashboard = () => {
       setModalMessage(`Course ${action}d successfully!`);
     } catch (error: any) {
       console.error(`Failed to ${action} course:`, error);
-      setModalMessage(`Failed to ${action} course: ${error?.data?.message ?? error?.message ?? "Likely a server error."}`);
+      setModalMessage(`Failed to ${action} course: ${error?.data?.message ?? error?.message ?? "An unexpected error occurred. Please try again or contact support."}`);
     }
   };
 
