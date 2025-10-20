@@ -201,7 +201,7 @@ const SiteAdminDashboard = () => {
     // ensure editingAdmin has accountStatus (backend expects accountStatus in update payload)
     setEditingAdmin({ ...admin, accountStatus: admin.status || "active" });
     // clear previous form errors when opening edit modal
-    setFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
+    setFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "", password: "" });
   };
   const handleCloseEditAdmin = () => setEditingAdmin(null);
   const handleSaveEditedAdmin = async (e: React.FormEvent) => {
