@@ -2,7 +2,7 @@
 
 import React, { useState, Fragment, useMemo, useEffect, useRef } from "react"
 import { BookOpen, Users, TrendingUp, Plus, Edit, BarChart3, Trash2, MoreVertical, Search } from "lucide-react"
-import { useGetEducatorDashboardQuery, useGetMyCoursesQuery, useGetMyProfileQuery } from "../../utils/api"
+import { useGetEducatorDashboardQuery, useGetMyCoursesQuery, useGetMyProfileQuery, useDeleteCourseEducatorMutation } from "../../utils/api"
 import { useNavigate } from "react-router-dom"
 import { Tab, Dialog, Transition, Menu } from "@headlessui/react"
 
@@ -473,12 +473,14 @@ const CourseCard: React.FC<{ course: any; navigate: any }> = ({ course, navigate
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // use RTK Query mutation to delete course as educator / course-admin
+  const [deleteCourseEducator] = useDeleteCourseEducatorMutation()
+
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      // TODO: Implement delete course API endpoint
-      console.log("Delete course:", course.id)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await deleteCourseEducator(course.id).unwrap()
+      // on success, close dialog — getMyCourses will be invalidated/refetched by RTK
       setShowDeleteDialog(false)
     } catch (error) {
       console.error("Failed to delete course:", error)
@@ -519,9 +521,7 @@ const CourseCard: React.FC<{ course: any; navigate: any }> = ({ course, navigate
                       {({ active }) => (
                         <button
                           onClick={() => setShowDeleteDialog(true)}
-                          className={`$${'{'}
-                            active ? 'bg-red-50' : ''
-                          } group flex w-full items-center rounded-md px-3 py-2 text-sm text-red-600`}
+                          className={`${active ? 'bg-red-50' : ''} group flex w-full items-center rounded-md px-3 py-2 text-sm text-red-600`}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Course
