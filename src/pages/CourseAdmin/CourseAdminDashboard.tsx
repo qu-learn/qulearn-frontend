@@ -27,13 +27,17 @@ const initialMockCoursesData = {
     {
       id: "c1",
       title: "Quantum Foundations",
-      instructor: { fullName: "Dr. Smith" },
+      instructor: { id: "inst1", fullName: "Dr. Smith" },
       status: "published",
       createdAt: "2024-01-15T10:30:00Z",
       enrollments: 450,
       category: "Quantum Basics",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "beginner" as const,
+      prerequisites: [],
+      modules: [],
       enrollmentHistory: [
         { month: 'Jan', students: 50 }, { month: 'Feb', students: 70 },
         { month: 'Mar', students: 120 }, { month: 'Apr', students: 150 },
@@ -44,13 +48,17 @@ const initialMockCoursesData = {
     {
       id: "c2",
       title: "Advanced Quantum Algorithms",
-      instructor: { fullName: "Prof. Johnson" },
+      instructor: { id: "inst2", fullName: "Prof. Johnson" },
       status: "under-review",
       createdAt: "2024-02-20T14:20:00Z",
       enrollments: 0,
       category: "Advanced Algorithms",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "advanced" as const,
+      prerequisites: [],
+      modules: [],
       enrollmentHistory: [
         { month: 'Feb', students: 0 }, { month: 'Mar', students: 0 },
         { month: 'Apr', students: 0 }, { month: 'May', students: 0 },
@@ -60,13 +68,17 @@ const initialMockCoursesData = {
     {
       id: "c3",
       title: "Quantum Computing Basics",
-      instructor: { fullName: "Dr. Williams" },
+      instructor: { id: "inst3", fullName: "Dr. Williams" },
       status: "published",
       createdAt: "2024-03-10T09:15:00Z",
       enrollments: 320,
       category: "Quantum Basics",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "beginner" as const,
+      prerequisites: [],
+      modules: [],
       enrollmentHistory: [
         { month: 'Mar', students: 80 }, { month: 'Apr', students: 120 },
         { month: 'May', students: 200 }, { month: 'Jun', students: 280 },
@@ -76,13 +88,17 @@ const initialMockCoursesData = {
     {
       id: "c5",
       title: "Introduction to AI",
-      instructor: { fullName: "Dr. Alice" },
+      instructor: { id: "inst4", fullName: "Dr. Alice" },
       status: "published",
       createdAt: "2024-04-01T10:00:00Z",
       enrollments: 600,
       category: "Artificial Intelligence",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "intermediate" as const,
+      prerequisites: [],
+      modules: [],
       enrollmentHistory: [
         { month: 'Apr', students: 100 }, { month: 'May', students: 250 },
         { month: 'Jun', students: 400 }, { month: 'Jul', students: 600 },
@@ -91,25 +107,33 @@ const initialMockCoursesData = {
     {
       id: "c6",
       title: "Machine Learning Fundamentals",
-      instructor: { fullName: "Dr. Bob" },
+      instructor: { id: "inst5", fullName: "Dr. Bob" },
       status: "rejected",
       createdAt: "2024-04-10T11:00:00Z",
       enrollments: 0,
       category: "Artificial Intelligence",
       subtitle: "",
       description: "",
-      enrollmentHistory: [], // No enrollments as it's rejected
+      thumbnailUrl: "",
+      difficultyLevel: "intermediate" as const,
+      prerequisites: [],
+      modules: [],
+      enrollmentHistory: [],
     },
     {
       id: "c7",
       title: "Data Science with Python",
-      instructor: { fullName: "Prof. Carol" },
+      instructor: { id: "inst6", fullName: "Prof. Carol" },
       status: "published",
       createdAt: "2024-05-05T13:00:00Z",
       enrollments: 720,
       category: "Data Science",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "intermediate" as const,
+      prerequisites: [],
+      modules: [],
       enrollmentHistory: [
         { month: 'May', students: 150 }, { month: 'Jun', students: 400 },
         { month: 'Jul', students: 720 },
@@ -120,11 +144,17 @@ const initialMockCoursesData = {
     {
       id: "c4",
       title: "Quantum Machine Learning",
-      instructor: { fullName: "Dr. Brown" },
+      instructor: { id: "inst7", fullName: "Dr. Brown" },
+      status: "under-review",
       createdAt: "2024-03-25T11:45:00Z",
       category: "Quantum Basics",
       subtitle: "",
       description: "",
+      thumbnailUrl: "",
+      difficultyLevel: "advanced" as const,
+      prerequisites: [],
+      modules: [],
+      enrollments: 0,
       enrollmentHistory: [],
     },
   ],
@@ -208,16 +238,22 @@ const CourseAdminDashboard = () => {
   useEffect(() => {
     if (!courseAdminCoursesData?.courses) return;
     const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((c: any) => ({
-      // map and provide sensible defaults for fields that ICourse requires
       id: c.id,
       title: c.title,
-      instructor: c.instructor ?? { fullName: "Unknown" },
+      instructor: {
+        id: c.instructor?.userId || c.instructor?.id || "unknown",
+        fullName: c.instructor?.fullName || "Unknown"
+      },
       status: (c.status ?? "draft") as CourseStatus,
       createdAt: c.createdAt ?? new Date().toISOString(),
       enrollments: (c as any).enrollments ?? 0,
       category: c.category ?? "Uncategorized",
       subtitle: c.subtitle ?? "",
       description: c.description ?? "",
+      thumbnailUrl: c.thumbnailUrl ?? "",
+      difficultyLevel: c.difficultyLevel ?? "beginner",
+      prerequisites: c.prerequisites ?? [],
+      modules: c.modules ?? [],
       enrollmentHistory: (c as any).enrollmentHistory ?? [],
     }));
     setCourses(apiCourses);
@@ -304,7 +340,7 @@ const CourseAdminDashboard = () => {
 
     filtered = filtered.filter((user) => {
       const userStatus = (user.status || "active").toLowerCase();
-      return userStatusFilter === "all" || userStatus === userStatusFilter;
+      return userStatusFilter.toLowerCase() === "all" || userStatus === userStatusFilter.toLowerCase();
     });
 
     return filtered;
@@ -442,7 +478,7 @@ const handleCloseAnalyticsModal = () => {
       const newUserResponse = await addEducator({
         ...formData,
         password: formData.password || "defaultPassword",
-      } as any).unwrap?.().catch?.(() => null);
+      } as any).unwrap();
 
       const newUser: IUser = {
         id: newUserResponse?.educator?.id ?? newId,
@@ -501,8 +537,8 @@ const handleCloseAnalyticsModal = () => {
       };
       if (updatedData.password) payload.password = updatedData.password;
 
-      const res = await updateEducator({ educatorId: userId, educator: payload } as any).unwrap?.().catch?.(() => null);
-      const updatedUser = res?.educator ?? { id: userId, ...payload };
+      const res = await updateEducator({ educatorId: userId, educator: payload } as any).unwrap();
+      const updatedUser = res.educator;
       setUsers(prev => prev.map(u => (u.id === updatedUser.id ? ({ ...u, ...updatedUser } as any) : u)));
       setModalMessage("User updated successfully!");
       setEditFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
@@ -522,7 +558,7 @@ const handleCloseAnalyticsModal = () => {
       return;
     }
     try {
-      await deleteEducator(userToDelete.id).unwrap?.().catch?.(() => null);
+      await deleteEducator(userToDelete.id).unwrap();
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
       setModalMessage(`User "${userToDelete.fullName}" deleted successfully!`);
       setUserToDelete(null);
@@ -918,13 +954,19 @@ const handleCloseAnalyticsModal = () => {
                           <Listbox value={userStatusFilter} onChange={setUserStatusFilter}>
                             <div className="relative">
                               <Listbox.Button className="w-full px-3 py-2 border border-gray-300 rounded-lg text-medium text-left focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                {userStatusFilter === "all" ? "Filter by Status" : userStatusFilter}
+                                {userStatusFilter === "all"
+                                  ? "Filter by Status"
+                                  : userStatusFilter.charAt(0).toUpperCase() + userStatusFilter.slice(1)}
                               </Listbox.Button>
                               <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
                                 <Listbox.Options className="absolute mt-1 w-full bg-white shadow-lg rounded-md z-10">
-                                  {["All", "Active", "Suspended", "Deactivated"].map((opt) => (
+                                  {["all", "active", "suspended", "deactivated"].map((opt) => (
                                     <Listbox.Option key={opt} value={opt}>
-                                      {({ active }) => <div className={`${active ? "bg-gray-100" : ""} px-3 py-2 text-medium`}>{opt === 'all' ? 'Filter by Status' : opt}</div>}
+                                      {({ active }) => (
+                                        <div className={`${active ? "bg-gray-100" : ""} px-3 py-2 text-medium`}>
+                                          {opt === 'all' ? 'Filter by Status' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                        </div>
+                                      )}
                                     </Listbox.Option>
                                   ))}
                                 </Listbox.Options>

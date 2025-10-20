@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Users } from "lucide-react";
-import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation } from "../../utils/api";
+import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation, useGetSystemMetricsQuery } from "../../utils/api";
 
 // Mock dashboard data
 const mockDashboardData = {
@@ -99,9 +99,32 @@ const SiteAdminDashboard = () => {
   const [deleteCourseAdministrator, { isLoading: deleting }] = useDeleteCourseAdministratorMutation()
 
   // Mock API responses (assuming these are static for this example)
-  const dashboardData = mockDashboardData;
+  //const dashboardData = mockDashboardData;
   const usersLoading = false;
-  const dashboardLoading = false;
+  //const dashboardLoading = false;
+
+  // Add this hook
+  const { 
+    data: systemMetrics, 
+    isLoading: metricsLoading, 
+    error: metricsError,
+    refetch: refetchMetrics 
+  } = useGetSystemMetricsQuery(undefined, {
+    pollingInterval: activeTab === "dashboard" ? 30000 : 0, // Poll every 30s when on dashboard
+    skip: activeTab !== "dashboard" // Skip when not on dashboard tab
+  });
+
+  // Use real data when available, fallback to mock
+  const dashboardData = systemMetrics ? {
+    ...mockDashboardData,
+    cpuUsage: systemMetrics.cpuUsage,
+    ramUsage: systemMetrics.ramUsage,
+    diskUsage: systemMetrics.diskUsage,
+    activeConnections: systemMetrics.activeConnections
+  } : mockDashboardData;
+
+  // Update the dashboardLoading variable
+  const dashboardLoading = metricsLoading;
 
   const handleAddUserClick = () => {
     setShowAddUserForm(true);
@@ -315,17 +338,20 @@ const SiteAdminDashboard = () => {
                       <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
                         <circle cx="32" cy="32" r="26" stroke="#8b5cf6" strokeWidth="5" fill="none"
-                          strokeDasharray={`${(mockDashboardData.cpuUsage / 100) * 163.4} 163.4`} 
+                          strokeDasharray={`${(dashboardData.cpuUsage / 100) * 163.4} 163.4`} 
                           strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-purple-600">
-                        {mockDashboardData.cpuUsage}%
+                        {dashboardData.cpuUsage}%
                       </div>
                     </div>
                   </div>
                   <div className="text-center sm:text-right min-w-0 flex-1">
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.cpuUsage}%</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{dashboardData.cpuUsage}%</p>
                     <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">CPU Usage</p>
+                    {metricsError && (
+                      <p className="text-xs text-red-500">Live data unavailable</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -338,17 +364,20 @@ const SiteAdminDashboard = () => {
                       <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
                         <circle cx="32" cy="32" r="26" stroke="#f97316" strokeWidth="5" fill="none"
-                          strokeDasharray={`${(mockDashboardData.ramUsage / 100) * 163.4} 163.4`}
+                          strokeDasharray={`${(dashboardData.ramUsage / 100) * 163.4} 163.4`}
                           strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-orange-600">
-                        {mockDashboardData.ramUsage}%
+                        {dashboardData.ramUsage}%
                       </div>
                     </div>
                   </div>
                   <div className="text-center sm:text-right min-w-0 flex-1">
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.ramUsage}%</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{dashboardData.ramUsage}%</p>
                     <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">RAM Usage</p>
+                    {metricsError && (
+                      <p className="text-xs text-red-500">Live data unavailable</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -361,17 +390,20 @@ const SiteAdminDashboard = () => {
                       <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
                         <circle cx="32" cy="32" r="26" stroke="#06b6d4" strokeWidth="5" fill="none"
-                          strokeDasharray={`${(mockDashboardData.diskUsage / 100) * 163.4} 163.4`}
+                          strokeDasharray={`${(dashboardData.diskUsage / 100) * 163.4} 163.4`}
                           strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-cyan-600">
-                        {mockDashboardData.diskUsage}%
+                        {dashboardData.diskUsage}%
                       </div>
                     </div>
                   </div>
                   <div className="text-center sm:text-right min-w-0 flex-1">
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.diskUsage}%</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{dashboardData.diskUsage}%</p>
                     <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">Disk Usage</p>
+                    {metricsError && (
+                      <p className="text-xs text-red-500">Live data unavailable</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -384,20 +416,43 @@ const SiteAdminDashboard = () => {
                       <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="26" stroke="#e5e7eb" strokeWidth="5" fill="none" />
                         <circle cx="32" cy="32" r="26" stroke="#6366f1" strokeWidth="5" fill="none"
-                          strokeDasharray={`${(mockDashboardData.activeConnections / 500) * 163.4} 163.4`}
+                          strokeDasharray={`${(dashboardData.activeConnections / 500) * 163.4} 163.4`}
                           strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-indigo-600">
-                        {Math.round((mockDashboardData.activeConnections / 500) * 100)}%
+                        {Math.round((dashboardData.activeConnections / 500) * 100)}%
                       </div>
                     </div>
                   </div>
                   <div className="text-center sm:text-right min-w-0 flex-1">
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{mockDashboardData.activeConnections}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 truncate">{dashboardData.activeConnections}</p>
                     <p className="text-xs sm:text-sm text-gray-600 font-medium whitespace-nowrap">Active Connections</p>
+                    {metricsError && (
+                      <p className="text-xs text-red-500">Live data unavailable</p>
+                    )}
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Add a refresh button and debug info */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">System Status</h3>
+                {systemMetrics && (
+                  <p className="text-sm text-green-600">✓ Real-time data loaded</p>
+                )}
+                {metricsError && (
+                  <p className="text-sm text-red-600">⚠ Using fallback data</p>
+                )}
+              </div>
+              <button
+                onClick={() => refetchMetrics()}
+                disabled={metricsLoading}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              >
+                {metricsLoading ? "Refreshing..." : "Refresh"}
+              </button>
             </div>
 
             {/* Chart Section */}

@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { ArrowLeft, BookOpen, Download, FileText, Video, ExternalLink, Play, Clock, Users } from "lucide-react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { useGetCourseByIdQuery } from "../../utils/api"
+import { useGetCourseByIdQuery, useGetEnrolledCourseByIdQuery, useMarkLessonCompleteMutation } from "../../utils/api"
 import type { ILesson, IModule } from "../../utils/types"
 import { LessonContent } from "../../components/LessonContent"
 
@@ -13,7 +13,25 @@ const LessonDetail: React.FC = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("overview")
 
-  const { data: courseData, isLoading, error } = useGetCourseByIdQuery(courseId!)
+  const { data: courseData, isLoading, error, refetch } = useGetCourseByIdQuery(courseId!)
+  // enrollment/completion info for this user+course (include refetch to invalidate/refresh cache)
+  const { data: enrolledData, refetch: refetchEnrolled } = useGetEnrolledCourseByIdQuery(courseId!)
+   const [markLessonComplete, { isLoading: isMarking }] = useMarkLessonCompleteMutation()
+ 
+  // determine if the current lesson is already completed according to the enrolled-course endpoint
+  const isLessonCompleted = useMemo(() => {
+    if (!enrolledData || !lessonId) return false
+    // common shapes: enrolledData.completion OR enrolledData.enrolledCourse OR enrolledData.enrollment
+    const enrollment = (enrolledData as any).completion || (enrolledData as any).enrolledCourse || (enrolledData as any).enrollment || enrolledData
+    if (!enrollment || !Array.isArray(enrollment.completions)) return false
+    for (const comp of enrollment.completions) {
+      if (!comp?.lessonIds) continue
+      for (const li of comp.lessonIds) {
+        if (li?.lessonId === lessonId) return true
+      }
+    }
+    return false
+  }, [enrolledData, lessonId])
 
   if (isLoading) {
     return (
@@ -91,6 +109,23 @@ const LessonDetail: React.FC = () => {
   const handleNextLesson = () => {
     if (nextLesson) {
       navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)
+    }
+  }
+
+  const handleMarkComplete = async () => {
+    if (!courseId || !currentModule || !currentLesson) return
+    try {
+      await markLessonComplete({
+        courseId: courseId,
+        moduleId: currentModule.id,
+        lessonId: currentLesson.id,
+      }).unwrap()
+      // refresh course + enrolled-course data to invalidate/update cache for this course
+      await refetch()
+      await refetchEnrolled?.()
+    } catch (e) {
+      // ignore here — APIError is handled globally by existing error middleware
+      console.error("Mark complete failed", e)
     }
   }
 
@@ -307,8 +342,12 @@ const LessonDetail: React.FC = () => {
               )}
             </div>
 
-            <button className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors font-medium">
-              Mark as Complete
+            <button
+              onClick={handleMarkComplete}
+              disabled={isMarking || isLessonCompleted}
+              className={`bg-cyan-600 text-white px-6 py-2 rounded-lg transition-colors font-medium ${isMarking || isLessonCompleted ? 'opacity-70 cursor-not-allowed' : 'hover:bg-cyan-700'}`}
+            >
+              {isLessonCompleted ? 'Completed' : isMarking ? 'Marking...' : 'Mark as Complete'}
             </button>
 
             <div className="flex-1 max-w-xs text-right">
