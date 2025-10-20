@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { ArrowLeft, Save, Eye, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Eye, Plus, Trash2, X, Maximize2 } from "lucide-react"
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "../../utils/api"
 import { useNavigate, useParams } from "react-router-dom"
-import { LessonContent } from "../../components/LessonContent"
+import { LessonContent, hasJavaScriptCode, extractJavaScriptCode, injectJavaScriptCode } from "../../components/LessonContent"
+import { CircuitSimulator, NetworkSimulator, JSSandbox } from "../../components/QCNS"
 import { Tab, Transition, Disclosure } from "@headlessui/react"
 
 interface CourseForm {
@@ -94,10 +95,16 @@ const CourseCreation: React.FC = () => {
   const [newPrerequisite, setNewPrerequisite] = useState("")
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
+  const [showCircuitModal, setShowCircuitModal] = useState(false)
+  const [showNetworkModal, setShowNetworkModal] = useState(false)
+  const [showJSSandboxModal, setShowJSSandboxModal] = useState(false)
 
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId })
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation()
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation()
+
+  const selectedModuleData = modules.find((m) => m.id === selectedModule)
+  const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
 
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
   const [isFormValid, setIsFormValid] = useState(true)
@@ -353,8 +360,31 @@ const validateForm = (): boolean => {
   }
 }
 
-  const selectedModuleData = modules.find((m) => m.id === selectedModule)
-  const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
+  const handleCircuitCreated = (circuitId: string) => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { circuitId })
+      setShowCircuitModal(false)
+    }
+  }
+
+  const handleCircuitDeleted = () => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { circuitId: undefined })
+    }
+  }
+
+  const handleNetworkCreated = (networkId: string) => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { networkId })
+      setShowNetworkModal(false)
+    }
+  }
+
+  const handleNetworkDeleted = () => {
+    if (selectedModule && selectedLesson) {
+      updateLesson(selectedModule, selectedLesson, { networkId: undefined })
+    }
+  }
 
 
   const FieldError: React.FC<{ error?: string }> = ({ error }) => {
@@ -788,9 +818,27 @@ const validateForm = (): boolean => {
                         </div>
 
                         <div>
-                          <label className="block text-base font-medium text-gray-700 mb-2">Content (Markdown)</label>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-base font-medium text-gray-700">Content (Markdown)</label>
+                            <button
+                              onClick={() => {
+                                // If no JS code exists, create a template
+                                if (!hasJavaScriptCode(selectedLessonData.content || '')) {
+                                  const defaultCode = '// Write your JavaScript code here\nconsole.log("Hello, World!");'
+                                  updateLesson(selectedModule!, selectedLesson!, { 
+                                    content: injectJavaScriptCode(defaultCode)
+                                  })
+                                }
+                                setShowJSSandboxModal(true)
+                              }}
+                              className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              {hasJavaScriptCode(selectedLessonData.content || '') ? 'Edit' : 'Add'} JS Code
+                            </button>
+                          </div>
                           <textarea
-                            value={selectedLessonData.content}
+                            value={selectedLessonData.content || ''}
                             onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { content: e.target.value })}
                             rows={8}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-base"
@@ -798,27 +846,73 @@ const validateForm = (): boolean => {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-base font-medium text-gray-700 mb-2">Circuit ID (Optional)</label>
-                            <input
-                              type="text"
-                              value={selectedLessonData.circuitId || ""}
-                              onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { circuitId: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Circuit simulator ID"
-                            />
+                        {/* Circuit Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <label className="block text-base font-medium text-gray-700">Circuit Simulator</label>
+                            <div className="flex items-center space-x-2">
+                              {selectedLessonData.circuitId ? (
+                                <>
+                                  <button
+                                    onClick={handleCircuitDeleted}
+                                    className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-1" />
+                                    Delete
+                                  </button>
+                                  <button
+                                    onClick={() => setShowCircuitModal(true)}
+                                    className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                                  >
+                                    <Maximize2 className="w-4 h-4 mr-1" />
+                                    Maximize
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => setShowCircuitModal(true)}
+                                  className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add Circuit
+                                </button>
+                              )}
+                            </div>
                           </div>
+                        </div>
 
-                          <div>
-                            <label className="block text-base font-medium text-gray-700 mb-2">Network ID (Optional)</label>
-                            <input
-                              type="text"
-                              value={selectedLessonData.networkId || ""}
-                              onChange={(e) => updateLesson(selectedModule!, selectedLesson!, { networkId: e.target.value })}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Network simulator ID"
-                            />
+                        {/* Network Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <label className="block text-base font-medium text-gray-700">Network Simulator</label>
+                            <div className="flex items-center space-x-2">
+                              {selectedLessonData.networkId ? (
+                                <>
+                                  <button
+                                    onClick={handleNetworkDeleted}
+                                    className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-1" />
+                                    Delete
+                                  </button>
+                                  <button
+                                    onClick={() => setShowNetworkModal(true)}
+                                    className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                                  >
+                                    <Maximize2 className="w-4 h-4 mr-1" />
+                                    Maximize
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => setShowNetworkModal(true)}
+                                  className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add Network
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1241,7 +1335,7 @@ const validateForm = (): boolean => {
                             <div className="space-y-3">
                               {module.lessons.map((lesson, lessonIndex) => (
                                 <div key={lesson.id} className="flex flex-col justify-between p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex items-center">
+                                  <div className="flex items-center mb-3">
                                     <span className="text-sm text-gray-500 mr-3">{lessonIndex + 1}.</span>
                                     <span className="font-medium text-gray-900">{lesson.title}</span>
                                     <div className="flex items-center space-x-2 ml-4">
@@ -1256,11 +1350,56 @@ const validateForm = (): boolean => {
                                           Network
                                         </span>
                                       )}
+                                      {lesson.content && hasJavaScriptCode(lesson.content) && (
+                                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">JS Sandbox</span>
+                                      )}
                                     </div>
                                   </div>
-                                  <div>
+                                  <div className="space-y-3">
                                     {lesson.content && (
                                       <LessonContent content={lesson.content} />
+                                    )}
+                                    
+                                    {/* Interactive Elements */}
+                                    {(lesson.circuitId || lesson.networkId || (lesson.content && hasJavaScriptCode(lesson.content))) && (
+                                      <div className="flex items-center space-x-3 pt-3 border-t">
+                                        {lesson.circuitId && (
+                                          <button
+                                            onClick={() => {
+                                              setSelectedModule(module.id)
+                                              setSelectedLesson(lesson.id)
+                                              setShowCircuitModal(true)
+                                            }}
+                                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                          >
+                                            View Circuit Simulator
+                                          </button>
+                                        )}
+                                        {lesson.networkId && (
+                                          <button
+                                            onClick={() => {
+                                              setSelectedModule(module.id)
+                                              setSelectedLesson(lesson.id)
+                                              setShowNetworkModal(true)
+                                            }}
+                                            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                                          >
+                                            View Network Simulator
+                                          </button>
+                                        )}
+                                        {lesson.content && hasJavaScriptCode(lesson.content) && (
+                                          <button
+                                            onClick={() => {
+                                              setSelectedModule(module.id)
+                                              setSelectedLesson(lesson.id)
+                                              setShowJSSandboxModal(true)
+                                            }}
+                                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                          >
+                                            View JS Sandbox
+                                          </button>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
                                 </div>
@@ -1277,6 +1416,91 @@ const validateForm = (): boolean => {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+
+      {/* Circuit Modal */}
+      {showCircuitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">
+                {selectedLessonData?.circuitId ? "View Circuit" : "Create Circuit"}
+              </h3>
+              <button
+                onClick={() => setShowCircuitModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <CircuitSimulator 
+                circuitId={selectedLessonData?.circuitId}
+                lessonTitle={selectedLessonData?.title}
+                onCircuitCreated={activeTab === "preview" ? undefined : handleCircuitCreated}
+                onCircuitDeleted={activeTab === "preview" ? undefined : handleCircuitDeleted}
+                isModal={activeTab !== "preview"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Network Modal */}
+      {showNetworkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">
+                {selectedLessonData?.networkId ? "View Network" : "Create Network"}
+              </h3>
+              <button
+                onClick={() => setShowNetworkModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <NetworkSimulator 
+                networkId={selectedLessonData?.networkId}
+                lessonTitle={selectedLessonData?.title}
+                onNetworkCreated={activeTab === "preview" ? undefined : handleNetworkCreated}
+                onNetworkDeleted={activeTab === "preview" ? undefined : handleNetworkDeleted}
+                isModal={activeTab !== "preview"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JS Sandbox Modal */}
+      {showJSSandboxModal && selectedLessonData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-xl font-bold text-gray-900">JavaScript Sandbox</h3>
+              <button
+                onClick={() => setShowJSSandboxModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4">
+              <JSSandbox 
+                code={extractJavaScriptCode(selectedLessonData.content || '') || ''}
+                onSave={(code) => {
+                  updateLesson(selectedModule!, selectedLesson!, { 
+                    content: injectJavaScriptCode(code)
+                  })
+                  setShowJSSandboxModal(false)
+                }}
+                isModal={activeTab !== "preview"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
 

@@ -19,126 +19,127 @@ import {
   useDeleteEducatorMutation,
   useGetCourseAdminDashboardQuery,
   useGetCourseAdminCoursesQuery,
+  useDeleteCourseAdminMutation
 } from "../../utils/api";
 
 // Mock courses data (initial data, will be moved to state for mutability)
 const initialMockCoursesData = {
   courses: [
-    {
-      id: "c1",
-      title: "Quantum Foundations",
-      instructor: { id: "inst1", fullName: "Dr. Smith" },
-      status: "published",
-      createdAt: "2024-01-15T10:30:00Z",
-      enrollments: 450,
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "beginner" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [
-        { month: 'Jan', students: 50 }, { month: 'Feb', students: 70 },
-        { month: 'Mar', students: 120 }, { month: 'Apr', students: 150 },
-        { month: 'May', students: 200 }, { month: 'Jun', students: 250 },
-        { month: 'Jul', students: 450 },
-      ],
-    },
-    {
-      id: "c2",
-      title: "Advanced Quantum Algorithms",
-      instructor: { id: "inst2", fullName: "Prof. Johnson" },
-      status: "under-review",
-      createdAt: "2024-02-20T14:20:00Z",
-      enrollments: 0,
-      category: "Advanced Algorithms",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "advanced" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [
-        { month: 'Feb', students: 0 }, { month: 'Mar', students: 0 },
-        { month: 'Apr', students: 0 }, { month: 'May', students: 0 },
-        { month: 'Jun', students: 0 }, { month: 'Jul', students: 0 },
-      ],
-    },
-    {
-      id: "c3",
-      title: "Quantum Computing Basics",
-      instructor: { id: "inst3", fullName: "Dr. Williams" },
-      status: "published",
-      createdAt: "2024-03-10T09:15:00Z",
-      enrollments: 320,
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "beginner" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [
-        { month: 'Mar', students: 80 }, { month: 'Apr', students: 120 },
-        { month: 'May', students: 200 }, { month: 'Jun', students: 280 },
-        { month: 'Jul', students: 320 },
-      ],
-    },
-    {
-      id: "c5",
-      title: "Introduction to AI",
-      instructor: { id: "inst4", fullName: "Dr. Alice" },
-      status: "published",
-      createdAt: "2024-04-01T10:00:00Z",
-      enrollments: 600,
-      category: "Artificial Intelligence",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "intermediate" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [
-        { month: 'Apr', students: 100 }, { month: 'May', students: 250 },
-        { month: 'Jun', students: 400 }, { month: 'Jul', students: 600 },
-      ],
-    },
-    {
-      id: "c6",
-      title: "Machine Learning Fundamentals",
-      instructor: { id: "inst5", fullName: "Dr. Bob" },
-      status: "rejected",
-      createdAt: "2024-04-10T11:00:00Z",
-      enrollments: 0,
-      category: "Artificial Intelligence",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "intermediate" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [],
-    },
-    {
-      id: "c7",
-      title: "Data Science with Python",
-      instructor: { id: "inst6", fullName: "Prof. Carol" },
-      status: "published",
-      createdAt: "2024-05-05T13:00:00Z",
-      enrollments: 720,
-      category: "Data Science",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "intermediate" as const,
-      prerequisites: [],
-      modules: [],
-      enrollmentHistory: [
-        { month: 'May', students: 150 }, { month: 'Jun', students: 400 },
-        { month: 'Jul', students: 720 },
-      ],
-    },
+    // {
+    //   id: "c1",
+    //   title: "Quantum Foundations",
+    //   instructor: { id: "inst1", fullName: "Dr. Smith" },
+    //   status: "published",
+    //   createdAt: "2024-01-15T10:30:00Z",
+    //   enrollments: 450,
+    //   category: "Quantum Basics",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "beginner" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [
+    //     { month: 'Jan', students: 50 }, { month: 'Feb', students: 70 },
+    //     { month: 'Mar', students: 120 }, { month: 'Apr', students: 150 },
+    //     { month: 'May', students: 200 }, { month: 'Jun', students: 250 },
+    //     { month: 'Jul', students: 450 },
+    //   ],
+    // },
+    // {
+    //   id: "c2",
+    //   title: "Advanced Quantum Algorithms",
+    //   instructor: { id: "inst2", fullName: "Prof. Johnson" },
+    //   status: "under-review",
+    //   createdAt: "2024-02-20T14:20:00Z",
+    //   enrollments: 0,
+    //   category: "Advanced Algorithms",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "advanced" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [
+    //     { month: 'Feb', students: 0 }, { month: 'Mar', students: 0 },
+    //     { month: 'Apr', students: 0 }, { month: 'May', students: 0 },
+    //     { month: 'Jun', students: 0 }, { month: 'Jul', students: 0 },
+    //   ],
+    // },
+    // {
+    //   id: "c3",
+    //   title: "Quantum Computing Basics",
+    //   instructor: { id: "inst3", fullName: "Dr. Williams" },
+    //   status: "published",
+    //   createdAt: "2024-03-10T09:15:00Z",
+    //   enrollments: 320,
+    //   category: "Quantum Basics",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "beginner" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [
+    //     { month: 'Mar', students: 80 }, { month: 'Apr', students: 120 },
+    //     { month: 'May', students: 200 }, { month: 'Jun', students: 280 },
+    //     { month: 'Jul', students: 320 },
+    //   ],
+    // },
+    // {
+    //   id: "c5",
+    //   title: "Introduction to AI",
+    //   instructor: { id: "inst4", fullName: "Dr. Alice" },
+    //   status: "published",
+    //   createdAt: "2024-04-01T10:00:00Z",
+    //   enrollments: 600,
+    //   category: "Artificial Intelligence",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "intermediate" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [
+    //     { month: 'Apr', students: 100 }, { month: 'May', students: 250 },
+    //     { month: 'Jun', students: 400 }, { month: 'Jul', students: 600 },
+    //   ],
+    // },
+    // {
+    //   id: "c6",
+    //   title: "Machine Learning Fundamentals",
+    //   instructor: { id: "inst5", fullName: "Dr. Bob" },
+    //   status: "rejected",
+    //   createdAt: "2024-04-10T11:00:00Z",
+    //   enrollments: 0,
+    //   category: "Artificial Intelligence",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "intermediate" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [],
+    // },
+    // {
+    //   id: "c7",
+    //   title: "Data Science with Python",
+    //   instructor: { id: "inst6", fullName: "Prof. Carol" },
+    //   status: "published",
+    //   createdAt: "2024-05-05T13:00:00Z",
+    //   enrollments: 720,
+    //   category: "Data Science",
+    //   subtitle: "",
+    //   description: "",
+    //   thumbnailUrl: "",
+    //   difficultyLevel: "intermediate" as const,
+    //   prerequisites: [],
+    //   modules: [],
+    //   enrollmentHistory: [
+    //     { month: 'May', students: 150 }, { month: 'Jun', students: 400 },
+    //     { month: 'Jul', students: 720 },
+    //   ],
+    // },
   ],
   pendingCourses: [
     {
@@ -207,6 +208,8 @@ const CourseAdminDashboard = () => {
   const [addEducator, { isLoading: isAddingEducator }] = useAddEducatorMutation();
   const [updateEducator, { isLoading: isUpdatingEducator }] = useUpdateEducatorMutation();
   const [deleteEducator, { isLoading: isDeletingEducator }] = useDeleteEducatorMutation();
+  const [deleteCourseAdmin] = useDeleteCourseAdminMutation();
+
 
   const { data: educators } = useGetEducatorsQuery();
   const { data: dashboardData, isLoading: dashboardLoading, isError: dashboardError } = useGetCourseAdminDashboardQuery();
@@ -233,6 +236,9 @@ const CourseAdminDashboard = () => {
     if (!educators) return;
     setUsers(educators.educators ?? []);
   }, [educators]);
+
+  const [courseToDelete, setCourseToDelete] = useState<ICourse | null>(null);
+
 
   // When API data arrives map to ICourse shape and replace local state
   useEffect(() => {
@@ -356,6 +362,13 @@ const CourseAdminDashboard = () => {
   const handleCourseAction = async (courseId: string, action: string) => {
     try {
       if (action === "approve" || action === "reject" || action === "delete") {
+        if (action === "delete") {
+        const confirmDelete = window.confirm("Are you sure you want to delete this course?");
+        if (!confirmDelete) return;
+
+        // ✅ Call backend API
+        await deleteCourseAdmin(courseId).unwrap();
+      }
         setCourses(prevCourses => {
           const updatedCourses = prevCourses.map(course => {
             if (course.id === courseId) {
@@ -386,6 +399,17 @@ const CourseAdminDashboard = () => {
       setModalMessage(`Failed to ${action} course: ${error?.message ?? String(error)}`);
     }
   };
+
+  const handleConfirmDeleteCourse = () => {
+  if (!courseToDelete) return;
+
+  // Call your API or state update logic to delete the course
+  console.log("Deleting course:", courseToDelete.title);
+
+  // Close modal after deletion
+  setCourseToDelete(null);
+};
+
 
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
 
@@ -845,18 +869,71 @@ const handleCloseAnalyticsModal = () => {
                                   </button>
 
                                   <button
-                                    onClick={() => handleCourseAction(course.id, "delete")}
-                                    className="px-3 py-1 text-sm font-medium rounded border border-red-500 text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
-                                    aria-label={`Delete ${course.title}`}
-                                  >
-                                    Delete
-                                  </button>
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCourseToDelete(course); // <-- This opens the modal
+                                  }}
+                                  className="px-3 py-1 text-sm font-medium rounded border border-red-600 text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
+                                  aria-label={`Delete ${course.title}`}
+                                >
+                                  Delete
+                                </button>
+
+
                                 </div>
                               </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
+                        {/* Place this once in your component, not inside <td> */}
+                      <Transition appear show={!!courseToDelete} as={Fragment}>
+                        <Dialog as="div" className="relative z-50" onClose={() => setCourseToDelete(null)}>
+                          <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                          >
+                            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+                          </Transition.Child>
+
+                          <div className="fixed inset-0 overflow-y-auto">
+                            <div className="flex min-h-full items-center justify-center p-4">
+                              <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                                  Confirm Delete
+                                </Dialog.Title>
+                                <div className="mt-3 text-sm text-gray-700">
+                                    Are you sure you want to delete the course "{courseToDelete?.title}"?
+                                </div>
+                                <div className="mt-6 flex justify-end space-x-2">
+                                  <button
+                                    type="button"
+                                    className="px-4 py-2 bg-gray-100 rounded-md"
+                                    onClick={() => setCourseToDelete(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                    onClick={handleConfirmDeleteCourse}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </Dialog.Panel>
+                              </Transition.Child>
+                            </div>
+                          </div>
+                        </Dialog>
+                      </Transition>
+
                       </div>
                     )}
 
@@ -867,13 +944,13 @@ const handleCloseAnalyticsModal = () => {
                       {pendingCourses && pendingCourses.length > 0 ? (
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-cyan-700 text-white">
+                            <thead className="bg-gray-50">
                               <tr>
-                                <th className="px-4 py-3 text-left text-medium font-semibold">Course Title</th>
-                                <th className="px-4 py-3 text-left text-medium font-semibold">Instructor</th>
-                                <th className="px-4 py-3 text-left text-medium font-semibold">Submitted On</th>
-                                <th className="px-4 py-3 text-left text-medium font-semibold">Category</th>
-                                <th className="px-4 py-3 text-left text-medium font-semibold">Actions</th>
+                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Course Title</th>
+                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Submitted On</th>
+                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">

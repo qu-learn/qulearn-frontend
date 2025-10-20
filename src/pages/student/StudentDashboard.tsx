@@ -1,13 +1,85 @@
 "use client"
 
-import type React from "react"
-import { BookOpen, Award, Zap, TrendingUp, Target, Users, Clock } from "lucide-react"
+import React, { useRef, useEffect, useState } from "react"
+import { BookOpen, Award, Zap, TrendingUp, Target, Users, Clock, X } from "lucide-react"
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { Link } from "react-router-dom"
 import { useGetMyDashboardQuery } from "../../utils/api"
 // import Footer from "../../components/Footer"
 
+// StatRing: round stat card with animated ring and centered value
+type StatRingProps = {
+  icon: React.ReactNode
+  value: number | string
+  label: string
+  colorGrad: [string, string]
+  progress?: number
+}
+
+const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingProps) => {
+  const size = 160
+  const stroke = 12
+  const radius = (size - stroke) / 2
+  const circumference = 2 * Math.PI * radius
+  const circleRef = useRef<SVGCircleElement | null>(null)
+  useEffect(() => {
+    if (circleRef.current) {
+      circleRef.current.style.transition = "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)"
+    }
+  }, [progress])
+  const dashOffset = circumference * (1 - (progress || 0) / 100)
+
+  let iconNode = icon
+  if (React.isValidElement(icon)) {
+    const iconEl = icon as React.ReactElement<any>
+    iconNode = React.cloneElement(iconEl, {
+      className: [iconEl.props.className || "", "w-7 h-7 text-blue-600"].join(" ").trim(),
+    })
+  }
+
+  return (
+    <div className="flex items-center">
+      <div className="relative bg-white rounded-full shadow-xl" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
+          <defs>
+            <linearGradient id={`statRingGrad-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={colorGrad[0]} />
+              <stop offset="100%" stopColor={colorGrad[1]} />
+            </linearGradient>
+          </defs>
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth={stroke} />
+          <circle
+            ref={circleRef}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={`url(#statRingGrad-${label})`}
+            strokeWidth={stroke}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)" }}
+          />
+        </svg>
+
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="text-4xl font-extrabold text-cyan-700 leading-none">{value}</span>
+        </span>
+      </div>
+      <div className="ml-6 flex flex-col items-start">
+        <span className="mb-1">{iconNode}</span>
+        <span className="text-xl font-semibold text-cyan-700 tracking-tight">{label}</span>
+      </div>
+    </div>
+  )
+}
+
 const StudentDashboard: React.FC = () => {
   const { data: dashboardData, isLoading, error } = useGetMyDashboardQuery()
+  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(null)
+  const [selectedBadge, setSelectedBadge] = useState<any | null>(null)
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -34,126 +106,55 @@ const StudentDashboard: React.FC = () => {
 
   return (
     <>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-[1500px] mx-auto px-10 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cyan-700 mb-2">Welcome Back!</h1>
-        <p className="text-cyan-600">Continue your quantum computing journey</p>
+        <h1 className="text-5xl font-extrabold text-cyan-700 mb-2">Welcome Back!</h1>
+        <p className="text-xl text-cyan-600">Continue your quantum computing journey</p>
       </div>
 
-      {/* Stats Overview - compact icon tiles */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <div className="flex flex-col items-center py-4">
-          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
-            <Target className="w-6 h-6 text-cyan-600" />
+      {/* Stats Overview - Circular Stat Rings (match Educator design) */}
+      <div className="mb-12">
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[900px] grid grid-cols-4 gap-12 items-center justify-items-center px-4">
+        <StatRing
+          icon={<Target className="w-7 h-7 text-cyan-600" />}
+          value={dashboardData.points.toLocaleString()}
+          label="Total Points"
+          colorGrad={["#60a5fa", "#06b6d4"]}
+          progress={100}
+        />
+        <StatRing
+          icon={<Award className="w-7 h-7 text-amber-500" />}
+          value={dashboardData.badges.length}
+          label="Badges Earned"
+          colorGrad={["#f59e0b", "#f97316"]}
+          progress={100}
+        />
+        <StatRing
+          icon={<TrendingUp className="w-7 h-7 text-orange-500" />}
+          value={`${dashboardData.learningStreak}d`}
+          label="Learning Streak"
+          colorGrad={["#fb923c", "#fb7185"]}
+          progress={100}
+        />
+        <StatRing
+          icon={<BookOpen className="w-7 h-7 text-purple-600" />}
+          value={dashboardData.enrolledCourses.length}
+          label="Enrolled Courses"
+          colorGrad={["#a78bfa", "#7c3aed"]}
+          progress={100}
+        />
           </div>
-          <p className="mt-2 text-sm text-gray-600">Total Points</p>
-          <p className="text-2xl font-bold text-cyan-700">{dashboardData.points.toLocaleString()}</p>
-        </div>
-
-        <div className="flex flex-col items-center py-4">
-          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
-            <Award className="w-6 h-6 text-amber-500" />
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Badges Earned</p>
-          <p className="text-2xl font-bold text-cyan-700">{dashboardData.badges.length}</p>
-        </div>
-
-        <div className="flex flex-col items-center py-4">
-          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-orange-500" />
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Learning Streak</p>
-          <p className="text-2xl font-bold text-cyan-700">{dashboardData.learningStreak}d</p>
-        </div>
-
-        <div className="flex flex-col items-center py-4">
-          <div className="w-12 h-12 bg-cyan-50 rounded-lg flex items-center justify-center">
-            <BookOpen className="w-6 h-6 text-purple-600" />
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Enrolled Courses</p>
-          <p className="text-2xl font-bold text-cyan-700">{dashboardData.enrolledCourses.length}</p>
         </div>
       </div>
 
-      {/* Circle badges with colored borders */}
-      {/* <div className="mb-8">
-        <div className="grid grid-cols-4 gap-6">
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-cyan-500">
-              <span className="text-xl font-bold text-cyan-600">{dashboardData.points.toLocaleString()}</span>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">Total Points</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-amber-500">
-              <span className="text-xl font-bold text-amber-600">{dashboardData.badges.length}</span>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">Badges Earned</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-orange-500">
-              <span className="text-xl font-bold text-orange-600">{dashboardData.learningStreak}d</span>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">Learning Streak</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-purple-600">
-              <span className="text-xl font-bold text-purple-600">{dashboardData.enrolledCourses.length}</span>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">Enrolled Courses</p>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Timer-style counters (professional) */}
-      {/* <div className="mb-12">
-        <h3 className="sr-only">Timer counters</h3>
-        <div className="grid grid-cols-4 gap-6">
-          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
-            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
-              <Target className="w-6 h-6 text-cyan-600" />
-            </div>
-            <div className="text-3xl font-mono font-semibold text-cyan-700">{dashboardData.points.toLocaleString()}</div>
-            <div className="text-sm text-gray-500 mt-1">Total Points</div>
-          </div>
-
-          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
-            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
-              <Award className="w-6 h-6 text-amber-500" />
-            </div>
-            <div className="text-3xl font-mono font-semibold text-amber-600">{dashboardData.badges.length}</div>
-            <div className="text-sm text-gray-500 mt-1">Badges Earned</div>
-          </div>
-
-          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
-            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
-              <Clock className="w-6 h-6 text-orange-500" />
-            </div>
-            <div className="text-3xl font-mono font-semibold text-orange-600">{dashboardData.learningStreak}</div>
-            <div className="text-sm text-gray-500 mt-1">Learning Streak (days)</div>
-          </div>
-
-          <div className="flex flex-col items-center bg-gray-50 py-6 rounded-lg">
-            <div className="bg-white rounded-full p-3 shadow-sm mb-3">
-              <BookOpen className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="text-3xl font-mono font-semibold text-purple-600">{dashboardData.enrolledCourses.length}</div>
-            <div className="text-sm text-gray-500 mt-1">Enrolled Courses</div>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Comparative bar-style view removed per request */}
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Current Courses (use MyCourses layout: no extra white container) */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-cyan-700">My Courses</h2>
-            <Link to="/my-courses" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
+            <h2 className="text-3xl font-bold text-cyan-700">My Courses</h2>
+            <Link to="/my-courses" className="inline-flex items-center px-3 py-1 bg-white text-cyan-700 rounded-md text-sm font-medium shadow-sm hover:bg-gray-50">
               View All
             </Link>
           </div>
@@ -175,8 +176,8 @@ const StudentDashboard: React.FC = () => {
               {dashboardData.enrolledCourses.slice(0, 3).map((enrollment) => (
                 <Link
                   key={enrollment.course.id}
-                  to={`/courses/${enrollment.course.id}/dashboard`}
-                  className="flex-none w-80 h-[520px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
+                    to={`/courses/${enrollment.course.id}/dashboard`}
+                    className="flex-none w-96 h-[600px] bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer block group flex flex-col"
                 >
                   <div className="relative">
                     <img
@@ -205,14 +206,14 @@ const StudentDashboard: React.FC = () => {
                   </div>
                   
                   <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-cyan-700 transition-colors duration-200 line-clamp-1">
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 group-hover:text-cyan-700 transition-colors duration-200 line-clamp-1">
                       {enrollment.course.title}
                     </h3>
-                    <p className="text-gray-600 mb-4 text-sm line-clamp-2 leading-relaxed">
+                    <p className="text-gray-600 mb-4 text-base line-clamp-2 leading-relaxed">
                       {enrollment.course.subtitle}
                     </p>
 
-                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
                       <Users className="w-4 h-4 mr-1" />
                       <span className="mr-3 truncate">By {enrollment.course.instructor.fullName}</span>
                       <Clock className="w-4 h-4 mr-1" />
@@ -220,10 +221,10 @@ const StudentDashboard: React.FC = () => {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mb-4">
+                      <div className="mb-6">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-cyan-700">Progress</span>
-                        <span className="text-sm text-cyan-600">{enrollment.progressPercentage}%</span>
+                        <span className="text-base font-medium text-cyan-700">Progress</span>
+                        <span className="text-base text-cyan-600">{enrollment.progressPercentage}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -258,110 +259,136 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Browse Courses Section */}
-      <div className="mt-8 bg-blue-200 rounded-xl shadow-lg p-8">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
-            <p className="text-gray-600 text-lg">Discover courses tailored to your interests and learning path</p>
+        {/* Browse Courses Section - full width promotional band */}
+      <div className="w-full bg-blue-200">
+        <div className="w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-12">
+          <div className="flex-1 md:pr-8 text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-bold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
+            <p className="text-base md:text-lg text-gray-700">Discover courses tailored to your interests and learning path</p>
           </div>
-          <div className="ml-8">
-              <Link
+          <div className="mt-6 md:mt-0 md:ml-6">
+            <Link
+              to="/courses"
+              className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg text-base md:text-lg font-semibold transition-colors flex items-center space-x-3 shadow-md"
+            >
+              <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
+              <span>Browse All Courses</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+               {/* Browse Courses Section */}
+       {/* <div className="mt-8 bg-blue-200 rounded-xl shadow-lg p-8">
+         <div className="flex items-center justify-between">
+          <div className="flex-1">
+           <h2 className="text-2xl font-bold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
+             <p className="text-gray-600 text-lg">Discover courses tailored to your interests and learning path</p>
+          </div>
+           <div className="ml-8">
+               <Link
                 to="/courses"
-                className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-7 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 text-lg"
               >
                 <BookOpen className="w-5 h-5" />
                 <span>Browse All Courses</span>
               </Link>            
           </div>
         </div>
-      </div>
+      </div> */}
 
-        {/* Recent Achievements (no white container, match MyCourses layout) */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-cyan-700">Recent Achievements</h2>
-            <Link to="/achievements" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
+
+        {/* Recent Achievements removed: consolidated into My achievements section above */}
+
+        {/* My Achievements (badges preview) */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-3xl font-bold text-cyan-700">My achievements</h2>
+            <Link to="/achievements" className="inline-flex items-center px-3 py-1 bg-white text-cyan-700 rounded-md text-sm font-medium shadow-sm hover:bg-gray-50">
               View All
             </Link>
           </div>
-          <div className="space-y-4">
-            {dashboardData.achievements.length === 0 ? (
-              <div className="text-center py-8">
-                <Award className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No achievements yet</p>
-                <p className="text-sm text-gray-500">Complete lessons to earn your first badge!</p>
-              </div>
-            ) : (
-              dashboardData.achievements.slice(0, 3).map((achievement, index) => (
-                <div key={index} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                  <img
-                    src={achievement.badge.iconUrl || "/2.png"}
-                    alt={achievement.badge.name}
-                    className="w-12 h-12 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{achievement.badge.name}</h3>
-                    <p className="text-sm text-gray-600">{achievement.badge.description}</p>
-                    <p className="text-xs text-gray-500">
-                      Earned {new Date(achievement.achievedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+
+          {dashboardData.badges.length === 0 ? (
+            <div className="text-center py-6">
+              <Award className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No badges yet — complete lessons to earn badges.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-4">
+              {dashboardData.badges.slice(0, 8).map((badge: any) => (
+                <button
+                  key={badge.id}
+                  onClick={() => {
+                    setSelectedBadge(badge)
+                    setIsBadgeModalOpen(true)
+                  }}
+                  className="bg-gradient-to-br from-cyan-50 to-blue-50 p-4 rounded-lg border-2 border-cyan-200 hover:shadow-lg hover:border-cyan-400 transition-all duration-200"
+                >
+                  <img src={badge.iconUrl || '/placeholder.svg'} alt={badge.name} className="w-16 h-16 mx-auto mb-3" />
+                  <h3 className="font-semibold text-gray-900 text-center text-sm">{badge.name}</h3>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      
-
-      {/* Recommended Courses */}
-      {/* {dashboardData.recommendedCourses.length > 0 && (
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-cyan-700">Recommended for You</h2>
-            <Link to="/recommended-courses" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
-              View All
-            </Link>
+        {/* Achievement details modal */}
+        {selectedAchievement && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSelectedAchievement(null)} />
+            <div className="relative bg-white rounded-lg shadow-xl max-w-xl w-full mx-4 p-6 z-10">
+              <div className="flex items-start">
+                <img src={selectedAchievement.badge.iconUrl || '/2.png'} alt={selectedAchievement.badge.name} className="w-20 h-20 rounded-full mr-4" />
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900">{selectedAchievement.badge.name}</h3>
+                  <p className="text-sm text-gray-500 mb-3">Earned {new Date(selectedAchievement.achievedAt).toLocaleDateString()}</p>
+                  <p className="text-gray-700">{selectedAchievement.badge.description}</p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => setSelectedAchievement(null)} className="px-4 py-2 bg-gray-100 rounded-md mr-2">Close</button>
+                <Link to={`/achievements/${selectedAchievement.badge.id}`} className="px-4 py-2 bg-cyan-600 text-white rounded-md">View Badge Page</Link>
+              </div>
+            </div>
           </div>
-          <div className="space-y-4">
-            {dashboardData.recommendedCourses.slice(0, 3).map((course) => (
-              <Link
-                key={course.id}
-                to={`/courses/${course.id}`}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer block"
-              >
-                <div className="flex items-start space-x-4">
-                  <img
-                    src={course.thumbnailUrl || "/1.png"}
-                    alt={course.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-1">{course.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{course.subtitle}</p>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          course.difficultyLevel === "beginner"
-                            ? "bg-green-100 text-green-800"
-                            : course.difficultyLevel === "intermediate"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {course.difficultyLevel}
-                      </span>
-                      <span className="text-sm text-gray-500">{course.category}</span>
+        )}
+
+        {/* Badge detail modal (reused look from Achievements) */}
+        <Dialog open={isBadgeModalOpen} onClose={() => setIsBadgeModalOpen(false)} className="relative z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <div className="flex justify-between items-center mb-4">
+                  <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900">Badge Details</DialogTitle>
+                  <button type="button" className="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none" onClick={() => setIsBadgeModalOpen(false)}>
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {selectedBadge && (
+                  <div className="text-center">
+                    <img src={selectedBadge.iconUrl || '/placeholder.svg'} alt={selectedBadge.name} className="w-24 h-24 mx-auto mb-4 rounded-full" />
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">{selectedBadge.name}</h4>
+                    <p className="text-gray-600 mb-4">{selectedBadge.description}</p>
+                    <div className="bg-cyan-50 rounded-lg p-4">
+                      <p className="text-sm text-cyan-700"><strong>Requirements:</strong> Complete the associated course or achieve specific learning milestones.</p>
                     </div>
                   </div>
+                )}
+
+                <div className="mt-6 flex justify-end">
+                  <button onClick={() => setIsBadgeModalOpen(false)} className="px-4 py-2 bg-gray-100 rounded-md mr-2">Close</button>
+                  {selectedBadge && (
+                    <Link to={`/achievements/${selectedBadge.id}`} className="px-4 py-2 bg-cyan-600 text-white rounded-md">View Badge Page</Link>
+                  )}
                 </div>
-              </Link>
-            ))}
+              </DialogPanel>
+            </div>
           </div>
-        </div>
-      )} */}
+        </Dialog>
     </div>
     
     {/* <Footer /> */}
@@ -370,5 +397,6 @@ const StudentDashboard: React.FC = () => {
 }
 
 export default StudentDashboard
+
 
 
