@@ -5,14 +5,23 @@
 
 "use client"
 
+<<<<<<< Updated upstream
 import React, { useRef, useEffect, useState } from "react"
 import { BookOpen, Award, Zap, TrendingUp, Target, Users, Clock, X } from "lucide-react"
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+=======
+import React, { useRef, useEffect } from "react"
+import { BookOpen, Award, Zap, TrendingUp, Target, Users, Clock } from "lucide-react"
+>>>>>>> Stashed changes
 import { Link } from "react-router-dom"
 import { useGetMyDashboardQuery } from "../../utils/api"
 // import Footer from "../../components/Footer"
 
+<<<<<<< Updated upstream
 // StatRing: round stat card with animated ring and centered value
+=======
+// Circular StatRing matching educator style
+>>>>>>> Stashed changes
 type StatRingProps = {
   icon: React.ReactNode
   value: number | string
@@ -22,24 +31,36 @@ type StatRingProps = {
 }
 
 const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingProps) => {
+<<<<<<< Updated upstream
   const size = 160
+=======
+  const size = 120
+>>>>>>> Stashed changes
   const stroke = 12
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const circleRef = useRef<SVGCircleElement | null>(null)
   useEffect(() => {
+<<<<<<< Updated upstream
     if (circleRef.current) {
       circleRef.current.style.transition = "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)"
     }
+=======
+    if (circleRef.current) circleRef.current.style.transition = "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)"
+>>>>>>> Stashed changes
   }, [progress])
   const dashOffset = circumference * (1 - (progress || 0) / 100)
 
   let iconNode = icon
   if (React.isValidElement(icon)) {
     const iconEl = icon as React.ReactElement<any>
+<<<<<<< Updated upstream
     iconNode = React.cloneElement(iconEl, {
       className: [iconEl.props.className || "", "w-7 h-7 text-blue-600"].join(" ").trim(),
     })
+=======
+    iconNode = React.cloneElement(iconEl, { className: [iconEl.props.className || "", "w-8 h-8 text-cyan-700"].join(" ") })
+>>>>>>> Stashed changes
   }
 
   return (
@@ -64,17 +85,29 @@ const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingPro
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
             strokeLinecap="round"
+<<<<<<< Updated upstream
             style={{ transition: "stroke-dashoffset 1s cubic-bezier(.4,2,.6,1)" }}
+=======
+>>>>>>> Stashed changes
           />
         </svg>
 
         <span className="absolute inset-0 flex items-center justify-center">
+<<<<<<< Updated upstream
           <span className="text-4xl font-extrabold text-cyan-700 leading-none">{value}</span>
         </span>
       </div>
       <div className="ml-6 flex flex-col items-start">
         <span className="mb-1">{iconNode}</span>
         <span className="text-xl font-semibold text-cyan-700 tracking-tight">{label}</span>
+=======
+          <span className="text-3xl font-extrabold text-cyan-700 leading-none">{value}</span>
+        </span>
+      </div>
+      <div className="ml-4 flex flex-col items-start">
+        <span className="mb-1">{iconNode}</span>
+        <span className="text-lg font-semibold text-cyan-700 tracking-tight">{label}</span>
+>>>>>>> Stashed changes
       </div>
     </div>
   )
@@ -114,6 +147,7 @@ const StudentDashboard: React.FC = () => {
   <div className="max-w-[1500px] mx-auto px-10 py-10">
       <div className="mb-8">
         <h1 className="text-5xl font-extrabold text-cyan-700 mb-2">Welcome Back!</h1>
+<<<<<<< Updated upstream
         <p className="text-xl text-cyan-600">Continue your quantum computing journey</p>
       </div>
 
@@ -151,6 +185,17 @@ const StudentDashboard: React.FC = () => {
         />
           </div>
         </div>
+=======
+        <p className="text-xl font-medium text-cyan-600">Continue your quantum computing journey</p>
+      </div>
+
+      {/* Stats Overview - circular stat rings to match educator design */}
+      <div className="grid grid-cols-4 gap-12 mb-8 items-center justify-items-center">
+        <StatRing icon={<Target className="w-8 h-8 text-cyan-700" />} value={dashboardData.points.toLocaleString()} label="Total Points" colorGrad={["#60a5fa","#06b6d4"]} />
+        <StatRing icon={<Award className="w-8 h-8 text-amber-500" />} value={dashboardData.badges.length} label="Badges Earned" colorGrad={["#f59e0b","#f97316"]} />
+        <StatRing icon={<TrendingUp className="w-8 h-8 text-orange-500" />} value={`${dashboardData.learningStreak}d`} label="Learning Streak" colorGrad={["#4ade80","#60a5fa"]} />
+        <StatRing icon={<BookOpen className="w-8 h-8 text-purple-600" />} value={dashboardData.enrolledCourses.length} label="Enrolled Courses" colorGrad={["#a78bfa","#7c3aed"]} />
+>>>>>>> Stashed changes
       </div>
 
       
@@ -159,7 +204,11 @@ const StudentDashboard: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-cyan-700">My Courses</h2>
+<<<<<<< Updated upstream
             <Link to="/my-courses" className="inline-flex items-center px-3 py-1 bg-white text-cyan-700 rounded-md text-sm font-medium shadow-sm hover:bg-gray-50">
+=======
+            <Link to="/my-courses" className="inline-flex items-center px-2 py-1 text-sm font-medium text-cyan-700 bg-white/0 border border-transparent hover:border-cyan-200 rounded-md">
+>>>>>>> Stashed changes
               View All
             </Link>
           </div>
@@ -264,12 +313,21 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
         </div>
+<<<<<<< Updated upstream
         {/* Browse Courses Section - full width promotional band */}
       <div className="w-full bg-blue-200">
         <div className="w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-12">
           <div className="flex-1 md:pr-8 text-center md:text-left">
             <h2 className="text-2xl md:text-3xl font-bold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
             <p className="text-base md:text-lg text-gray-700">Discover courses tailored to your interests and learning path</p>
+=======
+        {/* Browse Courses Section */}
+      <div className="mt-8 bg-blue-200 shadow-lg p-10">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h2 className="text-3xl font-extrabold text-cyan-700 mb-2">Accelerate your career with job‑ready skills.</h2>
+            <p className="text-gray-700 text-xl">Discover courses tailored to your interests and learning path</p>
+>>>>>>> Stashed changes
           </div>
           <div className="mt-6 md:mt-0 md:ml-6">
             <Link
@@ -298,7 +356,7 @@ const StudentDashboard: React.FC = () => {
            <div className="ml-8">
                <Link
                 to="/courses"
-                className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white px-7 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 text-lg"
               >
                 <BookOpen className="w-5 h-5" />
                 <span>Browse All Courses</span>
@@ -307,6 +365,7 @@ const StudentDashboard: React.FC = () => {
         </div>
       </div> */}
 
+<<<<<<< Updated upstream
 
         {/* Recent Achievements removed: consolidated into My achievements section above */}
 
@@ -315,6 +374,13 @@ const StudentDashboard: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-3xl font-bold text-cyan-700">My achievements</h2>
             <Link to="/achievements" className="inline-flex items-center px-3 py-1 bg-white text-cyan-700 rounded-md text-sm font-medium shadow-sm hover:bg-gray-50">
+=======
+        {/* Recent Achievements (no white container, match MyCourses layout) */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-cyan-700">My Achievements</h2>
+            <Link to="/achievements" className="text-cyan-700 hover:text-cyan-900 text-sm font-medium">
+>>>>>>> Stashed changes
               View All
             </Link>
           </div>
