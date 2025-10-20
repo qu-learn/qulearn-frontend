@@ -201,15 +201,15 @@ const CourseDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
+      <div className="w-80 bg-white shadow-lg">
         {/* Logo/Course Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200">
           <div className="flex items-center mb-2">
-            <div className="w-8 h-8 bg-cyan-600 rounded mr-3 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-cyan-600 rounded mr-4 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm break-words whitespace-normal">{course.title}</h3>
+              <h3 className="font-semibold text-gray-900 text-base break-words whitespace-normal">{course.title}</h3>
             </div>
           </div>
         </div>
@@ -219,10 +219,10 @@ const CourseDashboard: React.FC = () => {
           
           <button
             onClick={() => setActiveTab("course-dashboard")}
-            className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
+            className={`w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 ${
               activeTab === "course-dashboard" 
-                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm" 
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-md" 
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
             Course Dashboard
@@ -232,10 +232,10 @@ const CourseDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab("assessments")}
-            className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
+            className={`w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 ${
               activeTab === "assessments" 
                 ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white" 
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
             Assessments
@@ -243,10 +243,10 @@ const CourseDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab("grades")}
-            className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
+            className={`w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 ${
               activeTab === "grades" 
                 ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white" 
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
             Grades
@@ -259,15 +259,15 @@ const CourseDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+  <header className="bg-white shadow-sm border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Link 
+                <Link 
                 to={`/courses/${courseId}`}
-                className="flex items-center text-cyan-700 hover:text-cyan-800 mr-4"
+                className="flex items-center text-cyan-700 hover:text-cyan-800 mr-6"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {course.title}
+                <ArrowLeft className="w-5 h-5 mr-3" />
+                <span className="text-lg font-semibold">{course.title}</span>
               </Link>
               {/* <div className="text-sm text-gray-500">
                 {activeTab === "course-content" ? "Course Content" : 
@@ -280,17 +280,17 @@ const CourseDashboard: React.FC = () => {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 p-6">
+  <main className="flex-1 p-8">
           {activeTab === "course-content" && <CourseContent />}
 
           {activeTab === "course-dashboard" && (
-            <div className="max-w-7xl space-y-8">
+            <div className="max-w-[1500px] space-y-10">
               {/* Keep course detail box and course content on top */}
               <div>
                 {/* Course Header */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                  <div className="flex items-start space-x-6">
-                    <div className="relative w-48 h-32 flex-shrink-0">
+                <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+                  <div className="flex items-start space-x-8">
+                    <div className="relative w-56 h-40 flex-shrink-0">
                       <img
                         src={course.thumbnailUrl || "/placeholder.svg"}
                         alt={course.title}
@@ -298,27 +298,27 @@ const CourseDashboard: React.FC = () => {
                       />
                     </div>
                     <div className="flex-1">
-                      <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
-                      <p className="text-gray-600 mb-3">{course.subtitle}</p>
+                      <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{course.title}</h1>
+                      <p className="text-lg text-gray-600 mb-4">{course.subtitle}</p>
 
                       {/* Top summary: include total modules and lessons here */}
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
-                          <span className="text-sm text-gray-600 mr-2">Modules</span>
-                          <span className="text-sm font-semibold text-cyan-600">{course.modules.length}</span>
+                      <div className="flex items-center space-x-6 mb-6">
+                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+                          <span className="text-base text-gray-600 mr-3">Modules</span>
+                          <span className="text-base font-semibold text-cyan-600">{course.modules.length}</span>
                         </div>
-                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
-                          <span className="text-sm text-gray-600 mr-2">Lessons</span>
-                          <span className="text-sm font-semibold text-cyan-600">{course.modules.reduce((total, m) => total + m.lessons.length, 0)}</span>
+                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+                          <span className="text-base text-gray-600 mr-3">Lessons</span>
+                          <span className="text-base font-semibold text-cyan-600">{course.modules.reduce((total, m) => total + m.lessons.length, 0)}</span>
                         </div>
-                        <div className="ml-auto text-sm font-medium text-gray-700">
-                          <span className="mr-2">Progress</span>
-                          <span className="text-sm font-medium text-cyan-600">{progress}%</span>
+                        <div className="ml-auto text-base font-medium text-gray-700">
+                          <span className="mr-3">Progress</span>
+                          <span className="text-base font-medium text-cyan-600">{progress}%</span>
                         </div>
                       </div>
 
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-cyan-600 h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="bg-cyan-600 h-3 rounded-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
                       </div>
                     </div>
                   </div>
@@ -402,42 +402,45 @@ const CourseDashboard: React.FC = () => {
           )}
 
           {activeTab === "assessments" && (
-            <div className="max-w-7xl">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Assessments</h1>
-              <div className="space-y-4">
+            <div className="max-w-[1500px] space-y-6">
+              <h1 className="text-4xl font-bold text-gray-900 mb-6">Assessments</h1>
+              <div className="space-y-6">
                 {course.modules.map((module) =>
                   module.lessons
                     .filter((lesson) => lesson.quiz)
                     .map((lesson) => (
-                      <div key={lesson.id} className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <div key={lesson.id} className="bg-white rounded-lg shadow-sm p-8">
+                        <div className="flex items-start justify-between">
+                          <div className="max-w-[78%]">
+                            <h3 className="text-2xl font-semibold text-gray-900 mb-2">
                               {lesson.title} Quiz
                             </h3>
-                            <p className="text-gray-600 mb-4">
+                            <p className="text-lg text-gray-600 mb-4">
                               Test your knowledge on {lesson.title.toLowerCase()}
                             </p>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Award className="w-4 h-4 mr-2" />
+                            <div className="flex items-center text-base text-gray-500">
+                              <Award className="w-6 h-6 mr-3" />
                               <span>Assessment available</span>
                             </div>
                           </div>
-                          <button
-                            onClick={() => navigate(`/courses/${courseId}/quiz/${lesson.id}`)}
-                            className="bg-cyan-700 text-white px-6 py-2 rounded-lg hover:bg-cyan-800 transition-colors font-medium"
-                          >
-                            Attempt Quiz
-                          </button>
+                          <div className="flex-shrink-0 ml-6 flex flex-col items-end justify-center">
+                            <button
+                              onClick={() => navigate(`/courses/${courseId}/quiz/${lesson.id}`)}
+                              className="bg-cyan-700 text-white px-8 py-3 rounded-lg hover:bg-cyan-800 transition-colors font-medium text-lg whitespace-nowrap"
+                            >
+                              Attempt Quiz
+                            </button>
+                            <div className="mt-3 text-sm text-gray-500">{module.title}</div>
+                          </div>
                         </div>
                       </div>
                     ))
                 )}
                 {course.modules.every((module) => module.lessons.every((lesson) => !lesson.quiz)) && (
-                  <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                    <Award className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessments Available</h3>
-                    <p className="text-gray-600">There are currently no quizzes available for this course.</p>
+                  <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Assessments Available</h3>
+                    <p className="text-lg text-gray-600">There are currently no quizzes available for this course.</p>
                   </div>
                 )}
               </div>
@@ -445,8 +448,8 @@ const CourseDashboard: React.FC = () => {
           )}
 
           {activeTab === "grades" && (
-            <div className="max-w-7xl">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Grades</h1>
+            <div className="max-w-[1500px]">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Grades</h1>
               
               {/* Grade Summary Cards
               <div className="grid grid-cols-4 gap-6 mb-8">
@@ -479,25 +482,25 @@ const CourseDashboard: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Assessment
                         </th>
                         {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Type
                         </th> */}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Weight
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Score
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Grade
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Attempts
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Status
                         </th>
                         {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -525,9 +528,9 @@ const CourseDashboard: React.FC = () => {
                               <tr key={lesson.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <div className="flex items-center">
-                                    <Award className="w-4 h-4 text-amber-500 mr-2" />
+                                    <Award className="w-5 h-5 text-amber-500 mr-3" />
                                     <div>
-                                      <div className="text-sm font-medium text-gray-900">
+                                      <div className="text-base font-medium text-gray-900">
                                         {lesson.title} Quiz
                                       </div>
                                       <div className="text-sm text-gray-500">
@@ -541,14 +544,14 @@ const CourseDashboard: React.FC = () => {
                                     Quiz
                                   </span> */}
                                 {/* </td> */}
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                   15%
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                   {score ? `${score}/100` : '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                                     grade === 'A' ? 'bg-green-100 text-green-800' :
                                     grade === 'B' ? 'bg-blue-100 text-blue-800' :
                                     grade === 'C' ? 'bg-yellow-100 text-yellow-800' :
@@ -559,11 +562,11 @@ const CourseDashboard: React.FC = () => {
                                     {grade}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                   {attempts}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                                     status === 'Completed' 
                                       ? 'bg-green-100 text-green-800' 
                                       : 'bg-yellow-100 text-yellow-800'
