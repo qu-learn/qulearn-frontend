@@ -404,15 +404,15 @@ const CourseQuiz: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
+      <div className="w-80 bg-white shadow-lg">
         {/* Logo/Course Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200">
           <div className="flex items-center mb-2">
-            <div className="w-8 h-8 bg-cyan-600 rounded mr-3 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-cyan-600 rounded mr-4 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm truncate">{course.title}</h3>
+              <h3 className="font-semibold text-gray-900 text-base break-words whitespace-normal">{course.title}</h3>
             </div>
           </div>
         </div>
@@ -421,33 +421,29 @@ const CourseQuiz: React.FC = () => {
         <nav className="mt-4">
           <Link
             to={`/courses/${courseId}/dashboard`}
-            className="w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className="w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
           >
             Course Dashboard
           </Link>
 
-          <Link
-            to={`/courses/${courseId}/dashboard`}
-            className="w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Course Content
-          </Link>
+          
 
-          <button
-            className="w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm"
-          >
-            Assessments
-          </button>
+          <div className="w-full">
+            <button
+              className="w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-md"
+            >
+              Assessments
+            </button>
+          </div>
 
           <Link
             to={`/courses/${courseId}/dashboard`}
-            className="w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className="w-full flex items-center px-8 py-5 text-left text-lg font-semibold transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
           >
             Grades
           </Link>
         </nav>
 
-        
       </div>
 
       {/* Main Content */}
