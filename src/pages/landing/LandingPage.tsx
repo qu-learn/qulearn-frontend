@@ -45,69 +45,81 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
     <div className="min-h-screen">
   {/* Hero Section */}
 <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 min-h-screen">
-  {/* Background quantum network image */}
-  {/* <div 
-  className="absolute inset-0 bg-cover bg-center opacity-40"
-  style={{
-    backgroundImage: `url(${heroBackground})`
-  }}
-></div> */}
-<video 
-  className="absolute inset-0 w-full h-full object-cover opacity-40"
-  autoPlay
-  loop
-  muted
-  playsInline
->
-  <source src="/video5.mp4" type="video/mp4" />
-  <source src="/video5.webm" type="video/webm" />
-  
-</video>
-  
-  {/* Navigation */}
-  <nav className="relative z-10 flex justify-between items-center p-6">
-    <div className="flex items-center">
-  <img 
-    src={logoImage2}
-    alt="QuLearn Logo" 
-    className="w-15 h-15 rounded mr-2"
-  />
-  <span className="text-white text-3xl font-bold">QuLearn</span>
-</div>
-    <Link
-      to="/login"
-      className="bg-blue-400 hover:bg-blue-500 text-blue-900 px-6 py-2 rounded-lg font-semibold transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg transform"
-    >
-      Login
-    </Link>
-  </nav>
+  {/* Background video */}
+  <video
+    className="absolute inset-0 w-full h-full object-cover opacity-40"
+    autoPlay
+    loop
+    muted
+    playsInline
+  >
+    <source src="/video5.mp4" type="video/mp4" />
+    <source src="/video5.webm" type="video/webm" />
+  </video>
 
-  {/* Main content */}
-  <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex items-center min-h-[70vh]">
-    <div className="max-w-2xl">
-      <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight animate-fade-in-down">
-        Empowering Your Quantum Computing<br />
-        Education Journey
-      </h1>
-      
-      <p className="text-lg text-gray-200 mb-8 uppercase tracking-wide animate-fade-in-up animation-delay-300">
-        MASTER THE FUTURE OF TECHNOLOGY WITH INTERACTIVE COURSES AND<br />
-        POWERFUL SIMULATORS.
-      </p>
-      
-      <div className="flex flex-col gap-4 max-w-sm">
+  {/* Gradient overlay for readability */}
+  <div className="absolute inset-0 bg-gradient-to-b from-blue-900/70 via-blue-900/40 to-purple-900/60" />
+
+  {/* Navigation */}
+  <nav className="relative z-10">
+    <div className="max-w-7xl mx-auto pl-4 pr-2 sm:pl-6 sm:pr-3 lg:pl-8 lg:pr-4 py-6 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <img src={logoImage2} alt="QuLearn Logo" className="w-12 h-12 rounded" />
+        <span className="text-white text-2xl md:text-3xl font-extrabold tracking-tight">QuLearn</span>
+      </div>
+      <div className="flex items-center gap-3 mr-2 sm:mr-4 lg:mr-6">
         <Link
-          to="/courses-landing"
-          className="bg-blue-400 hover:bg-blue-500 text-blue-900 px-8 py-4 rounded-lg font-bold text-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg transform"
+          to="/login"
+          className="text-white/90 hover:text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+          aria-label="Sign in"
         >
-          EXPLORE COURSES
+          Sign in
         </Link>
         <Link
           to="/register"
-          className="bg-blue-400 hover:bg-blue-500 text-blue-900 px-8 py-4 rounded-lg font-bold text-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg transform"
+          className="bg-white text-blue-700 hover:bg-blue-50 px-4 sm:px-5 py-2 rounded-lg font-semibold shadow-md transition-all"
+          aria-label="Get started"
         >
-          SIGN UP
+          Get started
         </Link>
+      </div>
+    </div>
+  </nav>
+
+  {/* Main content */}
+  <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24 md:pt-16 md:pb-36 flex items-center min-h-[70vh]">
+    <div className="max-w-3xl">
+      <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl">
+        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white tracking-tight mb-5">
+          Learn Quantum Computing the Modern Way
+        </h1>
+        <p className="text-base md:text-lg text-blue-100/90 mb-8">
+          Master quantum concepts with interactive courses and powerful simulators — designed for clarity, built for inspiration.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <Link
+            to="/courses-landing"
+            className="inline-flex items-center justify-center bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-blue-950 px-7 py-3 md:px-8 md:py-4 rounded-xl font-bold shadow-lg shadow-blue-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-transparent"
+            aria-label="Explore courses"
+          >
+            Explore Courses
+          </Link>
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center bg-white/15 hover:bg-white/25 text-white px-7 py-3 md:px-8 md:py-4 rounded-xl font-semibold border border-white/20 transition-all backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-transparent"
+            aria-label="Create your free account"
+          >
+            Create Free Account
+          </Link>
+        </div>
+
+        {/* Quick value props */}
+        <div className="mt-6 md:mt-8 flex flex-wrap gap-3 text-sm text-blue-100/90">
+          <span className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 border border-white/10">No prior experience required</span>
+          <span className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 border border-white/10">Hands-on simulators</span>
+          <span className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 border border-white/10">Learn at your own pace</span>
+        </div>
       </div>
     </div>
   </div>
