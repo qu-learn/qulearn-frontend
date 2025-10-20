@@ -62,7 +62,7 @@ const CourseCatalogEnrollButton: React.FC<EnrollButtonProps> = ({ courseId, isLo
       if (onEnrolled) {
         onEnrolled(courseId);
       }
-      navigate(`/student/courses/${courseId}`);
+      navigate(`/courses/${courseId}/dashboard`);
     } catch (error) {
       // Optionally show error
     }

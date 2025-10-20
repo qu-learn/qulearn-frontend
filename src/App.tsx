@@ -40,9 +40,23 @@ interface AppState {
 }
 
 function AppContent() {
+  // Initialize from localStorage to avoid flash before useEffect runs
+  const initialUser = (() => {
+    try {
+      const token = localStorage.getItem("token")
+      const userData = localStorage.getItem("user")
+      if (token && userData) {
+        return JSON.parse(userData) as IUser
+      }
+    } catch {
+      /* noop */
+    }
+    return null
+  })()
+
   const [appState, setAppState] = useState<AppState>({
-    initialized: false,
-    user: null,
+    initialized: Boolean(initialUser),
+    user: initialUser,
   })
   const navigate = useNavigate()
   const location = useLocation()
@@ -118,7 +132,10 @@ function AppContent() {
         <Breadcrumbs user={appState.user} />
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/"
+            element={appState.user ? <Navigate to="/me/dashboard" replace /> : <LandingPage />}
+          />
           <Route path="/courses-landing" element={<CourseCatalog user={appState.user} />} />
           <Route path="/about" element={<AboutPage />} />
           <Route
@@ -243,6 +260,29 @@ function AppContent() {
               <ProtectedRoute>
                 <SiteAdminDashboard />
               </ProtectedRoute>
+            }
+          />
+
+          {/* Unified Me Dashboard route for logged-in users */}
+          <Route
+            path="/me/dashboard"
+            element={
+              appState.user ? (
+                <Navigate
+                  to={
+                    appState.user.role === "student"
+                      ? "/dashboard"
+                      : appState.user.role === "educator"
+                        ? "/educator"
+                        : appState.user.role == "system-administrator"
+                          ? "/site-admin"
+                          : "/admin"
+                  }
+                  replace
+                />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             }
           />
 

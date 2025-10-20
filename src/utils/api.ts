@@ -283,7 +283,7 @@ export const api = createApi({
 
         // Course Admin
         getCourseAdminDashboard: builder.query<IGetCourseAdminDashboardResponse, void>({
-            query: () => "/course-admin/dashboard",
+            query: () => "/course-admin/me/dashboard",
         }),
         getCourseAdminUsers: builder.query<IGetCourseAdminUsersResponse, IGetCourseAdminUsersRequest>({
             query: ({ page, pageSize }) => `/course-admin/users?page=${page}&pageSize=${pageSize}`,
