@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, Fragment } from "react";
+import React, { useState, useMemo, useEffect, Fragment, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Users, BookOpen, TrendingUp, CheckCircle, XCircle, Eye, Trash2, X, Edit3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -24,141 +24,8 @@ import {
 
 // Mock courses data (initial data, will be moved to state for mutability)
 const initialMockCoursesData = {
-  courses: [
-    // {
-    //   id: "c1",
-    //   title: "Quantum Foundations",
-    //   instructor: { id: "inst1", fullName: "Dr. Smith" },
-    //   status: "published",
-    //   createdAt: "2024-01-15T10:30:00Z",
-    //   enrollments: 450,
-    //   category: "Quantum Basics",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "beginner" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [
-    //     { month: 'Jan', students: 50 }, { month: 'Feb', students: 70 },
-    //     { month: 'Mar', students: 120 }, { month: 'Apr', students: 150 },
-    //     { month: 'May', students: 200 }, { month: 'Jun', students: 250 },
-    //     { month: 'Jul', students: 450 },
-    //   ],
-    // },
-    // {
-    //   id: "c2",
-    //   title: "Advanced Quantum Algorithms",
-    //   instructor: { id: "inst2", fullName: "Prof. Johnson" },
-    //   status: "under-review",
-    //   createdAt: "2024-02-20T14:20:00Z",
-    //   enrollments: 0,
-    //   category: "Advanced Algorithms",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "advanced" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [
-    //     { month: 'Feb', students: 0 }, { month: 'Mar', students: 0 },
-    //     { month: 'Apr', students: 0 }, { month: 'May', students: 0 },
-    //     { month: 'Jun', students: 0 }, { month: 'Jul', students: 0 },
-    //   ],
-    // },
-    // {
-    //   id: "c3",
-    //   title: "Quantum Computing Basics",
-    //   instructor: { id: "inst3", fullName: "Dr. Williams" },
-    //   status: "published",
-    //   createdAt: "2024-03-10T09:15:00Z",
-    //   enrollments: 320,
-    //   category: "Quantum Basics",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "beginner" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [
-    //     { month: 'Mar', students: 80 }, { month: 'Apr', students: 120 },
-    //     { month: 'May', students: 200 }, { month: 'Jun', students: 280 },
-    //     { month: 'Jul', students: 320 },
-    //   ],
-    // },
-    // {
-    //   id: "c5",
-    //   title: "Introduction to AI",
-    //   instructor: { id: "inst4", fullName: "Dr. Alice" },
-    //   status: "published",
-    //   createdAt: "2024-04-01T10:00:00Z",
-    //   enrollments: 600,
-    //   category: "Artificial Intelligence",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "intermediate" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [
-    //     { month: 'Apr', students: 100 }, { month: 'May', students: 250 },
-    //     { month: 'Jun', students: 400 }, { month: 'Jul', students: 600 },
-    //   ],
-    // },
-    // {
-    //   id: "c6",
-    //   title: "Machine Learning Fundamentals",
-    //   instructor: { id: "inst5", fullName: "Dr. Bob" },
-    //   status: "rejected",
-    //   createdAt: "2024-04-10T11:00:00Z",
-    //   enrollments: 0,
-    //   category: "Artificial Intelligence",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "intermediate" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [],
-    // },
-    // {
-    //   id: "c7",
-    //   title: "Data Science with Python",
-    //   instructor: { id: "inst6", fullName: "Prof. Carol" },
-    //   status: "published",
-    //   createdAt: "2024-05-05T13:00:00Z",
-    //   enrollments: 720,
-    //   category: "Data Science",
-    //   subtitle: "",
-    //   description: "",
-    //   thumbnailUrl: "",
-    //   difficultyLevel: "intermediate" as const,
-    //   prerequisites: [],
-    //   modules: [],
-    //   enrollmentHistory: [
-    //     { month: 'May', students: 150 }, { month: 'Jun', students: 400 },
-    //     { month: 'Jul', students: 720 },
-    //   ],
-    // },
-  ],
-  pendingCourses: [
-    {
-      id: "c4",
-      title: "Quantum Machine Learning",
-      instructor: { id: "inst7", fullName: "Dr. Brown" },
-      status: "under-review",
-      createdAt: "2024-03-25T11:45:00Z",
-      category: "Quantum Basics",
-      subtitle: "",
-      description: "",
-      thumbnailUrl: "",
-      difficultyLevel: "advanced" as const,
-      prerequisites: [],
-      modules: [],
-      enrollments: 0,
-      enrollmentHistory: [],
-    },
-  ],
+  courses: [],
+  pendingCourses: [],
 };
 
 type SelectedCourseAnalytics = {
@@ -273,6 +140,33 @@ const CourseAdminDashboard = () => {
 
   // State for custom modal
   const [modalMessage, setModalMessage] = useState('');
+
+  // ref to store toast timeout id so we can clear it when needed
+  const toastTimeoutRef = useRef<number | null>(null);
+
+  // auto-close toast after 4 seconds whenever modalMessage is set
+  useEffect(() => {
+    // clear any existing timeout first
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+
+    if (!modalMessage) return;
+
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setModalMessage('');
+      toastTimeoutRef.current = null;
+    }, 4000); // 4 seconds
+
+    // clear timeout if modalMessage changes/unmounts
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = null;
+      }
+    };
+  }, [modalMessage]);
 
   // Get logged-in user from localStorage (use same approach as SiteAdminDashboard)
   const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
@@ -550,20 +444,31 @@ const handleCloseAnalyticsModal = () => {
 
   const handleSaveEditedUser = async (userId: string, updatedData: any) => {
     try {
-      const payload: any = {
+      // Build payload including all fields that might be present on the edit form / educator object
+      const rawPayload: any = {
         fullName: updatedData.fullName,
         email: updatedData.email,
+        // include password if supplied (admin may choose to set a new password)
+        password: updatedData.password,
         contactNumber: updatedData.contactNumber,
         nationalId: updatedData.nationalId,
         residentialAddress: updatedData.residentialAddress,
         gender: updatedData.gender,
         status: updatedData.status && String(updatedData.status).toLowerCase(),
       };
-      if (updatedData.password) payload.password = updatedData.password;
 
+      // Remove undefined / null values so we only send fields that were actually provided/changed
+      const payload = Object.fromEntries(
+        Object.entries(rawPayload).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+      );
+
+      console.log("Updating user with payload:", JSON.stringify(payload));
+
+      // Call updateEducator mutation and await result
       const res = await updateEducator({ educatorId: userId, educator: payload } as any).unwrap();
-      const updatedUser = res.educator;
-      setUsers(prev => prev.map(u => (u.id === updatedUser.id ? ({ ...u, ...updatedUser } as any) : u)));
+      const updatedUser = res.educator ?? res; // handle variants of API response
+
+      setUsers(prev => prev.map(u => (u.id === (updatedUser.id || userId) ? ({ ...u, ...updatedUser } as any) : u)));
       setModalMessage("User updated successfully!");
       setEditFormErrors({ fullName: "", email: "", contactNumber: "", nationalId: "", residentialAddress: "", gender: "" });
       setEditingUser(null);
@@ -582,7 +487,9 @@ const handleCloseAnalyticsModal = () => {
       return;
     }
     try {
+      // pass educator id string directly so endpoint path param is correct
       await deleteEducator(userToDelete.id).unwrap();
+ 
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
       setModalMessage(`User "${userToDelete.fullName}" deleted successfully!`);
       setUserToDelete(null);
@@ -594,6 +501,14 @@ const handleCloseAnalyticsModal = () => {
 
   const handleCloseDeleteConfirmModal = () => setUserToDelete(null);
   const handleModalClose = () => setModalMessage('');
+  // keep backward-compatible name but ensure timeout is cleared when user closes manually
+  const _handleModalClose = () => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+    setModalMessage('');
+  };
 
   // map activeTab to Tab.Group index
   const currentTabIndex = Math.max(0, tabOrder.indexOf(activeTab === "analytics" ? "courses" : activeTab));
@@ -1261,7 +1176,7 @@ const handleCloseAnalyticsModal = () => {
                           </ResponsiveContainer>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4 mt-6">
+                        <div className="grid grid-cols-2 gap-4 mt-6">
                           <div className="bg-gray-50 rounded-lg p-4 text-center">
                             <div className="text-2xl font-bold text-blue-600">
                               {(data ?? []).reduce((s, d) => s + (d?.students ?? 0), 0)}
@@ -1271,10 +1186,6 @@ const handleCloseAnalyticsModal = () => {
                           <div className="bg-gray-50 rounded-lg p-4 text-center">
                             <div className="text-2xl font-bold text-green-600">—</div>
                             <div className="text-sm text-gray-600">Completion Rate</div>
-                          </div>
-                          <div className="bg-gray-50 rounded-lg p-4 text-center">
-                            <div className="text-2xl font-bold text-purple-600">—</div>
-                            <div className="text-sm text-gray-600">Average Rating</div>
                           </div>
                         </div>
                       </>
@@ -1288,7 +1199,7 @@ const handleCloseAnalyticsModal = () => {
         </div>
       </div>
 
-      { /* Headless UI Dialogs for View / Edit / Delete / Add User and toast */ }
+      { /* Headless UI Dialogs for View / Edit / Delete / Add User and toast */}
 
       <Transition appear show={!!selectedUser} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={handleCloseViewUserModal}>
@@ -1363,6 +1274,8 @@ const handleCloseAnalyticsModal = () => {
                       if (editingUser.residentialAddress && editingUser.residentialAddress.length < 5) { errors.residentialAddress = "Address is too short"; valid = false; }
                       setEditFormErrors(errors);
                       if (!valid) return;
+
+                      console.log("Saving edited user:", editingUser);
 
                       // call existing handler (signature: userId, updatedData)
                       handleSaveEditedUser(editingUser.id, editingUser);
@@ -1470,8 +1383,8 @@ const handleCloseAnalyticsModal = () => {
                       <button type="button" onClick={handleCloseEditUserModal} className="px-4 py-2 border border-gray-300 rounded-2xl shadow-sm text-medium font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
                         Cancel
                       </button>
-                      <button type="submit" className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800">
-                        Save
+                      <button type="submit" disabled={isUpdatingEducator} className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800">
+                        {isUpdatingEducator ? "Saving..." : "Save"}
                       </button>
                     </div>
                   </form>
@@ -1498,7 +1411,9 @@ const handleCloseAnalyticsModal = () => {
                   </div>
                   <div className="mt-6 flex justify-end space-x-2">
                     <button onClick={handleCloseDeleteConfirmModal} className="px-4 py-2 bg-gray-100 rounded-md">Cancel</button>
-                    <button onClick={handleConfirmDeleteUser} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+                    <button onClick={handleConfirmDeleteUser} disabled={isDeletingEducator} className="px-4 py-2 bg-red-600 text-white rounded-md">
+                      {isDeletingEducator ? "Deleting..." : "Delete"}
+                    </button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
@@ -1695,7 +1610,7 @@ const handleCloseAnalyticsModal = () => {
           <div className="bg-white border shadow-md px-4 py-2 rounded-md">
             <div className="flex items-center justify-between space-x-4">
               <div className="text-sm text-gray-800">{modalMessage}</div>
-              <button onClick={handleModalClose} className="text-gray-500">Close</button>
+              <button onClick={_handleModalClose} className="text-gray-500">Close</button>
             </div>
           </div>
         </div>
