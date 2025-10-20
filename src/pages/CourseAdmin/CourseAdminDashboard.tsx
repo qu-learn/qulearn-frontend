@@ -19,6 +19,7 @@ import {
   useDeleteEducatorMutation,
   useGetCourseAdminDashboardQuery,
   useGetCourseAdminCoursesQuery,
+  useUpdateCourseStatusMutation,
   useDeleteCourseAdminMutation
 } from "../../utils/api";
 
@@ -33,6 +34,8 @@ type SelectedCourseAnalytics = {
   title: string;
   status: CourseStatus;
   enrollmentHistory: { month: string; students: number }[];
+  enrollments?: number;
+  avgCompletionRate?: number;
 };
 
 const tabOrder = ["overview", "courses", "users"];
@@ -75,7 +78,8 @@ const CourseAdminDashboard = () => {
   const [addEducator, { isLoading: isAddingEducator }] = useAddEducatorMutation();
   const [updateEducator, { isLoading: isUpdatingEducator }] = useUpdateEducatorMutation();
   const [deleteEducator, { isLoading: isDeletingEducator }] = useDeleteEducatorMutation();
-  const [deleteCourseAdmin] = useDeleteCourseAdminMutation();
+  const [updateCourseStatus, { isLoading: isUpdatingCourseStatus }] = useUpdateCourseStatusMutation();
+  const [deleteCourseAdmin, { isLoading: isDeletingCourse }] = useDeleteCourseAdminMutation();
 
 
   const { data: educators } = useGetEducatorsQuery();
@@ -110,25 +114,34 @@ const CourseAdminDashboard = () => {
   // When API data arrives map to ICourse shape and replace local state
   useEffect(() => {
     if (!courseAdminCoursesData?.courses) return;
-    const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((c: any) => ({
-      id: c.id,
-      title: c.title,
-      instructor: {
-        id: c.instructor?.userId || c.instructor?.id || "unknown",
-        fullName: c.instructor?.fullName || "Unknown"
-      },
-      status: (c.status ?? "draft") as CourseStatus,
-      createdAt: c.createdAt ?? new Date().toISOString(),
-      enrollments: (c as any).enrollments ?? 0,
-      category: c.category ?? "Uncategorized",
-      subtitle: c.subtitle ?? "",
-      description: c.description ?? "",
-      thumbnailUrl: c.thumbnailUrl ?? "",
-      difficultyLevel: c.difficultyLevel ?? "beginner",
-      prerequisites: c.prerequisites ?? [],
-      modules: c.modules ?? [],
-      enrollmentHistory: (c as any).enrollmentHistory ?? [],
-    }));
+    // API now returns items shaped { course: ICourse, avgCompletionRate: number }
+    const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((entry: any) => {
+      const c = entry.course ?? entry; // defensive: support old shape if present
+      const courseObj: any = {
+        id: c.id,
+        title: c.title,
+        instructor: {
+          id: c.instructor?.userId || c.instructor?.id || "unknown",
+          fullName: c.instructor?.fullName || "Unknown",
+        },
+        status: (c.status ?? "draft") as CourseStatus,
+        createdAt: c.createdAt ?? new Date().toISOString(),
+        enrollments: c.enrollments ?? (entry.enrollments ?? 0),
+        category: c.category ?? "Uncategorized",
+        subtitle: c.subtitle ?? "",
+        description: c.description ?? "",
+        thumbnailUrl: c.thumbnailUrl ?? "",
+        difficultyLevel: c.difficultyLevel ?? "beginner",
+        prerequisites: c.prerequisites ?? [],
+        modules: c.modules ?? [],
+        enrollmentHistory: c.enrollmentHistory ?? [],
+      }
+      // attach avgCompletionRate from top-level entry when present
+      if (typeof entry.avgCompletionRate === 'number') {
+        courseObj.avgCompletionRate = entry.avgCompletionRate;
+      }
+      return courseObj as ICourse;
+    });
     setCourses(apiCourses);
     setPendingCourses(apiCourses.filter((c) => c.status === "under-review"));
   }, [courseAdminCoursesData]);
@@ -257,12 +270,17 @@ const CourseAdminDashboard = () => {
     try {
       if (action === "approve" || action === "reject" || action === "delete") {
         if (action === "delete") {
-        const confirmDelete = window.confirm("Are you sure you want to delete this course?");
-        if (!confirmDelete) return;
+          const confirmDelete = window.confirm("Are you sure you want to delete this course?");
+          if (!confirmDelete) return;
 
-        // ✅ Call backend API
-        await deleteCourseAdmin(courseId).unwrap();
-      }
+          // ✅ Call backend API to delete
+          await deleteCourseAdmin(courseId).unwrap();
+        } else {
+          // approve/reject -> call updateCourseStatus mutation
+          const status = action === "approve" ? "published" : "rejected";
+          await updateCourseStatus({ courseId, status }).unwrap();
+        }
+
         setCourses(prevCourses => {
           const updatedCourses = prevCourses.map(course => {
             if (course.id === courseId) {
@@ -290,19 +308,27 @@ const CourseAdminDashboard = () => {
       setModalMessage(`Course ${action}d successfully!`);
     } catch (error: any) {
       console.error(`Failed to ${action} course:`, error);
-      setModalMessage(`Failed to ${action} course: ${error?.message ?? String(error)}`);
+      setModalMessage(`Failed to ${action} course: ${error?.data?.message ?? error?.message ?? "An unexpected error occurred. Please try again or contact support."}`);
     }
   };
 
-  const handleConfirmDeleteCourse = () => {
-  if (!courseToDelete) return;
+  const handleConfirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
+    try {
+      // call backend
+      await deleteCourseAdmin(courseToDelete.id).unwrap();
 
-  // Call your API or state update logic to delete the course
-  console.log("Deleting course:", courseToDelete.title);
+      // remove from local state
+      setCourses(prev => prev.filter(c => c.id !== courseToDelete.id));
+      setPendingCourses(prev => prev.filter(c => c.id !== courseToDelete.id));
 
-  // Close modal after deletion
-  setCourseToDelete(null);
-};
+      setModalMessage(`Course "${courseToDelete.title}" deleted successfully`);
+      setCourseToDelete(null);
+    } catch (err: any) {
+      console.error("Failed to delete course:", err);
+      setModalMessage(err?.data?.message || err?.message || "Failed to delete course");
+    }
+  };
 
 
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
@@ -314,6 +340,8 @@ const CourseAdminDashboard = () => {
     title: course.title,
     status: course.status,
     enrollmentHistory: course.enrollmentHistory ?? [],
+    enrollments: (course as any).enrollments ?? undefined,
+    avgCompletionRate: (course as any).avgCompletionRate ?? undefined,
   });
 
   // then open modal (no race)
@@ -836,10 +864,11 @@ const handleCloseAnalyticsModal = () => {
                                   </button>
                                   <button
                                     type="button"
-                                    className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md disabled:opacity-60"
                                     onClick={handleConfirmDeleteCourse}
+                                    disabled={isDeletingCourse}
                                   >
-                                    Delete
+                                    {isDeletingCourse ? "Deleting..." : "Delete"}
                                   </button>
                                 </div>
                               </Dialog.Panel>
@@ -1179,12 +1208,17 @@ const handleCloseAnalyticsModal = () => {
                         <div className="grid grid-cols-2 gap-4 mt-6">
                           <div className="bg-gray-50 rounded-lg p-4 text-center">
                             <div className="text-2xl font-bold text-blue-600">
-                              {(data ?? []).reduce((s, d) => s + (d?.students ?? 0), 0)}
+                              {/* Prefer server-provided enrollments count; fall back to history sum */}
+                              {selectedCourseAnalytics?.enrollments ?? (data ?? []).reduce((s, d) => s + (d?.students ?? 0), 0)}
                             </div>
                             <div className="text-sm text-gray-600">Total Enrollments</div>
                           </div>
                           <div className="bg-gray-50 rounded-lg p-4 text-center">
-                            <div className="text-2xl font-bold text-green-600">—</div>
+                            <div className="text-2xl font-bold text-green-600">
+                              {typeof selectedCourseAnalytics?.avgCompletionRate === 'number'
+                                ? `${(selectedCourseAnalytics!.avgCompletionRate).toFixed(2)}%`
+                                : "—"}
+                            </div>
                             <div className="text-sm text-gray-600">Completion Rate</div>
                           </div>
                         </div>

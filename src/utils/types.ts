@@ -393,7 +393,7 @@ export interface IGetCourseAdminUsersResponse {
 export type IGetCourseAdminCoursesRequest = {}
 
 export interface IGetCourseAdminCoursesResponse {
-  courses: ICourse[]
+  courses: { course: ICourse, avgCompletionRate: number }[]
 }
 
 export interface IUpdateCourseStatusRequest {
