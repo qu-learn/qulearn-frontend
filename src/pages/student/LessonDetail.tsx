@@ -374,10 +374,30 @@ const LessonDetail: React.FC = () => {
               )}
             </div>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             
             <button className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors font-medium">
               Mark as Complete
 =======
+=======
+
+            <button
+              onClick={() => {
+                // Mark current lesson completed locally
+                setIsCompleted(true)
+                // If there is a next lesson, navigate to its overview
+                if (nextLesson) {
+                  navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)
+                } else {
+                  // No next lesson -> go back to course dashboard
+                  navigate(`/courses/${courseId}/dashboard`)
+                }
+              }}
+              className={`px-6 py-2 rounded-lg transition-colors font-medium ${isCompleted ? 'bg-green-600 text-white' : 'bg-cyan-600 text-white hover:bg-cyan-700'}`}
+            >
+              {isCompleted ? 'Completed' : 'Mark as Complete'}
+            </button>
+>>>>>>> Stashed changes
 
             <button
               onClick={() => {
