@@ -1,20 +1,52 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { ArrowLeft, Home, BookOpen, ChevronDown, ChevronRight, Play, Award, CheckCircle, Circle, ChevronLeft } from "lucide-react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { useGetCourseByIdQuery, useGetMyDashboardQuery } from "../../utils/api"
+import { useGetEnrolledCourseByIdQuery, useGetMyDashboardQuery } from "../../utils/api"
 
 const CourseDashboard: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState("course-content")
+  const [activeTab, setActiveTab] = useState("course-dashboard")
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [currentYear, setCurrentYear] = useState(2025)
 
-  const { data: courseData, isLoading, error } = useGetCourseByIdQuery(courseId!)
+  const { data: courseData, isLoading, error } = useGetEnrolledCourseByIdQuery(courseId!)
   const { data: dashboardData } = useGetMyDashboardQuery()
+
+  // Prefer enrollment/completion data returned with the course query, fallback to dashboard
+  const enrollmentForCourse = useMemo(() => {
+    // If getEnrolledCourseByIdQuery returns an enrollment/completions object, use it.
+    // common shapes: courseData.enrollment OR courseData.enrolledCourse — adjust field name as needed.
+    if (courseData?.completion) return courseData.completion
+    if ((courseData as any)?.enrolledCourse) return (courseData as any).enrolledCourse
+
+    // fallback: find enrollment from dashboard query
+    return dashboardData?.enrolledCourses?.find(
+      (e) => e.course?.id === courseData?.course?.id || e.course?.id === courseId
+    )
+  }, [courseData, dashboardData, courseId])
+
+  const completedLessonIds = useMemo(() => {
+    const s = new Set<string>()
+    enrollmentForCourse?.completions?.forEach((mc: any) => {
+      mc.lessonIds?.forEach((li: any) => {
+        if (li?.lessonId) s.add(li.lessonId)
+      })
+    })
+    return s
+  }, [enrollmentForCourse])
+
+  const currentLessonId = useMemo(() => {
+    for (const mod of courseData?.course?.modules || []) {
+      for (const lesson of mod.lessons || []) {
+        if (!completedLessonIds.has(lesson.id)) return lesson.id
+      }
+    }
+    return null
+  }, [courseData, completedLessonIds])
 
   const toggleModule = (moduleId: string) => {
     const newExpanded = new Set(expandedModules)
@@ -41,8 +73,25 @@ const CourseDashboard: React.FC = () => {
   // Calculate progress (placeholder - you can implement actual progress calculation)
   const calculateProgress = () => {
     if (!courseData || !dashboardData) return 0
-    // This is a placeholder - implement actual progress calculation based on completed lessons
-    return 0
+    const c = courseData.course
+    const enrollment = dashboardData.enrolledCourses?.find(
+      (e) => e.course?.id === c.id || e.course?.id === courseId
+    )
+    if (enrollment && typeof enrollment.progressPercentage === "number") {
+      return Math.max(0, Math.min(100, Math.round(enrollment.progressPercentage)))
+    }
+
+    // compute from completed lessons if no saved percentage
+    const completedSet = new Set<string>()
+    enrollment?.completions?.forEach((mc) => {
+      mc.lessonIds?.forEach((li) => {
+        if (li?.lessonId) {
+          completedSet.add(li.lessonId)
+        }
+      })
+    })
+    const totalLessons = c.modules.reduce((t, m) => t + (m.lessons?.length || 0), 0) || 0
+    return totalLessons === 0 ? 0 : Math.round((completedSet.size / totalLessons) * 100)
   }
 
   if (isLoading) {
@@ -67,6 +116,88 @@ const CourseDashboard: React.FC = () => {
   const { course } = courseData
   const progress = calculateProgress()
 
+  // Render function for the Course Content section so it can be reused
+  const CourseContent: React.FC<{ showHeader?: boolean }> = ({ showHeader = true }) => (
+    <div className="max-w-7xl">
+      {/* Course Header (optional) */}
+      {showHeader && (
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-start space-x-6">
+            <div className="relative w-48 h-32 flex-shrink-0">
+              <img
+                src={course.thumbnailUrl || "/placeholder.svg"}
+                alt={course.title}
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
+              <p className="text-gray-600 mb-4">{course.subtitle}</p>
+              
+              {/* Progress Section */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Progress</span>
+                  <span className="text-sm font-medium text-cyan-600">{progress}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-cyan-600 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Course Content */}
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Course Content</h2>
+        </div>
+        <div className="divide-y divide-gray-200">
+          {course.modules.map((module) => (
+            <div key={module.id} className="p-4">
+              <button
+                onClick={() => toggleModule(module.id)}
+                className="flex items-center justify-between w-full text-left"
+              >
+                <h3 className="font-medium text-gray-900">{module.title}</h3>
+                {expandedModules.has(module.id) ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              
+              {expandedModules.has(module.id) && (
+                <div className="mt-3 pl-4 space-y-2">
+                  {module.lessons.map((lesson) => (
+                    <button
+                      key={lesson.id}
+                      onClick={() => handleStartLesson(lesson.id)}
+                      className="flex items-center w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700 hover:text-cyan-600"
+                    >
+                      {completedLessonIds.has(lesson.id) ? (
+                        <CheckCircle className="w-4 h-4 mr-3 text-cyan-500" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-3 text-gray-400" />
+                      )}
+                      <span className="flex-1">{lesson.title}</span>
+                      {lesson.quiz && <Award className="w-4 h-4 text-yellow-500 ml-2" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -78,8 +209,7 @@ const CourseDashboard: React.FC = () => {
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm truncate">{course.title}</h3>
-              
+              <h3 className="font-semibold text-gray-900 text-sm break-words whitespace-normal">{course.title}</h3>
             </div>
           </div>
         </div>
@@ -98,22 +228,13 @@ const CourseDashboard: React.FC = () => {
             Course Dashboard
           </button>
 
-          <button
-            onClick={() => setActiveTab("course-content")}
-            className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
-              activeTab === "course-content" 
-                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm" 
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-          >
-            Course Content
-          </button>
+          {/* Course Content tab removed per request */}
 
           <button
             onClick={() => setActiveTab("assessments")}
             className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
               activeTab === "assessments" 
-                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm" 
+                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white" 
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
@@ -124,7 +245,7 @@ const CourseDashboard: React.FC = () => {
             onClick={() => setActiveTab("grades")}
             className={`w-full flex items-center px-6 py-4 text-left font-medium transition-all duration-200 ${
               activeTab === "grades" 
-                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-sm" 
+                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white" 
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
@@ -160,260 +281,120 @@ const CourseDashboard: React.FC = () => {
 
         {/* Content Area */}
         <main className="flex-1 p-6">
-          {activeTab === "course-content" && (
-            <div className="max-w-7xl">
-              {/* Course Header */}
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <div className="flex items-start space-x-6">
-                  <div className="relative w-48 h-32 flex-shrink-0">
-                    <img
-                      src={course.thumbnailUrl || "/placeholder.svg"}
-                      alt={course.title}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
-                    <p className="text-gray-600 mb-4">{course.subtitle}</p>
-                    
-                    {/* Progress Section */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Progress</span>
-                        <span className="text-sm font-medium text-cyan-600">{progress}% Complete</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-cyan-600 h-2 rounded-full transition-all duration-300 ease-out"
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Course Content */}
-              <div className="bg-white rounded-lg shadow-sm">
-                <div className="p-6 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Course Content</h2>
-                </div>
-                <div className="divide-y divide-gray-200">
-                  {course.modules.map((module) => (
-                    <div key={module.id} className="p-4">
-                      <button
-                        onClick={() => toggleModule(module.id)}
-                        className="flex items-center justify-between w-full text-left"
-                      >
-                        <h3 className="font-medium text-gray-900">{module.title}</h3>
-                        {expandedModules.has(module.id) ? (
-                          <ChevronDown className="w-5 h-5 text-gray-400" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5 text-gray-400" />
-                        )}
-                      </button>
-                      
-                      {expandedModules.has(module.id) && (
-                        <div className="mt-3 pl-4 space-y-2">
-                          {module.lessons.map((lesson) => (
-                            <button
-                              key={lesson.id}
-                              onClick={() => handleStartLesson(lesson.id)}
-                              className="flex items-center w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700 hover:text-cyan-600"
-                            >
-                              <Play className="w-4 h-4 mr-3 text-gray-400" />
-                              <span className="flex-1">{lesson.title}</span>
-                              {lesson.quiz && <Award className="w-4 h-4 text-yellow-500 ml-2" />}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === "course-content" && <CourseContent />}
 
           {activeTab === "course-dashboard" && (
-            <div className="max-w-7xl">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Course Dashboard</h1>
-              
-              {/* Progress Statistics */}
-              <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="bg-blue-200 rounded-lg shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress</h3>
-                  <div className="text-3xl font-bold text-cyan-600">{progress}%</div>
-                  <p className="text-gray-600">Course completion</p>
-                </div>
-                <div className="bg-blue-200 rounded-lg shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Modules</h3>
-                  <div className="text-3xl font-bold text-cyan-600">{course.modules.length}</div>
-                  <p className="text-gray-600">Total modules</p>
-                </div>
-                <div className="bg-blue-200 rounded-lg shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Lessons</h3>
-                  <div className="text-3xl font-bold text-cyan-600">
-                    {course.modules.reduce((total, module) => total + module.lessons.length, 0)}
-                  </div>
-                  <p className="text-gray-600">Total lessons</p>
-                </div>
-              </div>
+            <div className="max-w-7xl space-y-8">
+              {/* Keep course detail box and course content on top */}
+              <div>
+                {/* Course Header */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                  <div className="flex items-start space-x-6">
+                    <div className="relative w-48 h-32 flex-shrink-0">
+                      <img
+                        src={course.thumbnailUrl || "/placeholder.svg"}
+                        alt={course.title}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
+                      <p className="text-gray-600 mb-3">{course.subtitle}</p>
 
-              {/* Road to Certificate Section */}
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Road to Certificate</h2>
-                {/* <p className="text-sm text-gray-600 mb-6">12% of the Lessons Completed</p> */}
-                
-                <div className="space-y-6">
-                  {course.modules.map((module, moduleIndex) => (
-                    <div key={module.id} className="border-l-4 border-cyan-500 pl-6 relative">
-                      {/* Module circle indicator */}
-                      <div className="absolute -left-2 top-2 w-4 h-4 bg-cyan-500 rounded-full border-2 border-white"></div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                          {module.title}
-                        </h4>
-                        
-                        {/* Lessons as sub-topics */}
-                        <div className="space-y-2">
-                          {module.lessons.map((lesson, lessonIndex) => {
-                            // Show completion only for lesson 1.1 (completed) and 1.2 (current with continue)
-                            const isCompleted = moduleIndex === 0 && lessonIndex === 0 // Only 1.1 is completed
-                            const isCurrentLesson = moduleIndex === 0 && lessonIndex === 1 // 1.2 is current
-                            
-                            return (
-                              <div key={lesson.id} className="flex items-center space-x-3">
-                                {/* Completion status icon */}
-                                <div className={`flex-shrink-0 ${
-                                  isCompleted 
-                                    ? 'text-cyan-500' 
-                                    : isCurrentLesson 
-                                      ? 'text-cyan-500' 
-                                      : 'text-gray-300'
-                                }`}>
-                                  {isCompleted ? (
-                                    <CheckCircle className="w-4 h-4" />
-                                  ) : (
-                                    <Circle className="w-4 h-4" />
-                                  )}
-                                </div>
-                                
-                                <div className="flex-shrink-0">
-                                  <span className="text-sm font-medium text-cyan-600">
-                                    {moduleIndex + 1}.{lessonIndex + 1}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex-1 relative">
-                                  <button
-                                    onClick={() => handleStartLesson(lesson.id)}
-                                    className="text-left text-gray-700 font-medium hover:text-cyan-600 hover:underline transition-colors cursor-pointer"
-                                  >
-                                    {lesson.title}
-                                  </button>
-                                  
-                                  {/* Continue badge for current lesson */}
-                                  {isCurrentLesson && (
-                                    <span className="ml-2 bg-cyan-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                      Continue
-                                    </span>
-                                  )}
-                                </div>
-                                
-                                {lesson.quiz && (
-                                  <div className="flex-shrink-0">
-                                    <button className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-md border border-amber-200 hover:bg-amber-200 transition-colors">
-                                      <Award className="w-3 h-3 mr-1 inline" />
-                                      Quiz Available
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
+                      {/* Top summary: include total modules and lessons here */}
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
+                          <span className="text-sm text-gray-600 mr-2">Modules</span>
+                          <span className="text-sm font-semibold text-cyan-600">{course.modules.length}</span>
+                        </div>
+                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
+                          <span className="text-sm text-gray-600 mr-2">Lessons</span>
+                          <span className="text-sm font-semibold text-cyan-600">{course.modules.reduce((total, m) => total + m.lessons.length, 0)}</span>
+                        </div>
+                        <div className="ml-auto text-sm font-medium text-gray-700">
+                          <span className="mr-2">Progress</span>
+                          <span className="text-sm font-medium text-cyan-600">{progress}%</span>
                         </div>
                       </div>
+
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-cyan-600 h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
+
+                {/* Course Content (top) */}
+                {/* <CourseContent showHeader={false} /> */}
               </div>
 
-              {/* Learning Activity Section */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Learning Activity</h2>
-                
-                {/* Activity Calendar/Grid */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{currentYear}</h3>
-                      
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        onClick={handlePreviousYear}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        <ChevronLeft className="w-4 h-4 text-gray-600" />
-                      </button>
-                      <button 
-                        onClick={handleNextYear}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                      >
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Month Headers */}
-                  <div className="grid grid-cols-12 gap-2 mb-2 text-xs text-gray-500">
-                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => (
-                      <div key={month} className="text-center">{month}</div>
-                    ))}
-                  </div>
-                  
-                  {/* Activity Grid */}
-                  <div className="grid grid-cols-12 gap-2">
-                    {Array.from({ length: 12 }, (_, monthIndex) => (
-                      <div key={monthIndex} className="space-y-1">
-                        {Array.from({ length: 5 }, (_, weekIndex) => (
-                          <div key={weekIndex} className="grid grid-cols-7 gap-1">
-                            {Array.from({ length: 7 }, (_, dayIndex) => {
-                              // Show activity only for 3 specific days in July (month index 6) and only for 2025
-                              const hasActivity = currentYear === 2025 && monthIndex === 6 && (
-                                (weekIndex === 0 && dayIndex === 5) || // Day 6 of July
-                                (weekIndex === 1 && dayIndex === 1) || // Day 8 of July  
-                                (weekIndex === 1 && dayIndex === 2)    // Day 9 of July
-                              )
-                              const isToday = currentYear === 2025 && monthIndex === 6 && weekIndex === 1 && dayIndex === 2 // Mock "today" as last activity day
-                              
+              {/* Then show dashboard metrics and activity */}
+              <div>
+                {/* <h2 className="text-xl font-bold text-gray-900">Course Dashboard</h2> */}
+
+                {/* Removed duplicate small stat cards (Progress / Modules / Lessons) to avoid duplication
+                    Total modules and lessons are now shown in the course detail card above. */}
+
+                {/* Road to Certificate */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Road to Certificate</h3>
+                  <div className="space-y-6">
+                    {course.modules.map((module, moduleIndex) => (
+                      <div key={module.id} className="border-l-4 border-cyan-500 pl-6 relative">
+                        <div className="absolute -left-2 top-2 w-4 h-4 bg-cyan-500 rounded-full border-2 border-white" />
+                        <div className="mb-4">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-3">{module.title}</h4>
+                          <div className="space-y-2">
+                            {module.lessons.map((lesson, lessonIndex) => {
+                              const isCompleted = completedLessonIds.has(lesson.id)
+                              const isCurrentLesson = currentLessonId === lesson.id
+
                               return (
-                                <div
-                                  key={dayIndex}
-                                  className={`w-3 h-3 rounded-sm ${
-                                    hasActivity 
-                                      ? 'bg-cyan-500' 
-                                      : isToday 
-                                        ? 'bg-cyan-200 border-2 border-cyan-500' 
-                                        : 'bg-gray-100'
-                                  }`}
-                                  title={hasActivity ? 'Learning activity on this day' : 'No activity'}
-                                />
+                                <div key={lesson.id} className="flex items-center space-x-3">
+                                  <div className={`flex-shrink-0 ${isCompleted ? 'text-cyan-500' : isCurrentLesson ? 'text-cyan-500' : 'text-gray-300'}`}>
+                                    {isCompleted ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                                  </div>
+                                  <div className="flex-shrink-0"><span className="text-sm font-medium text-cyan-600">{moduleIndex + 1}.{lessonIndex + 1}</span></div>
+                                  <div className="flex-1 relative">
+                                    <button onClick={() => handleStartLesson(lesson.id)} className="text-left text-gray-700 font-medium hover:text-cyan-600 hover:underline transition-colors cursor-pointer">{lesson.title}</button>
+                                    {isCurrentLesson && <span className="ml-2 bg-cyan-500 text-white text-xs px-2 py-0.5 rounded-full">Continue</span>}
+                                  </div>
+                                  {lesson.quiz && <div className="flex-shrink-0"><button className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-md border border-amber-200 hover:bg-amber-200 transition-colors"><Award className="w-3 h-3 mr-1 inline" />Quiz Available</button></div>}
+                                </div>
                               )
                             })}
                           </div>
-                        ))}
+                        </div>
                       </div>
                     ))}
                   </div>
-                  
-                  <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
-                    <span>Longest Streak: 3 days</span>
-                    <div className="flex items-center space-x-2">
-                        <p className="text-sm text-gray-500">Current Streak: 0 days</p>
+                </div>
+
+                {/* Learning Activity */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Learning Activity</h3>
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4"><h4 className="text-lg font-semibold">{currentYear}</h4></div>
+                      <div className="flex items-center space-x-2">
+                        <button onClick={handlePreviousYear} className="p-1 hover:bg-gray-100 rounded transition-colors"><ChevronLeft className="w-4 h-4 text-gray-600" /></button>
+                        <button onClick={handleNextYear} className="p-1 hover:bg-gray-100 rounded transition-colors"><ChevronRight className="w-4 h-4 text-gray-600" /></button>
+                      </div>
                     </div>
+
+                    <div className="grid grid-cols-12 gap-2 mb-2 text-xs text-gray-500">{['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(month => <div key={month} className="text-center">{month}</div>)}</div>
+
+                    <div className="grid grid-cols-12 gap-2">{Array.from({ length: 12 }, (_, monthIndex) => (
+                      <div key={monthIndex} className="space-y-1">{Array.from({ length: 5 }, (_, weekIndex) => (
+                        <div key={weekIndex} className="grid grid-cols-7 gap-1">{Array.from({ length: 7 }, (_, dayIndex) => {
+                          const hasActivity = currentYear === 2025 && monthIndex === 6 && ((weekIndex === 0 && dayIndex === 5) || (weekIndex === 1 && dayIndex === 1) || (weekIndex === 1 && dayIndex === 2))
+                          const isToday = currentYear === 2025 && monthIndex === 6 && weekIndex === 1 && dayIndex === 2
+                          return <div key={dayIndex} className={`w-3 h-3 rounded-sm ${hasActivity ? 'bg-cyan-500' : isToday ? 'bg-cyan-200 border-2 border-cyan-500' : 'bg-gray-100'}`} title={hasActivity ? 'Learning activity on this day' : 'No activity'} />
+                        })}</div>
+                      ))}</div>
+                    ))}</div>
+
+                    <div className="flex items-center justify-between mt-4 text-xs text-gray-500"><span>Longest Streak: 3 days</span><div className="flex items-center space-x-2"><p className="text-sm text-gray-500">Current Streak: 0 days</p></div></div>
                   </div>
                 </div>
               </div>

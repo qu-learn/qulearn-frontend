@@ -5,13 +5,12 @@ import { useState } from "react"
 import { User, BookOpen, Zap, Award, LogOut, Settings, ChevronDown } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
-import logoImage1 from "../assets/logo1.png" 
 import logoImage2 from "../assets/logo2.png" 
 
 interface HeaderProps {
   user: IUser
   onLogout: () => void
-  currentPage: string
+  currentPage: string 
 }
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {

@@ -58,6 +58,11 @@ import type {
     IGetCourseAdministratorResponse,
     IDeleteCourseAdministratorResponse,
     IGetCourseAdministratorsResponse,
+    IChangePasswordRequest,
+    IChangePasswordResponse,
+    IGetSystemMetricsResponse, // Add this import
+    IMarkLessonCompleteRequest,
+    IMarkLessonCompleteResponse,
 } from "./types"
 
 // RTK Query API
@@ -133,10 +138,9 @@ export const api = createApi({
             providesTags: ["Course"],
         }),
 
-        // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
-                url: "/enrollments",
+                url: "/students/enrollments",
                 method: "POST",
                 body,
             }),
@@ -264,7 +268,7 @@ export const api = createApi({
 
         // Course Analytics
         getCourseAnalytics: builder.query<IGetCourseAnalyticsResponse, string>({
-            query: (courseId) => `/courses/${courseId}/analytics`,
+            query: (courseId) => `/educators/courses/${courseId}/analytics`,
         }),
         updateGamificationSettings: builder.mutation<
             IUpdateGamificationSettingsResponse,
@@ -366,6 +370,33 @@ export const api = createApi({
                 body: cAdmin,
             }),
         }),
+        changePassword: builder.mutation<IChangePasswordResponse, IChangePasswordRequest>({
+            query: (body) => ({
+                url: "/users/me/change-password",
+                method: "PATCH",
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
+
+        // Add this new endpoint for system metrics
+        getSystemMetrics: builder.query<IGetSystemMetricsResponse, void>({
+            query: () => "/sys-admin/system-metrics",
+            keepUnusedDataFor: 30, // Keep data for 30 seconds
+        }),
+        
+        markLessonComplete: builder.mutation<IMarkLessonCompleteResponse, IMarkLessonCompleteRequest>({
+            query: ({ courseId, moduleId, lessonId, ...body }) => ({
+                url: `/students/enrollments/${courseId}/modules/${moduleId}/lessons/${lessonId}/complete`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Enrollment", "User"],
+        }),
+        getEnrolledCourseById: builder.query<IGetCourseByIdResponse, string>({
+            query: (courseId) => `/students/courses/${courseId}`,
+            providesTags: ["Course"],
+        }),
     }),
 })
 
@@ -416,4 +447,8 @@ export const {
     useDeleteCourseAdministratorMutation,
     useGetCourseAdministratorQuery,
     useUpdateCourseAdministratorMutation,
+    useChangePasswordMutation,
+    useGetSystemMetricsQuery, //New hook
+    useMarkLessonCompleteMutation,
+    useGetEnrolledCourseByIdQuery,
 } = api

@@ -1,8 +1,11 @@
 "use client"
 
+import { Fragment } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import type { IUser } from "../utils/types"
 import { useGetCourseByIdQuery } from "../utils/api"
+import { Transition, Menu } from "@headlessui/react"
+import { ChevronRight, Home } from "lucide-react"
 
 interface BreadcrumbsProps {
   user?: IUser | null
@@ -146,38 +149,64 @@ function Breadcrumbs({ user }: BreadcrumbsProps) {
 
   // Render (simple inline style, no card)
   return (
-    <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2" aria-label="Breadcrumb">
-      <ol className="flex items-center space-x-2 text-sm text-gray-500">
-        {crumbs.map((c, i) => {
-          const isLast = i === crumbs.length - 1
-          return (
-            <li key={c.to} className="flex items-center">
-              {!isLast ? (
-                <>
-                  {c.clickable ? (
-                    <Link
-                      to={c.to}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        navigate(c.to)
-                      }}
-                      className="text-blue-600 hover:text-gray-800 text-lg"
-                    >
-                      {c.label}
-                    </Link>
-                  ) : (
-                    <span className="text-blue-500 text-lg">{c.label}</span>
-                  )}
-                  <span className="mx-2 text-blue-300 text-lg">/</span>
-                </>
-              ) : (
-                <span className="text-blue-700 font-semibold text-lg">{c.label}</span>
-              )}
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
+    <Transition
+      show={true}
+      as={Fragment}
+      enter="transition-opacity duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+    >
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2" aria-label="Breadcrumb">
+        <ol className="flex items-center space-x-2 text-sm text-gray-500">
+          {crumbs.map((c, i) => {
+            const isLast = i === crumbs.length - 1
+            const isFirst = i === 0
+            return (
+              <li key={c.to} className="flex items-center">
+                <Transition
+                  show={true}
+                  as={Fragment}
+                  enter={`transition-all duration-300 delay-${i * 50}`}
+                  enterFrom="opacity-0 translate-x-2"
+                  enterTo="opacity-100 translate-x-0"
+                >
+                  <div className="flex items-center">
+                    {!isLast ? (
+                      <>
+                        {c.clickable ? (
+                          <Link
+                            to={c.to}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              navigate(c.to)
+                            }}
+                            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 text-lg group"
+                          >
+                            {isFirst && <Home className="w-4 h-4 mr-1 group-hover:scale-110 transition-transform duration-200" />}
+                            <span className="group-hover:underline">{c.label}</span>
+                          </Link>
+                        ) : (
+                          <span className="flex items-center text-blue-500 text-lg">
+                            {isFirst && <Home className="w-4 h-4 mr-1" />}
+                            {c.label}
+                          </span>
+                        )}
+                        <ChevronRight className="mx-2 text-blue-300 w-4 h-4" />
+                      </>
+                    ) : (
+                      <span className="flex items-center text-blue-700 font-semibold text-lg">
+                        {isFirst && <Home className="w-4 h-4 mr-1" />}
+                        {c.label}
+                      </span>
+                    )}
+                  </div>
+                </Transition>
+              </li>
+            )
+          })}
+        </ol>
+      </nav>
+    </Transition>
   )
 }
 
