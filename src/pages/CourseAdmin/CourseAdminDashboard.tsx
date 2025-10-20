@@ -933,7 +933,7 @@ const handleCloseAnalyticsModal = () => {
                         <h3 className="text-2xl font-bold text-gray-900">Educator Management</h3>
                         <button
                           onClick={handleAddUserClick}
-                          className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-medium shadow"
+                          className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
                         >
                           Add New Educator
                         </button>
@@ -1390,10 +1390,10 @@ const handleCloseAnalyticsModal = () => {
 
                     {/* tighter action row */}
                     <div className="flex justify-end gap-3 mt-3">
-                      <button type="button" onClick={handleCloseEditUserModal} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-medium font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
+                      <button type="button" onClick={handleCloseEditUserModal} className="px-4 py-2 border border-gray-300 rounded-2xl shadow-sm text-medium font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
                         Cancel
                       </button>
-                      <button type="submit" className="px-4 py-2 border border-transparent rounded-md shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800">
+                      <button type="submit" className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800">
                         Save
                       </button>
                     </div>
@@ -1583,13 +1583,13 @@ const handleCloseAnalyticsModal = () => {
                     <button
                       type="button"
                       onClick={handleCancelAddUser}
-                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-medium font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                      className="px-4 py-2 border border-gray-300 rounded-2xl shadow-sm text-medium font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
+                      className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
                       disabled={isAddingEducator}
                     >
                       {isAddingEducator ? "Adding..." : "Add Educator"}

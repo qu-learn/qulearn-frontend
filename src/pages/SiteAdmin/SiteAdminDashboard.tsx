@@ -528,7 +528,7 @@ const SiteAdminDashboard = () => {
                 <h3 className="text-xl font-bold text-gray-900">Course Administrator Management</h3>
                 <button
                   onClick={handleAddUserClick}
-                  className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-3 px-4 rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200 font-semibold text-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2"
+                  className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
                 >
                   Add New Course Administrator
                 </button>
@@ -688,13 +688,13 @@ const SiteAdminDashboard = () => {
                             <button
                               type="button"
                               onClick={handleCancelAddUser}
-                              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                              className="px-4 py-2 border border-gray-300 rounded-2xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                             >
                               Cancel
                             </button>
                             <button
                               type="submit"
-                              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-md hover:from-cyan-700 hover:to-cyan-800 transition-all duration-200"
+                              className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
                             >
                               Add Course Administrator
                             </button>
