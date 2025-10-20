@@ -114,9 +114,15 @@ const CourseAdminDashboard = () => {
   // When API data arrives map to ICourse shape and replace local state
   useEffect(() => {
     if (!courseAdminCoursesData?.courses) return;
-    // API now returns items shaped { course: ICourse, avgCompletionRate: number }
+    // API now returns items shaped { course: ICourse, avgCompletionRate: number, monthlyEnrollments: { month, count }[] }
     const apiCourses: ICourse[] = courseAdminCoursesData.courses.map((entry: any) => {
       const c = entry.course ?? entry; // defensive: support old shape if present
+
+      // Prefer monthlyEnrollments from the course-admin API (shape: { month, count }[])
+      const enrollmentHistoryFromMonthly = Array.isArray(entry.monthlyEnrollments)
+        ? entry.monthlyEnrollments.map((m: any) => ({ month: m.month, students: m.count }))
+        : undefined
+
       const courseObj: any = {
         id: c.id,
         title: c.title,
@@ -134,7 +140,8 @@ const CourseAdminDashboard = () => {
         difficultyLevel: c.difficultyLevel ?? "beginner",
         prerequisites: c.prerequisites ?? [],
         modules: c.modules ?? [],
-        enrollmentHistory: c.enrollmentHistory ?? [],
+        // Use monthlyEnrollments -> enrollmentHistory for charting; fallback to any existing enrollmentHistory
+        enrollmentHistory: enrollmentHistoryFromMonthly ?? (c.enrollmentHistory ?? entry.enrollmentHistory ?? []),
       }
       // attach avgCompletionRate from top-level entry when present
       if (typeof entry.avgCompletionRate === 'number') {
@@ -1167,6 +1174,8 @@ const handleCloseAnalyticsModal = () => {
                   {/* ... */}
                   {(() => {
                     const data = selectedCourseAnalytics?.enrollmentHistory ?? [];
+                    console.log("Rendering analytics modal with data:", data);
+                    console.log("Selected course analytics:", selectedCourseAnalytics);
                     if (data.length === 0) {
                       return (
                         <div className="h-80 flex flex-col items-center justify-center text-center text-gray-600">
