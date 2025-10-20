@@ -449,7 +449,7 @@ const SiteAdminDashboard = () => {
               <button
                 onClick={() => refetchMetrics()}
                 disabled={metricsLoading}
-                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-2xl shadow-sm text-medium font-medium text-white bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
               >
                 {metricsLoading ? "Refreshing..." : "Refresh"}
               </button>
