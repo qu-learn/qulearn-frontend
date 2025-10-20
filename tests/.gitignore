@@ -1,0 +1,49 @@
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# pytest cache
+.pytest_cache/
+.cache/
+
+# Test reports
+reports/
+*.html
+*.xml
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+selenium-*.log
+
+# Screenshots (if added later)
+screenshots/
+*.png
+
+# WebDriver binaries (managed by webdriver-manager)
+.wdm/
+drivers/

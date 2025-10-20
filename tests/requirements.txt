@@ -1,0 +1,16 @@
+# Selenium UI Testing Dependencies for QuLearn Frontend
+# Python 3.8+ required
+
+# Core testing framework
+pytest==7.4.3
+pytest-html==4.1.1
+pytest-xdist==3.5.0
+
+# Selenium WebDriver
+selenium==4.16.0
+
+# Automatic WebDriver management
+webdriver-manager==4.0.1
+
+# Additional utilities
+python-dotenv==1.0.0
