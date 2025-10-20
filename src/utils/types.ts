@@ -110,6 +110,7 @@ export interface IEnrollment {
   completedAt?: string | Date
   completions?: IModuleCompletion[]
   QuizAttempts?: IQuizAttempt[]
+  activityHistory?: { date: string; lessonsCompleted: number }[]
 }
 
 export type ICircuitConfiguration = {

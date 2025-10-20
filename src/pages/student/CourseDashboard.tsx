@@ -94,6 +94,54 @@ const CourseDashboard: React.FC = () => {
     return totalLessons === 0 ? 0 : Math.round((completedSet.size / totalLessons) * 100)
   }
 
+  // Helper: build a map of 'YYYY-MM-DD' -> lessonsCompleted from API activityHistory
+  const getActivityMap = () => {
+    const map = new Map<string, number>()
+    const items = (enrollmentForCourse && enrollmentForCourse.activityHistory) || []
+    items.forEach((h: any) => {
+      if (!h || !h.date) return
+      const d = new Date(h.date)
+      if (isNaN(d.getTime())) return
+      const key = d.toISOString().slice(0, 10)
+      const count = typeof h.lessonsCompleted === "number" ? h.lessonsCompleted : 1
+      map.set(key, (map.get(key) || 0) + count)
+    })
+    return map
+  }
+
+  // Helper: generate calendar weeks for a given month (array of weeks; each week is array of Date | null)
+  const getWeeksForMonth = (year: number, monthIndex: number): (Date | null)[][] => {
+    const weeks: (Date | null)[][] = []
+    const firstDay = new Date(year, monthIndex, 1)
+    const lastDay = new Date(year, monthIndex + 1, 0)
+    const totalDays = lastDay.getDate()
+    let week: (Date | null)[] = []
+
+    // pad start of first week with nulls up to firstDay.getDay()
+    for (let i = 0; i < firstDay.getDay(); i++) week.push(null)
+
+    for (let day = 1; day <= totalDays; day++) {
+      week.push(new Date(year, monthIndex, day))
+      if (week.length === 7) {
+        weeks.push(week)
+        week = []
+      }
+    }
+
+    // pad the final week if needed
+    if (week.length > 0) {
+      while (week.length < 7) week.push(null)
+      weeks.push(week)
+    }
+
+    // Ensure at least 5 weeks for layout stability (some months span 6 weeks)
+    if (weeks.length < 5) {
+      while (weeks.length < 5) weeks.push(Array(7).fill(null))
+    }
+
+    return weeks
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -349,6 +397,8 @@ const CourseDashboard: React.FC = () => {
                               const isCompleted = completedLessonIds.has(lesson.id)
                               const isCurrentLesson = currentLessonId === lesson.id
 
+                              console.log({lessonId: lesson.id, isCompleted, isCurrentLesson})
+
                               return (
                                 <div key={lesson.id} className="flex items-center space-x-3">
                                   <div className={`flex-shrink-0 ${isCompleted ? 'text-cyan-500' : isCurrentLesson ? 'text-cyan-500' : 'text-gray-300'}`}>
@@ -382,17 +432,41 @@ const CourseDashboard: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-2 mb-2 text-xs text-gray-500">{['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(month => <div key={month} className="text-center">{month}</div>)}</div>
-
-                    <div className="grid grid-cols-12 gap-2">{Array.from({ length: 12 }, (_, monthIndex) => (
-                      <div key={monthIndex} className="space-y-1">{Array.from({ length: 5 }, (_, weekIndex) => (
-                        <div key={weekIndex} className="grid grid-cols-7 gap-1">{Array.from({ length: 7 }, (_, dayIndex) => {
-                          const hasActivity = currentYear === 2025 && monthIndex === 6 && ((weekIndex === 0 && dayIndex === 5) || (weekIndex === 1 && dayIndex === 1) || (weekIndex === 1 && dayIndex === 2))
-                          const isToday = currentYear === 2025 && monthIndex === 6 && weekIndex === 1 && dayIndex === 2
-                          return <div key={dayIndex} className={`w-3 h-3 rounded-sm ${hasActivity ? 'bg-cyan-500' : isToday ? 'bg-cyan-200 border-2 border-cyan-500' : 'bg-gray-100'}`} title={hasActivity ? 'Learning activity on this day' : 'No activity'} />
-                        })}</div>
-                      ))}</div>
-                    ))}</div>
+                    <div className="grid grid-cols-12 gap-2">{Array.from({ length: 12 }, (_, monthIndex) => {
+                      const activityMap = getActivityMap()
+                      const weeks = getWeeksForMonth(currentYear, monthIndex)
+                      const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][monthIndex]
+                      return (
+                        <div key={monthIndex} className="space-y-1">
+                          <div className="text-xs text-center text-gray-500">{monthName}</div>
+                          <div className="space-y-1">
+                            {weeks.map((week, weekIndex) => (
+                              <div key={weekIndex} className="grid grid-cols-7 gap-1">
+                                {week.map((cellDate, dayIndex) => {
+                                  if (!cellDate) {
+                                    return <div key={dayIndex} className="w-3 h-3 rounded-sm bg-gray-100" />
+                                  }
+                                  const iso = cellDate.toISOString().slice(0, 10)
+                                  const count = activityMap.get(iso) || 0
+                                  const isToday = iso === new Date().toISOString().slice(0, 10)
+                                  // Choose color intensity based on lessonsCompleted (0 -> light, 1+ -> stronger)
+                                  const bgClass = count >= 3 ? 'bg-cyan-700' : count === 2 ? 'bg-cyan-600' : count === 1 ? 'bg-cyan-500' : (isToday ? 'bg-cyan-200 border-2 border-cyan-500' : 'bg-gray-100')
+                                  const title = count > 0 ? `${count} lesson(s) completed on ${iso}` : `${iso} - no activity`
+                                  return (
+                                    <div
+                                      key={dayIndex}
+                                      className={`w-3 h-3 rounded-sm ${bgClass}`}
+                                      title={title}
+                                      aria-label={title}
+                                    />
+                                  )
+                                })}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}</div>
 
                     <div className="flex items-center justify-between mt-4 text-xs text-gray-500"><span>Longest Streak: 3 days</span><div className="flex items-center space-x-2"><p className="text-sm text-gray-500">Current Streak: 0 days</p></div></div>
                   </div>
