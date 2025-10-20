@@ -17,7 +17,8 @@ type StatRingProps = {
 }
 
 const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingProps) => {
-  const size = 160
+  // Use the smaller educator-style ring size for parity
+  const size = 120
   const stroke = 12
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
@@ -33,13 +34,13 @@ const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingPro
   if (React.isValidElement(icon)) {
     const iconEl = icon as React.ReactElement<any>
     iconNode = React.cloneElement(iconEl, {
-      className: [iconEl.props.className || "", "w-7 h-7 text-blue-600"].join(" ").trim(),
+      className: [iconEl.props.className || "", "w-8 h-8 text-blue-600"].join(" ").trim(),
     })
   }
 
   return (
     <div className="flex items-center">
-      <div className="relative bg-white rounded-full shadow-xl" style={{ width: size, height: size }}>
+      <div className="relative bg-white rounded-full" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
           <defs>
             <linearGradient id={`statRingGrad-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -67,7 +68,7 @@ const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingPro
           <span className="text-4xl font-extrabold text-cyan-700 leading-none">{value}</span>
         </span>
       </div>
-      <div className="ml-6 flex flex-col items-start">
+    <div className="ml-4 flex flex-col items-start">
         <span className="mb-1">{iconNode}</span>
         <span className="text-xl font-semibold text-cyan-700 tracking-tight">{label}</span>
       </div>
@@ -147,7 +148,6 @@ const StudentDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-
       
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Current Courses (use MyCourses layout: no extra white container) */}

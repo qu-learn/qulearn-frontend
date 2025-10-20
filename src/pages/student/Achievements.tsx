@@ -32,7 +32,7 @@ const StatRing = ({ icon, value, label, colorGrad, progress = 100 }: StatRingPro
 
   return (
     <div className="flex items-center">
-      <div className="relative bg-white rounded-full shadow-xl" style={{ width: size, height: size }}>
+      <div className="relative bg-white rounded-full" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
           <defs>
             <linearGradient id={`statRingGrad-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -99,12 +99,12 @@ const Achievements: React.FC = () => {
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-5xl font-extrabold text-cyan-700 mb-2">Achievements & Progress</h1>
+          <h1 className="text-4xl font-extrabold text-cyan-700 mb-2">Achievements & Progress</h1>
           <p className="text-xl text-cyan-600">Track your quantum computing learning journey</p>
         </div>
 
         {/* Circular Stat Rings - single row */}
-  <div className="mb-12 border-b-0 pb-6">
+        <div className="mb-12 border-b-0 pb-6">
           <div className="w-full overflow-x-auto">
             <div className="min-w-[900px] grid grid-cols-4 gap-12 items-center justify-items-center px-4 border-b-0">
               <StatRing
@@ -129,26 +129,14 @@ const Achievements: React.FC = () => {
                 progress={100}
               />
               <StatRing
-                icon={<Medal className="w-7 h-7 text-cyan-700" />}
+                icon={<Medal className="w-7 h-7 text-gray-600" />}
                 value={dashboardData.achievements.length}
                 label="Achievements"
-                colorGrad={["#60a5fa", "#06b6d4"]}
+                colorGrad={["#f3f4f6", "#f3f4f6"]}
                 progress={100}
               />
             </div>
           </div>
-
-          <h1 className="text-4xl font-extrabold text-cyan-700 mb-2">Achievements & Progress</h1>
-          <p className="text-xl font-medium text-cyan-600">Track your quantum computing learning journey</p>
-        </div>
-
-        {/* Progress Overview - circular stats to match student dashboard */}
-        <div className="grid grid-cols-4 gap-12 mb-8 items-center justify-items-center">
-          <StatRing icon={<Star className="w-8 h-8 text-cyan-700" />} value={dashboardData.points.toLocaleString()} label="Total Points" colorGrad={["#60a5fa", "#06b6d4"]} />
-          <StatRing icon={<Trophy className="w-8 h-8 text-yellow-600" />} value={dashboardData.badges.length} label="Badges Earned" colorGrad={["#f59e0b", "#f97316"]} />
-          <StatRing icon={<TrendingUp className="w-8 h-8 text-green-600" />} value={`${dashboardData.learningStreak}d`} label="Learning Streak" colorGrad={["#4ade80", "#60a5fa"]} />
-          <StatRing icon={<Medal className="w-8 h-8 text-purple-600" />} value={dashboardData.achievements.length} label="Achievements" colorGrad={["#a78bfa", "#7c3aed"]} />
-
         </div>
 
         {/* Tab Group for different sections */}

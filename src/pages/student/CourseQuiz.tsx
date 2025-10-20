@@ -448,28 +448,6 @@ const CourseQuiz: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Link 
-                to={`/courses/${courseId}/dashboard`}
-                className="flex items-center text-cyan-700 hover:text-cyan-800 mr-4"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {course.title}
-              </Link>
-              <div className="text-sm text-gray-500">
-                Assessment: {lesson.title} Quiz
-              </div>
-            </div>
-            <div className="flex items-center text-sm text-gray-500">
-              <Clock className="w-4 h-4 mr-2" />
-              <span>Quiz in Progress</span>
-            </div>
-          </div>
-        </header>
-
         {/* Quiz Content */}
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
