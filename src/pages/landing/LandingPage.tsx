@@ -8,7 +8,7 @@ import heroBackground from "../../assets/b.jpg"
 import { useState, useEffect } from "react"
 import Footer from "../../components/Footer"
 import logoImage2 from "../../assets/logo2.png" 
-
+import aboutImage from "../../assets/about.jpg"
 
 
 const LandingPage: React.FC = () => {
@@ -59,8 +59,8 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
   muted
   playsInline
 >
-  <source src="/public/video5.mp4" type="video/mp4" />
-  <source src="/public/video5.webm" type="video/webm" />
+  <source src="/video5.mp4" type="video/mp4" />
+  <source src="/video5.webm" type="video/webm" />
   
 </video>
   
@@ -74,6 +74,12 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
   />
   <span className="text-white text-3xl font-bold">QuLearn</span>
 </div>
+    <Link
+      to="/login"
+      className="bg-blue-400 hover:bg-blue-500 text-blue-900 px-6 py-2 rounded-lg font-semibold transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg transform"
+    >
+      Login
+    </Link>
   </nav>
 
   {/* Main content */}
@@ -161,7 +167,7 @@ const animatedCourses = useCountAnimation(landingData?.noOfCourses || 0, 2200)
           <div className="relative transform transition-all duration-1000 ease-out hover:scale-105">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl transition-opacity duration-500 hover:opacity-0"></div>
             <img
-              src="/src/assets/about.jpg"
+              src={aboutImage}
               alt="Quantum Computing Education"
               className="w-full h-150 object-cover rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out relative z-10"
             />

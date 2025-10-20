@@ -1,8 +1,8 @@
-
 // Types
-type Role = "student" | "educator" | "course-administrator" | "system-administrator"
-type CourseStatus = "draft" | "under-review" | "published" | "rejected"
-type BadgeCriteriaType = "courses-completed" | "simulations-run" | "quizzes-answered"
+export type Role = "student" | "educator" | "course-administrator" | "system-administrator"
+export type CourseStatus = "draft" | "under-review" | "published" | "rejected"
+export type BadgeCriteriaType = "courses-completed" | "simulations-run" | "quizzes-answered"
+export type AccountStatus = "active" | "suspended" | "deactivated" | "deleted"
 
 export interface IUser {
   id: string
@@ -10,9 +10,16 @@ export interface IUser {
   email: string
   role: Role
   avatarUrl?: string
+  bio?: string
+  certName?: string
   country?: string
   city?: string
   createdAt: string
+  gender?: string
+  contactNumber?: string
+  status?: AccountStatus
+  nationalId?: string
+  residentialAddress?: string
 }
 
 export interface IBadge {
@@ -69,12 +76,40 @@ export interface ICourse {
   instructor: Pick<IUser, "id" | "fullName">
   status: CourseStatus
   createdAt: string
+  jupyterNotebookUrl?: string
+  modules: IModule[]
+  enrollments?: number;
+  enrollmentHistory?: { month: string; students: number }[];
+}
+
+export interface IQuizAnswer {
+  questionId: string
+  selectedOptions: string[]
+}
+
+export interface IQuizAttempt {
+  quizId: string
+  answers: IQuizAnswer[]
+  score?: number
+  attemptedAt?: string | Date
+}
+
+export interface ILessonCompletion {
+  lessonId: string
+  completedAt?: string | Date
+}
+
+export interface IModuleCompletion {
+  moduleId: string
+  lessonIds: ILessonCompletion[]
 }
 
 export interface IEnrollment {
   course: ICourse
-  progressPercentage: number
-  completedAt?: string
+  progressPercentage?: number
+  completedAt?: string | Date
+  completions?: IModuleCompletion[]
+  QuizAttempts?: IQuizAttempt[]
 }
 
 export type ICircuitConfiguration = {
@@ -158,18 +193,36 @@ export interface IUpdateMyProfileRequest {
   email: string
   country?: string
   city?: string
+  bio?: string
+  certName?: string
+  contactNumber?: string
 }
 
 export interface IUpdateMyProfileResponse {
   user: IUser
 }
 
+export interface IChangePasswordRequest {
+  oldPassword: string
+  newPassword: string
+}
+
+export interface IChangePasswordResponse {
+  success: boolean
+  reason?: string
+}
+
 export interface IGetCoursesResponse {
   courses: ICourse[]
 }
 
+export interface IGetCoursesNoModulesResponse {
+  courses: ICourse[]
+}
+
 export interface IGetCourseByIdResponse {
-  course: ICourse & { modules: IModule[] }
+  course: ICourse
+  completion?: IEnrollment | null
 }
 
 export interface IEnrollInCourseRequest {
@@ -273,6 +326,7 @@ export interface ICreateCourseRequest {
   prerequisites: string[]
   thumbnailImageUrl: string
   jupyterNotebookUrl?: string
+  modules: IModule[]
 }
 
 export interface ICreateCourseResponse {
@@ -396,6 +450,8 @@ export interface IAddCourseAdministratorRequest {
   nationalId: string
   residentialAddress: string
   gender: string
+  // New: optional account status for updates (kept optional to avoid affecting creation flows)
+  accountStatus?: AccountStatus
 }
 
 export interface IAddCourseAdministratorResponse {
@@ -425,4 +481,22 @@ export interface IDeleteCourseAdministratorRequest {
 
 export interface IDeleteCourseAdministratorResponse {
   success: boolean
+}
+
+export interface IGetSystemMetricsResponse {
+    cpuUsage: number;
+    ramUsage: number;
+    diskUsage: number;
+    activeConnections: number;
+}
+
+export interface IMarkLessonCompleteRequest {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedAt?: string | Date
+}
+
+export interface IMarkLessonCompleteResponse {
+  enrollment: IEnrollment
 }

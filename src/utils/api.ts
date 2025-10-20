@@ -57,13 +57,19 @@ import type {
     IUpdateCourseAdministratorRequest,
     IGetCourseAdministratorResponse,
     IDeleteCourseAdministratorResponse,
+    IGetCourseAdministratorsResponse,
+    IChangePasswordRequest,
+    IChangePasswordResponse,
+    IGetSystemMetricsResponse, // Add this import
+    IMarkLessonCompleteRequest,
+    IMarkLessonCompleteResponse,
 } from "./types"
 
 // RTK Query API
 export const api = createApi({
     reducerPath: "api",
     baseQuery: fetchBaseQuery({
-        //baseUrl: "http://localhost:3000/api/v1/",
+        //baseUrl: "http://localhost:4000/api/v1/",
         baseUrl: '/api/v1',
         prepareHeaders: (headers) => {
             const token = localStorage.getItem("token")
@@ -106,6 +112,8 @@ export const api = createApi({
         getMyProfile: builder.query<IGetMyProfileResponse, void>({
             query: () => "/users/me",
             providesTags: ["User"],
+            // do not keep profile in cache when unused
+            keepUnusedDataFor: 0,
         }),
         updateMyProfile: builder.mutation<IUpdateMyProfileResponse, IUpdateMyProfileRequest>({
             query: (body) => ({
@@ -130,10 +138,9 @@ export const api = createApi({
             providesTags: ["Course"],
         }),
 
-        // Enrollments
         enrollInCourse: builder.mutation<IEnrollInCourseResponse, IEnrollInCourseRequest>({
             query: (body) => ({
-                url: "/enrollments",
+                url: "/students/enrollments",
                 method: "POST",
                 body,
             }),
@@ -247,7 +254,7 @@ export const api = createApi({
             query: ({ courseId, course }) => ({
                 url: `/courses/${courseId}`,
                 method: "PATCH",
-                body: course,
+                body: { course },
             }),
             invalidatesTags: ["Course"],
         }),
@@ -261,7 +268,7 @@ export const api = createApi({
 
         // Course Analytics
         getCourseAnalytics: builder.query<IGetCourseAnalyticsResponse, string>({
-            query: (courseId) => `/courses/${courseId}/analytics`,
+            query: (courseId) => `/educators/courses/${courseId}/analytics`,
         }),
         updateGamificationSettings: builder.mutation<
             IUpdateGamificationSettingsResponse,
@@ -311,9 +318,11 @@ export const api = createApi({
                 method: "POST",
                 body,
             }),
+            invalidatesTags: ["User", "Course"],
         }),
         getEducators: builder.query<IGetEducatorsResponse, void>({
             query: () => "/course-admin/educators",
+            providesTags: ["User"],
         }),
         deleteEducator: builder.mutation<IDeleteEducatorResponse, string>({
             query: (educatorId) => ({
@@ -339,9 +348,11 @@ export const api = createApi({
                 method: "POST",
                 body,
             }),
+            invalidatesTags: ["User", "Course"],
         }),
-        getCourseAdministrators: builder.query<IGetCourseAdministratorResponse, void>({
+        getCourseAdministrators: builder.query<IGetCourseAdministratorsResponse, void>({
             query: () => "/sys-admin/course-admins",
+            providesTags: ["User"],
         }),
         deleteCourseAdministrator: builder.mutation<IDeleteCourseAdministratorResponse, string>({
             query: (cAdminId) => ({
@@ -358,6 +369,33 @@ export const api = createApi({
                 method: "PATCH",
                 body: cAdmin,
             }),
+        }),
+        changePassword: builder.mutation<IChangePasswordResponse, IChangePasswordRequest>({
+            query: (body) => ({
+                url: "/users/me/change-password",
+                method: "PATCH",
+                body,
+            }),
+            invalidatesTags: ["User"],
+        }),
+
+        // Add this new endpoint for system metrics
+        getSystemMetrics: builder.query<IGetSystemMetricsResponse, void>({
+            query: () => "/sys-admin/system-metrics",
+            keepUnusedDataFor: 30, // Keep data for 30 seconds
+        }),
+        
+        markLessonComplete: builder.mutation<IMarkLessonCompleteResponse, IMarkLessonCompleteRequest>({
+            query: ({ courseId, moduleId, lessonId, ...body }) => ({
+                url: `/students/enrollments/${courseId}/modules/${moduleId}/lessons/${lessonId}/complete`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Enrollment", "User"],
+        }),
+        getEnrolledCourseById: builder.query<IGetCourseByIdResponse, string>({
+            query: (courseId) => `/students/courses/${courseId}`,
+            providesTags: ["Course"],
         }),
     }),
 })
@@ -409,4 +447,8 @@ export const {
     useDeleteCourseAdministratorMutation,
     useGetCourseAdministratorQuery,
     useUpdateCourseAdministratorMutation,
+    useChangePasswordMutation,
+    useGetSystemMetricsQuery, //New hook
+    useMarkLessonCompleteMutation,
+    useGetEnrolledCourseByIdQuery,
 } = api

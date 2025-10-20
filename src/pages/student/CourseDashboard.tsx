@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { ArrowLeft, Home, BookOpen, ChevronDown, ChevronRight, Play, Award, CheckCircle, Circle, ChevronLeft } from "lucide-react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { useGetCourseByIdQuery, useGetMyDashboardQuery } from "../../utils/api"
+import { useGetEnrolledCourseByIdQuery, useGetMyDashboardQuery } from "../../utils/api"
 
 const CourseDashboard: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>()
@@ -13,8 +13,40 @@ const CourseDashboard: React.FC = () => {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [currentYear, setCurrentYear] = useState(2025)
 
-  const { data: courseData, isLoading, error } = useGetCourseByIdQuery(courseId!)
+  const { data: courseData, isLoading, error } = useGetEnrolledCourseByIdQuery(courseId!)
   const { data: dashboardData } = useGetMyDashboardQuery()
+
+  // Prefer enrollment/completion data returned with the course query, fallback to dashboard
+  const enrollmentForCourse = useMemo(() => {
+    // If getEnrolledCourseByIdQuery returns an enrollment/completions object, use it.
+    // common shapes: courseData.enrollment OR courseData.enrolledCourse — adjust field name as needed.
+    if (courseData?.completion) return courseData.completion
+    if ((courseData as any)?.enrolledCourse) return (courseData as any).enrolledCourse
+
+    // fallback: find enrollment from dashboard query
+    return dashboardData?.enrolledCourses?.find(
+      (e) => e.course?.id === courseData?.course?.id || e.course?.id === courseId
+    )
+  }, [courseData, dashboardData, courseId])
+
+  const completedLessonIds = useMemo(() => {
+    const s = new Set<string>()
+    enrollmentForCourse?.completions?.forEach((mc: any) => {
+      mc.lessonIds?.forEach((li: any) => {
+        if (li?.lessonId) s.add(li.lessonId)
+      })
+    })
+    return s
+  }, [enrollmentForCourse])
+
+  const currentLessonId = useMemo(() => {
+    for (const mod of courseData?.course?.modules || []) {
+      for (const lesson of mod.lessons || []) {
+        if (!completedLessonIds.has(lesson.id)) return lesson.id
+      }
+    }
+    return null
+  }, [courseData, completedLessonIds])
 
   const toggleModule = (moduleId: string) => {
     const newExpanded = new Set(expandedModules)
@@ -41,8 +73,25 @@ const CourseDashboard: React.FC = () => {
   // Calculate progress (placeholder - you can implement actual progress calculation)
   const calculateProgress = () => {
     if (!courseData || !dashboardData) return 0
-    // This is a placeholder - implement actual progress calculation based on completed lessons
-    return 0
+    const c = courseData.course
+    const enrollment = dashboardData.enrolledCourses?.find(
+      (e) => e.course?.id === c.id || e.course?.id === courseId
+    )
+    if (enrollment && typeof enrollment.progressPercentage === "number") {
+      return Math.max(0, Math.min(100, Math.round(enrollment.progressPercentage)))
+    }
+
+    // compute from completed lessons if no saved percentage
+    const completedSet = new Set<string>()
+    enrollment?.completions?.forEach((mc) => {
+      mc.lessonIds?.forEach((li) => {
+        if (li?.lessonId) {
+          completedSet.add(li.lessonId)
+        }
+      })
+    })
+    const totalLessons = c.modules.reduce((t, m) => t + (m.lessons?.length || 0), 0) || 0
+    return totalLessons === 0 ? 0 : Math.round((completedSet.size / totalLessons) * 100)
   }
 
   if (isLoading) {
@@ -131,7 +180,11 @@ const CourseDashboard: React.FC = () => {
                       onClick={() => handleStartLesson(lesson.id)}
                       className="flex items-center w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700 hover:text-cyan-600"
                     >
-                      <Play className="w-4 h-4 mr-3 text-gray-400" />
+                      {completedLessonIds.has(lesson.id) ? (
+                        <CheckCircle className="w-4 h-4 mr-3 text-cyan-500" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-3 text-gray-400" />
+                      )}
                       <span className="flex-1">{lesson.title}</span>
                       {lesson.quiz && <Award className="w-4 h-4 text-yellow-500 ml-2" />}
                     </button>
@@ -293,8 +346,8 @@ const CourseDashboard: React.FC = () => {
                           <h4 className="text-lg font-semibold text-gray-900 mb-3">{module.title}</h4>
                           <div className="space-y-2">
                             {module.lessons.map((lesson, lessonIndex) => {
-                              const isCompleted = moduleIndex === 0 && lessonIndex === 0
-                              const isCurrentLesson = moduleIndex === 0 && lessonIndex === 1
+                              const isCompleted = completedLessonIds.has(lesson.id)
+                              const isCurrentLesson = currentLessonId === lesson.id
 
                               return (
                                 <div key={lesson.id} className="flex items-center space-x-3">

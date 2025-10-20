@@ -19,6 +19,7 @@ jobs:
           node-version: 22
           cache: 'pnpm'
       - run: |
+          git clone https://github.com/qu-learn/QCNS public/QCNS
           pnpm install --global vercel@latest
           vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}

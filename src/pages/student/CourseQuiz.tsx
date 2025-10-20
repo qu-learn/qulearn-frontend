@@ -387,12 +387,12 @@ const CourseQuiz: React.FC = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Quiz Not Found</h2>
           <p className="text-gray-600">The requested quiz could not be found.</p>
-          <Link
+          {/* <Link
             to={`/courses/${courseId}/dashboard`}
             className="mt-4 inline-block bg-cyan-700 text-white px-6 py-2 rounded-lg hover:bg-cyan-800"
           >
             Back to Course
-          </Link>
+          </Link> */}
         </div>
       </div>
     )

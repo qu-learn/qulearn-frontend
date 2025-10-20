@@ -4,6 +4,8 @@ import type React from "react"
 import { ArrowLeft } from "lucide-react"
 import { Link } from "react-router-dom"
 import Footer from "../../components/Footer"
+import aboutUs1 from "../../assets/aboutUs1.jpg"
+
 const AboutPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -51,7 +53,7 @@ const AboutPage: React.FC = () => {
             {/* Right side - Image */}
             <div className="relative">
               <img
-                src="/src/assets/aboutUs1.jpg"
+                src={aboutUs1}
                 alt="Quantum Computing Research Lab"
                 className="w-full h-120 object-cover rounded-lg shadow-xl"
               />

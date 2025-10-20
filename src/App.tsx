@@ -7,7 +7,7 @@ import { ApiProvider } from "@reduxjs/toolkit/query/react"
 import { api } from "./utils/api"
 import type { IUser } from "./utils/types"
 import LandingPage from "./pages/landing/LandingPage"
-import CourseCatalogL from "./pages/landing/CourseCatalogL"
+// import CourseCatalogL from "./pages/landing/CourseCatalogL"
 import AboutPage from './pages/landing/AboutPage'
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
@@ -21,25 +21,27 @@ import CourseQuiz from "./pages/student/CourseQuiz"
 import EducatorDashboard from "./pages/educator/EducatorDashboard"
 import CourseAdminDashboard from "./pages/CourseAdmin/CourseAdminDashboard"
 import SiteAdminDashboard from "./pages/SiteAdmin/SiteAdminDashboard"
-//import CourseCatalog from "./pages/educator/CourseCatalog"
 //import CourseDetail from "./pages/educator/CourseDetail"
 import CourseDetail from "./pages/student/CourseDetail"
 import LessonDetail from "./pages/student/LessonDetail"
 //import InteractiveLearning from "./pages/student/InteractiveLearning"
-import CircuitSimulator from "./pages/educator/CircuitSimulator"
-import NetworkSimulator from "./pages/educator/NetworkSimulator"
+import { CircuitSimulator, NetworkSimulator, JSSandbox } from "./components/QCNS"
 import Achievements from "./pages/student/Achievements"
 import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
 // import ProfileSettings from "./pages/student/ProfileSettings"
 import Header from "./components/Header"
+import Breadcrumbs from "./components/Breadcrumbs"
+
 
 interface AppState {
+  initialized: boolean
   user: IUser | null
 }
 
 function AppContent() {
   const [appState, setAppState] = useState<AppState>({
+    initialized: false,
     user: null,
   })
   const navigate = useNavigate()
@@ -51,7 +53,11 @@ function AppContent() {
     if (token && userData) {
       try {
         const user = JSON.parse(userData)
-        setAppState((prev) => ({ ...prev, user }))
+        setAppState((prev) => ({
+          ...prev,
+          initialized: true,
+          user,
+        }))
       } catch (error) {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
@@ -75,13 +81,26 @@ function AppContent() {
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("user")
-    setAppState({ user: null })
+    setAppState((prev) => ({
+      ...prev,
+      user: null,
+    }))
     navigate("/")
   }
 
   const getCurrentPage = () => {
     return location.pathname
   }
+
+  // Debug: log navigation changes and current user to help diagnose unexpected redirects
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.debug("Navigation ->", location.pathname, "user:", appState.user)
+    } catch (err) {
+      // noop
+    }
+  }, [location.pathname, appState.user])
 
   // Protected route wrapper
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -95,10 +114,12 @@ function AppContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {appState.user && <Header user={appState.user} onLogout={handleLogout} currentPage={getCurrentPage()} />}
       <main className={appState.user ? "pt-20" : ""}>
+        {/* Breadcrumbs are rendered inside main so the fixed header (when present) doesn't overlap them. */}
+        <Breadcrumbs user={appState.user} />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/courses-landing" element={<CourseCatalogL />} />
+          <Route path="/courses-landing" element={<CourseCatalog user={appState.user} />} />
           <Route path="/about" element={<AboutPage />} />
           <Route
             path="/login"
@@ -151,9 +172,9 @@ function AppContent() {
                 <StudentDashboard />
               </ProtectedRoute>
             }
-          /> 
+          />
 
-            <Route
+          <Route
             path="/my-courses"
             element={
               <ProtectedRoute>
@@ -304,6 +325,15 @@ function AppContent() {
             }
           />
 
+          <Route
+            path="/simulators/sandbox"
+            element={
+              <ProtectedRoute>
+                <JSSandbox />
+              </ProtectedRoute>
+            }
+          />
+
           {/* User Routes */}
           <Route
             path="/achievements"
@@ -313,7 +343,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Profile Settings */}
           <Route
             path="/profile"
@@ -322,7 +352,7 @@ function AppContent() {
                 <ProfileSettings user={appState.user!} />
               </ProtectedRoute>
             }
-          />  
+          />
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />

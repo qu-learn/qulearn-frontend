@@ -5,13 +5,12 @@ import { useState } from "react"
 import { User, BookOpen, Zap, Award, LogOut, Settings, ChevronDown } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { type IUser } from "../utils/types"
-import logoImage1 from "../assets/logo1.png" 
 import logoImage2 from "../assets/logo2.png" 
 
 interface HeaderProps {
   user: IUser
   onLogout: () => void
-  currentPage: string
+  currentPage: string 
 }
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
@@ -77,13 +76,15 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
 
   const navigationItems = getNavigationItems()
 
+  const dashboardPath = user.role === "student" ? "/dashboard" : user.role === "educator" ? "/educator" : user.role === "system-administrator" ? "/site-admin" : "/admin"
+    
   return (
   <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-cyan-600 to-blue-800 shadow-lg z-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-3 lg:px-0">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center space-x-3">
+            <Link to={dashboardPath} className="flex items-center space-x-3">
               <img 
                 src={logoImage2}
                 alt="QuLearn Logo" 
@@ -134,6 +135,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
                   <Zap className="w-4 h-4 mr-2" />
                   Network Simulator
                 </Link>
+                <Link
+                  to="/simulators/sandbox"
+                  className="flex items-center px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  JS Sandbox
+                </Link>
               </>
             )}
 
@@ -141,7 +149,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
             <div className="relative">
               <button
                 onClick={toggleDropdown}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="group flex items-center space-x-2 px-3 py-2 rounded-md text-large font-medium text-white hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {user.avatarUrl ? (
                   <img 
@@ -150,14 +158,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
                     className="w-8 h-8 rounded-full" 
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-large font-medium">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center transition-colors">
+                    <span className="text-white text-large font-medium transition-colors">
                       {user.fullName.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
-                <span className="text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors">{user.fullName}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="text-large font-medium text-white group-hover:text-blue-600 transition-colors">{user.fullName}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform text-white group-hover:text-blue-600 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Menu */}
