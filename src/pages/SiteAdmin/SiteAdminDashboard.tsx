@@ -216,6 +216,7 @@ const SiteAdminDashboard = () => {
       nationalId: "",
       residentialAddress: "",
       gender: "",
+      password: "",
     };
     let valid = true;
     if (!editingAdmin.fullName || !editingAdmin.fullName.trim()) { errors.fullName = "Full name is required."; valid = false; }
