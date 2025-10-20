@@ -25,8 +25,7 @@ import SiteAdminDashboard from "./pages/SiteAdmin/SiteAdminDashboard"
 import CourseDetail from "./pages/student/CourseDetail"
 import LessonDetail from "./pages/student/LessonDetail"
 //import InteractiveLearning from "./pages/student/InteractiveLearning"
-import CircuitSimulator from "./pages/educator/CircuitSimulator"
-import NetworkSimulator from "./pages/educator/NetworkSimulator"
+import { CircuitSimulator, NetworkSimulator, JSSandbox } from "./components/QCNS"
 import Achievements from "./pages/student/Achievements"
 import CourseCreation from "./pages/educator/CourseCreation"
 import CourseAnalytics from "./pages/educator/CourseAnalytics"
@@ -322,6 +321,15 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <NetworkSimulator />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/simulators/sandbox"
+            element={
+              <ProtectedRoute>
+                <JSSandbox />
               </ProtectedRoute>
             }
           />

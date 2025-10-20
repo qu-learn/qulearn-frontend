@@ -135,6 +135,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, currentPage }) => {
                   <Zap className="w-4 h-4 mr-2" />
                   Network Simulator
                 </Link>
+                <Link
+                  to="/simulators/sandbox"
+                  className="flex items-center px-3 py-2 rounded-md text-large font-medium text-white hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  JS Sandbox
+                </Link>
               </>
             )}
 
