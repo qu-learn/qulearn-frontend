@@ -397,6 +397,13 @@ export const api = createApi({
             query: (courseId) => `/students/courses/${courseId}`,
             providesTags: ["Course"],
         }),
+        deleteCourseEducator: builder.mutation<void, string>({
+            query: (courseId) => ({
+                url: `/educators/courses/${courseId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Course"],
+        }),
     }),
 })
 
@@ -451,4 +458,5 @@ export const {
     useGetSystemMetricsQuery, //New hook
     useMarkLessonCompleteMutation,
     useGetEnrolledCourseByIdQuery,
+    useDeleteCourseEducatorMutation,
 } = api
