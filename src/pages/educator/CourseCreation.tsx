@@ -99,11 +99,6 @@ const CourseCreation: React.FC = () => {
   const [showNetworkModal, setShowNetworkModal] = useState(false)
   const [showJSSandboxModal, setShowJSSandboxModal] = useState(false)
 
-  const [modules, setModules] = useState<Module[]>([]);
-  const [newPrerequisite, setNewPrerequisite] = useState("");
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
-
   const { data: existingCourse } = useGetCourseByIdQuery(courseId || "", { skip: !courseId });
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
@@ -113,9 +108,6 @@ const CourseCreation: React.FC = () => {
 
   const selectedModuleData = modules.find((m) => m.id === selectedModule)
   const selectedLessonData = selectedModuleData?.lessons.find((l) => l.id === selectedLesson)
-
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
-  const [isFormValid, setIsFormValid] = useState(true)
 
   // Add URL validation helper function
   const isValidUrl = (string: string): boolean => {
