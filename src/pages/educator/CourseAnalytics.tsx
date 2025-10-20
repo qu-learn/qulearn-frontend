@@ -122,14 +122,36 @@ const CourseAnalytics: React.FC = () => {
     { name: "In Progress", value: 100 - analyticsData.completionRate, color: "#F59E0B" },
   ]
 
-  // --- Hardcoded quiz score data for histogram demo ---
-  const quizScores = [
-    { quizName: 'Quiz 1: Basics', averageScore: 85 },
-    { quizName: 'Quiz 2: Circuits', averageScore: 72 },
-    { quizName: 'Quiz 3: Algorithms', averageScore: 90 },
-    { quizName: 'Quiz 4: Entanglement', averageScore: 65 },
-    { quizName: 'Quiz 5: Applications', averageScore: 78 },
-  ]
+  // --- Use API-provided quiz score data instead of hardcoded demo ---
+  // Build quizScores from per-quiz averages returned by backend, fallback to overall average
+  const quizScores = React.useMemo(() => {
+    if (Array.isArray(analyticsData?.averageQuizScorePerQuiz) && analyticsData!.averageQuizScorePerQuiz.length) {
+      return analyticsData!.averageQuizScorePerQuiz.map((q) => {
+        // Prefer server-provided quizTitle when available
+        let title = (q as any).quizTitle ?? `Quiz ${q.quizId}`
+        // If no quizTitle provided by API, try to resolve from course structure
+        if (!((q as any).quizTitle)) {
+          const modules = courseData?.course?.modules || []
+          outer: for (const module of modules) {
+            for (const lesson of module.lessons || []) {
+              const quiz = (lesson as any).quiz
+              if (!quiz) continue
+              if (quiz.id === q.quizId || (quiz._id && quiz._id.toString && quiz._id.toString() === q.quizId)) {
+                title = quiz.title || lesson.title || title
+                break outer
+              }
+            }
+          }
+        }
+        return { quizName: title, averageScore: q.averageScore }
+      })
+    }
+ 
+    if (analyticsData && typeof analyticsData.averageQuizScore === "number") {
+      return [{ quizName: "All Quizzes (avg)", averageScore: analyticsData.averageQuizScore }]
+    }
+    return []
+  }, [analyticsData, courseData])
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -274,22 +296,22 @@ const CourseAnalytics: React.FC = () => {
                   <h3 className="text-lg font-bold text-gray-900 mb-6">Quiz Score Distribution</h3>
                   <div className="h-96 flex items-center justify-center">
                     {quizScores.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={quizScores} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="quizName" angle={-45} textAnchor="end" interval={0} height={80} />
-                          <YAxis domain={[0, 100]} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                          <Tooltip formatter={(value) => [
-                            typeof value === 'number' ? `${value.toFixed(1)}%` : `${value}%`,
-                            "Average Score"
-                          ]} />
-                          <Bar dataKey="averageScore" fill="#F59E0B" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <span className="text-gray-400">No quiz score data available.</span>
-                    )}
-                  </div>
+                       <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={quizScores} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                           <CartesianGrid strokeDasharray="3 3" />
+                           <XAxis dataKey="quizName" angle={-45} textAnchor="end" interval={0} height={80} />
+                           <YAxis domain={[0, 100]} tickFormatter={(v) => `${v.toFixed(0)}%`} />
+                           <Tooltip formatter={(value) => [
+                             typeof value === 'number' ? `${value.toFixed(1)}%` : `${value}%`,
+                             "Average Score"
+                           ]} />
+                           <Bar dataKey="averageScore" fill="#F59E0B" />
+                         </BarChart>
+                       </ResponsiveContainer>
+                     ) : (
+                       <span className="text-gray-400">No quiz score data available.</span>
+                     )}
+                   </div>
                 </div>
               </Transition>
             </Tab.Panel>

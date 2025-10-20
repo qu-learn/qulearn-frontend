@@ -36,6 +36,7 @@ const SiteAdminDashboard = () => {
     nationalId: "",
     residentialAddress: "",
     gender: "",
+    password: "",
   });
   // Headless UI modal states
   const [selectedAdmin, setSelectedAdmin] = useState<any | null>(null); // view
@@ -49,6 +50,7 @@ const SiteAdminDashboard = () => {
     nationalId: "",
     residentialAddress: "",
     gender: "",
+    password: "",
   });
 
   const validateForm = () => {
@@ -59,6 +61,7 @@ const SiteAdminDashboard = () => {
       nationalId: "",
       residentialAddress: "",
       gender: "",
+      password: "",
     };
     let valid = true;
   
@@ -71,6 +74,14 @@ const SiteAdminDashboard = () => {
       valid = false;
     } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
       errors.email = "Invalid email address.";
+      valid = false;
+    }
+    // Password validation: required, minimum 8 characters
+    if (!formData.password || !formData.password.trim()) {
+      errors.password = "Password is required.";
+      valid = false;
+    } else if (formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters.";
       valid = false;
     }
     if (formData.contactNumber && !/^\d{10,15}$/.test(formData.contactNumber)) {
@@ -142,7 +153,7 @@ const SiteAdminDashboard = () => {
       const response = await addCourseAdmin({
         fullName: formData.fullName,
         email: formData.email,
-        password: "defaultPassword", // Default password or prompt user to set one
+        password: formData.password, // use password entered in the form
         contactNumber: formData.contactNumber,
         nationalId: formData.nationalId,
         residentialAddress: formData.residentialAddress,
@@ -618,6 +629,21 @@ const SiteAdminDashboard = () => {
                               required
                             />
                             {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                          </div>
+
+                          {/* Password */}
+                          <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                            <input
+                              type="password"
+                              id="password"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Enter password (min. 8 characters)"
+                              value={formData.password}
+                              onChange={(e) => setFormData((prevData) => ({ ...prevData, password: e.target.value }))}
+                              required
+                            />
+                            {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
                           </div>
 
                           {/* Contact Number */}

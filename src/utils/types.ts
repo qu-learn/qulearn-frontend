@@ -358,6 +358,7 @@ export interface IGetCourseAnalyticsResponse {
   completionRate: number
   averageQuizScore: number
   studentProgress: { studentId: string; studentName: string; progress: number }[]
+  averageQuizScorePerQuiz: { quizId: string; quizTitle: string; averageScore: number }[]
 }
 
 export interface IUpdateGamificationSettingsRequest {
