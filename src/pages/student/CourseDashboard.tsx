@@ -94,8 +94,7 @@ const CourseDashboard: React.FC = () => {
     return totalLessons === 0 ? 0 : Math.round((completedSet.size / totalLessons) * 100)
   }
 
-  // Helper: build a map of 'YYYY-MM-DD' -> lessonsCompleted from API activityHistory
-  const getActivityMap = () => {
+  const activityMap = useMemo(() => {
     const map = new Map<string, number>()
     const items = (enrollmentForCourse && enrollmentForCourse.activityHistory) || []
     items.forEach((h: any) => {
@@ -107,7 +106,49 @@ const CourseDashboard: React.FC = () => {
       map.set(key, (map.get(key) || 0) + count)
     })
     return map
-  }
+  }, [enrollmentForCourse])
+
+  // Compute longest and current streaks (within selected year). Current streak counts up to today.
+  const { longestStreak, currentStreak } = useMemo(() => {
+    const yearPrefix = String(currentYear)
+    const keysInYear = Array.from(activityMap.keys()).filter(k => k.startsWith(yearPrefix)).sort()
+    if (keysInYear.length === 0) return { longestStreak: 0, currentStreak: 0 }
+
+    // longest streak: scan sorted dates for consecutive runs
+    const dates = keysInYear.map(k => new Date(k))
+    let longest = 0
+    let run = 1
+    for (let i = 1; i < dates.length; i++) {
+      const prev = dates[i - 1]
+      const cur = dates[i]
+      const diffDays = Math.round((cur.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000))
+      if (diffDays === 1) {
+        run++
+      } else {
+        if (run > longest) longest = run
+        run = 1
+      }
+    }
+    if (run > longest) longest = run
+
+    // current streak: count backward from today (only if today is in the selected year)
+    let current = 0
+    const todayIso = new Date().toISOString().slice(0, 10)
+    if (todayIso.startsWith(yearPrefix)) {
+      let d = new Date(todayIso)
+      while (true) {
+        const iso = d.toISOString().slice(0, 10)
+        if (activityMap.get(iso)) {
+          current++
+          d.setDate(d.getDate() - 1)
+        } else {
+          break
+        }
+      }
+    }
+
+    return { longestStreak: longest, currentStreak: current }
+  }, [activityMap, currentYear])
 
   // Helper: generate calendar weeks for a given month (array of weeks; each week is array of Date | null)
   const getWeeksForMonth = (year: number, monthIndex: number): (Date | null)[][] => {
@@ -433,42 +474,46 @@ const CourseDashboard: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-12 gap-2">{Array.from({ length: 12 }, (_, monthIndex) => {
-                      const activityMap = getActivityMap()
-                      const weeks = getWeeksForMonth(currentYear, monthIndex)
-                      const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][monthIndex]
-                      return (
-                        <div key={monthIndex} className="space-y-1">
-                          <div className="text-xs text-center text-gray-500">{monthName}</div>
-                          <div className="space-y-1">
-                            {weeks.map((week, weekIndex) => (
-                              <div key={weekIndex} className="grid grid-cols-7 gap-1">
-                                {week.map((cellDate, dayIndex) => {
-                                  if (!cellDate) {
-                                    return <div key={dayIndex} className="w-3 h-3 rounded-sm bg-gray-100" />
-                                  }
-                                  const iso = cellDate.toISOString().slice(0, 10)
-                                  const count = activityMap.get(iso) || 0
-                                  const isToday = iso === new Date().toISOString().slice(0, 10)
-                                  // Choose color intensity based on lessonsCompleted (0 -> light, 1+ -> stronger)
-                                  const bgClass = count >= 3 ? 'bg-cyan-700' : count === 2 ? 'bg-cyan-600' : count === 1 ? 'bg-cyan-500' : (isToday ? 'bg-cyan-200 border-2 border-cyan-500' : 'bg-gray-100')
-                                  const title = count > 0 ? `${count} lesson(s) completed on ${iso}` : `${iso} - no activity`
-                                  return (
-                                    <div
-                                      key={dayIndex}
-                                      className={`w-3 h-3 rounded-sm ${bgClass}`}
-                                      title={title}
-                                      aria-label={title}
-                                    />
-                                  )
-                                })}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })}</div>
+                       const weeks = getWeeksForMonth(currentYear, monthIndex)
+                       const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][monthIndex]
+                       return (
+                         <div key={monthIndex} className="space-y-1">
+                           <div className="text-xs text-center text-gray-500">{monthName}</div>
+                           <div className="space-y-1">
+                             {weeks.map((week, weekIndex) => (
+                               <div key={weekIndex} className="grid grid-cols-7 gap-1">
+                                 {week.map((cellDate, dayIndex) => {
+                                   if (!cellDate) {
+                                     return <div key={dayIndex} className="w-3 h-3 rounded-sm bg-gray-100" />
+                                   }
+                                   const iso = cellDate.toISOString().slice(0, 10)
+                                   const count = activityMap.get(iso) || 0
+                                   const isToday = iso === new Date().toISOString().slice(0, 10)
+                                   // Choose color intensity based on lessonsCompleted (0 -> light, 1+ -> stronger)
+                                   const bgClass = count >= 3 ? 'bg-cyan-700' : count === 2 ? 'bg-cyan-600' : count === 1 ? 'bg-cyan-500' : (isToday ? 'bg-cyan-200 border-2 border-cyan-500' : 'bg-gray-100')
+                                   const title = count > 0 ? `${count} lesson(s) completed on ${iso}` : `${iso} - no activity`
+                                   return (
+                                     <div
+                                       key={dayIndex}
+                                       className={`w-3 h-3 rounded-sm ${bgClass}`}
+                                       title={title}
+                                       aria-label={title}
+                                     />
+                                   )
+                                 })}
+                               </div>
+                             ))}
+                           </div>
+                         </div>
+                       )
+                     })}</div>
 
-                    <div className="flex items-center justify-between mt-4 text-xs text-gray-500"><span>Longest Streak: 3 days</span><div className="flex items-center space-x-2"><p className="text-sm text-gray-500">Current Streak: 0 days</p></div></div>
+                    <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
+                      <span>Longest Streak: {longestStreak} {longestStreak === 1 ? 'day' : 'days'}</span>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-sm text-gray-500">Current Streak: {currentStreak} {currentStreak === 1 ? 'day' : 'days'}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
