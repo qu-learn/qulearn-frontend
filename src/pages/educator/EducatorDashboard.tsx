@@ -378,10 +378,12 @@ const EducatorDashboard: React.FC = () => {
                           <p className="text-gray-600">No courses found matching your search.</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-3 gap-8">
-                          {filteredCourses.map((course) => (
-                            <CourseCard key={course.id} course={course} navigate={navigate} />
-                          ))}
+                        <div className="max-h-[900px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                          <div className="grid grid-cols-3 gap-8">
+                            {filteredCourses.map((course) => (
+                              <CourseCard key={course.id} course={course} navigate={navigate} />
+                            ))}
+                          </div>
                         </div>
                       )}
                     </Transition>
@@ -400,12 +402,14 @@ const EducatorDashboard: React.FC = () => {
                           <p className="text-gray-600">No published courses found matching your search.</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-3 gap-8">
-                          {filteredCourses
-                            .filter((course) => course.status === "published")
-                            .map((course) => (
-                              <CourseCard key={course.id} course={course} navigate={navigate} />
-                            ))}
+                        <div className="max-h-[900px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                          <div className="grid grid-cols-3 gap-8">
+                            {filteredCourses
+                              .filter((course) => course.status === "published")
+                              .map((course) => (
+                                <CourseCard key={course.id} course={course} navigate={navigate} />
+                              ))}
+                          </div>
                         </div>
                       )}
                     </Transition>
@@ -424,12 +428,14 @@ const EducatorDashboard: React.FC = () => {
                           <p className="text-gray-600">No draft courses found matching your search.</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-3 gap-8">
-                          {filteredCourses
-                            .filter((course) => course.status === "draft")
-                            .map((course) => (
-                              <CourseCard key={course.id} course={course} navigate={navigate} />
-                            ))}
+                        <div className="max-h-[900px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                          <div className="grid grid-cols-3 gap-8">
+                            {filteredCourses
+                              .filter((course) => course.status === "draft")
+                              .map((course) => (
+                                <CourseCard key={course.id} course={course} navigate={navigate} />
+                              ))}
+                          </div>
                         </div>
                       )}
                     </Transition>
@@ -448,12 +454,14 @@ const EducatorDashboard: React.FC = () => {
                           <p className="text-gray-600">No courses under review found matching your search.</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-3 gap-8">
-                          {filteredCourses
-                            .filter((course) => course.status === "under-review")
-                            .map((course) => (
-                              <CourseCard key={course.id} course={course} navigate={navigate} />
-                            ))}
+                        <div className="max-h-[900px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                          <div className="grid grid-cols-3 gap-8">
+                            {filteredCourses
+                              .filter((course) => course.status === "under-review")
+                              .map((course) => (
+                                <CourseCard key={course.id} course={course} navigate={navigate} />
+                              ))}
+                          </div>
                         </div>
                       )}
                     </Transition>

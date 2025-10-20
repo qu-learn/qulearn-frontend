@@ -289,8 +289,8 @@ const CourseDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg">
+      {/* Sidebar - Increased width */}
+      <div className="w-96 bg-white shadow-lg flex-shrink-0">
         {/* Logo/Course Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center mb-2">
@@ -346,102 +346,115 @@ const CourseDashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Content Area */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl ml-8 mr-auto px-8 py-8">
           {activeTab === "course-content" && <CourseContent />}
 
           {activeTab === "course-dashboard" && (
-            <div className="max-w-[1500px] space-y-10">
-              {/* Keep course detail box and course content on top */}
-              <div>
-                {/* Course Header */}
-                <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-                  <div className="flex items-start space-x-8">
-                    <div className="relative w-56 h-40 flex-shrink-0">
-                      <img
-                        src={course.thumbnailUrl || "/placeholder.svg"}
-                        alt={course.title}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+            <div className="space-y-6">
+              {/* Course Header - Full width aligned */}
+              <div className="bg-white rounded-lg shadow-sm p-8">
+                <div className="flex items-start space-x-8">
+                  <div className="relative w-56 h-40 flex-shrink-0">
+                    <img
+                      src={course.thumbnailUrl || "/placeholder.svg"}
+                      alt={course.title}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{course.title}</h1>
+                    <p className="text-lg text-gray-600 mb-4">{course.subtitle}</p>
+
+                    {/* Top summary: include total modules and lessons here */}
+                    <div className="flex items-center space-x-6 mb-6">
+                      <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+                        <span className="text-base text-gray-600 mr-3">Modules</span>
+                        <span className="text-base font-semibold text-cyan-600">{course.modules.length}</span>
+                      </div>
+                      <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+                        <span className="text-base text-gray-600 mr-3">Lessons</span>
+                        <span className="text-base font-semibold text-cyan-600">{course.modules.reduce((total, m) => total + m.lessons.length, 0)}</span>
+                      </div>
+                      <div className="ml-auto text-base font-medium text-gray-700">
+                        <span className="mr-3">Progress</span>
+                        <span className="text-base font-medium text-cyan-600">{progress}%</span>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{course.title}</h1>
-                      <p className="text-lg text-gray-600 mb-4">{course.subtitle}</p>
 
-                      {/* Top summary: include total modules and lessons here */}
-                      <div className="flex items-center space-x-6 mb-6">
-                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
-                          <span className="text-base text-gray-600 mr-3">Modules</span>
-                          <span className="text-base font-semibold text-cyan-600">{course.modules.length}</span>
-                        </div>
-                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
-                          <span className="text-base text-gray-600 mr-3">Lessons</span>
-                          <span className="text-base font-semibold text-cyan-600">{course.modules.reduce((total, m) => total + m.lessons.length, 0)}</span>
-                        </div>
-                        <div className="ml-auto text-base font-medium text-gray-700">
-                          <span className="mr-3">Progress</span>
-                          <span className="text-base font-medium text-cyan-600">{progress}%</span>
-                        </div>
-                      </div>
-
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div className="bg-cyan-600 h-3 rounded-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
-                      </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="bg-cyan-600 h-3 rounded-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
                 </div>
-
-                {/* Course Content (top) */}
-                {/* <CourseContent showHeader={false} /> */}
               </div>
 
-              {/* Then show dashboard metrics and activity */}
-              <div>
-                {/* <h2 className="text-xl font-bold text-gray-900">Course Dashboard</h2> */}
+              {/* Road to Certificate with scrollable content */}
+              <div className="bg-white rounded-lg shadow-sm">
+                  <div className="p-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Road to Certificate</h3>
+                    {/* Scrollable container with max height */}
+                    <div className="max-h-[600px] overflow-y-auto pr-2 pl-4 space-y-10" style={{ scrollbarWidth: 'thin' }}>
+                      {course.modules.map((module, moduleIndex) => (
+                        <div key={module.id} className="relative pl-12">
+                          {/* Vertical blue line */}
+                          <div className="absolute left-4 top-0 bottom-0 w-1 bg-cyan-500" />
+                          {/* Circle marker - fully visible */}
+                          <div className="absolute left-[0.875rem] top-1 w-6 h-6 bg-cyan-500 rounded-full border-4 border-white shadow-lg ring-2 ring-cyan-100" />
+                          <div className="mb-4">
+                            <h4 className="text-xl font-semibold text-gray-900 mb-4">{module.title}</h4>
+                            <div className="space-y-3">
+                              {module.lessons.map((lesson, lessonIndex) => {
+                                const isCompleted = completedLessonIds.has(lesson.id)
+                                const isCurrentLesson = currentLessonId === lesson.id
 
-                {/* Removed duplicate small stat cards (Progress / Modules / Lessons) to avoid duplication
-                    Total modules and lessons are now shown in the course detail card above. */}
+                                console.log({lessonId: lesson.id, isCompleted, isCurrentLesson})
 
-                {/* Road to Certificate */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Road to Certificate</h3>
-                  <div className="space-y-6">
-                    {course.modules.map((module, moduleIndex) => (
-                      <div key={module.id} className="border-l-4 border-cyan-500 pl-6 relative">
-                        <div className="absolute -left-2 top-2 w-4 h-4 bg-cyan-500 rounded-full border-2 border-white" />
-                        <div className="mb-4">
-                          <h4 className="text-lg font-semibold text-gray-900 mb-3">{module.title}</h4>
-                          <div className="space-y-2">
-                            {module.lessons.map((lesson, lessonIndex) => {
-                              const isCompleted = completedLessonIds.has(lesson.id)
-                              const isCurrentLesson = currentLessonId === lesson.id
-
-                              console.log({lessonId: lesson.id, isCompleted, isCurrentLesson})
-
-                              return (
-                                <div key={lesson.id} className="flex items-center space-x-3">
-                                  <div className={`flex-shrink-0 ${isCompleted ? 'text-cyan-500' : isCurrentLesson ? 'text-cyan-500' : 'text-gray-300'}`}>
-                                    {isCompleted ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                                return (
+                                  <div key={lesson.id} className="flex items-center space-x-4 py-2">
+                                    <div className={`flex-shrink-0 ${isCompleted ? 'text-cyan-500' : isCurrentLesson ? 'text-cyan-500' : 'text-gray-300'}`}>
+                                      {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                                    </div>
+                                    <div className="flex-shrink-0 min-w-[2.5rem]">
+                                      <span className="text-base font-semibold text-cyan-600">{moduleIndex + 1}.{lessonIndex + 1}</span>
+                                    </div>
+                                    <div className="flex-1 relative">
+                                      <button 
+                                        onClick={() => handleStartLesson(lesson.id)} 
+                                        className="text-left text-base text-gray-700 font-medium hover:text-cyan-600 hover:underline transition-colors cursor-pointer"
+                                      >
+                                        {lesson.title}
+                                      </button>
+                                      {isCurrentLesson && (
+                                        <span className="ml-3 bg-cyan-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                                          Continue
+                                        </span>
+                                      )}
+                                    </div>
+                                    {lesson.quiz && (
+                                      <div className="flex-shrink-0">
+                                        <button className="px-3 py-1.5 text-sm bg-amber-100 text-amber-700 rounded-md border border-amber-200 hover:bg-amber-200 transition-colors font-medium">
+                                          <Award className="w-4 h-4 mr-1.5 inline" />
+                                          Quiz Available
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="flex-shrink-0"><span className="text-sm font-medium text-cyan-600">{moduleIndex + 1}.{lessonIndex + 1}</span></div>
-                                  <div className="flex-1 relative">
-                                    <button onClick={() => handleStartLesson(lesson.id)} className="text-left text-gray-700 font-medium hover:text-cyan-600 hover:underline transition-colors cursor-pointer">{lesson.title}</button>
-                                    {isCurrentLesson && <span className="ml-2 bg-cyan-500 text-white text-xs px-2 py-0.5 rounded-full">Continue</span>}
-                                  </div>
-                                  {lesson.quiz && <div className="flex-shrink-0"><button className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-md border border-amber-200 hover:bg-amber-200 transition-colors"><Award className="w-3 h-3 mr-1 inline" />Quiz Available</button></div>}
-                                </div>
-                              )
-                            })}
+                                )
+                              })}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    {/* Close scrollable container */}
                   </div>
                 </div>
 
-                {/* Learning Activity */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+              {/* Learning Activity */}
+              <div className="bg-white rounded-lg shadow-sm p-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Learning Activity</h3>
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
@@ -495,7 +508,6 @@ const CourseDashboard: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
           )}
 
@@ -726,6 +738,7 @@ const CourseDashboard: React.FC = () => {
               </div>
             </div>
           )}
+          </div>
         </main>
       </div>
     </div>
