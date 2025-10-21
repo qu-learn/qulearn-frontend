@@ -39,8 +39,8 @@ import type {
     IUpdateGamificationSettingsRequest,
     IUpdateGamificationSettingsResponse,
     IGetCourseAdminDashboardResponse,
-    IGetCourseAdminUsersRequest,
-    IGetCourseAdminUsersResponse,
+    IGetSysAdminUsersRequest,
+    IGetSysAdminUsersResponse,
     IGetCourseAdminCoursesResponse,
     IUpdateCourseStatusRequest,
     IUpdateCourseStatusResponse,
@@ -63,6 +63,8 @@ import type {
     IGetSystemMetricsResponse, // Add this import
     IMarkLessonCompleteRequest,
     IMarkLessonCompleteResponse,
+    IUpdateUserBySysAdminResponse,
+    IUpdateUserBySysAdminRequest,
 } from "./types"
 
 // RTK Query API
@@ -285,8 +287,8 @@ export const api = createApi({
         getCourseAdminDashboard: builder.query<IGetCourseAdminDashboardResponse, void>({
             query: () => "/course-admin/me/dashboard",
         }),
-        getCourseAdminUsers: builder.query<IGetCourseAdminUsersResponse, IGetCourseAdminUsersRequest>({
-            query: ({ page, pageSize }) => `/course-admin/users?page=${page}&pageSize=${pageSize}`,
+        getSysAdminUsers: builder.query<IGetSysAdminUsersResponse, IGetSysAdminUsersRequest>({
+            query: ({ page, pageSize }) => `/sys-admin/users?page=${page}&pageSize=${pageSize}`,
         }),
         getCourseAdminCourses: builder.query<IGetCourseAdminCoursesResponse, void>({
             query: () => "/course-admin/courses",
@@ -404,6 +406,13 @@ export const api = createApi({
             }),
             invalidatesTags: ["Course"],
         }),
+        updateUserBySysAdmin: builder.mutation<IUpdateUserBySysAdminResponse, IUpdateUserBySysAdminRequest>({
+            query: ({ userId, user }) => ({
+                url: `/sys-admin/users/${userId}`,
+                method: "PATCH",
+                body: user,
+            }),
+        }),
     }),
 })
 
@@ -440,7 +449,7 @@ export const {
     useGetCourseAnalyticsQuery,
     useUpdateGamificationSettingsMutation,
     useGetCourseAdminDashboardQuery,
-    useGetCourseAdminUsersQuery,
+    useGetSysAdminUsersQuery,
     useGetCourseAdminCoursesQuery,
     useUpdateCourseStatusMutation,
     useDeleteCourseAdminMutation,
@@ -459,4 +468,5 @@ export const {
     useMarkLessonCompleteMutation,
     useGetEnrolledCourseByIdQuery,
     useDeleteCourseEducatorMutation,
+    useUpdateUserBySysAdminMutation,
 } = api
