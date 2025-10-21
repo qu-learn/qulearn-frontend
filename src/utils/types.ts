@@ -380,12 +380,12 @@ export interface IGetCourseAdminDashboardResponse {
   enrollmentsPerMonth: { month: string; count: number }[]
 }
 
-export interface IGetCourseAdminUsersRequest {
+export interface IGetSysAdminUsersRequest {
   page: number
   pageSize: number
 }
 
-export interface IGetCourseAdminUsersResponse {
+export interface IGetSysAdminUsersResponse {
   users: IUser[]
   totalPages: number
   currentPage: number
@@ -492,6 +492,7 @@ export interface IGetSystemMetricsResponse {
     ramUsage: number;
     diskUsage: number;
     activeConnections: number;
+    cumulativeUsers: { month: string; count: number }[];
 }
 
 export interface IMarkLessonCompleteRequest {
@@ -503,4 +504,13 @@ export interface IMarkLessonCompleteRequest {
 
 export interface IMarkLessonCompleteResponse {
   enrollment: IEnrollment
+}
+
+export interface IUpdateUserBySysAdminRequest {
+  userId: string
+  user: IAddCourseAdministratorRequest
+}
+
+export interface IUpdateUserBySysAdminResponse {
+  user: IUser
 }

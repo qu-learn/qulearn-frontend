@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Users } from "lucide-react";
-import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation, useGetSystemMetricsQuery } from "../../utils/api";
+import { useAddCourseAdministratorMutation, useGetCourseAdministratorsQuery, useUpdateCourseAdministratorMutation, useDeleteCourseAdministratorMutation, useGetSystemMetricsQuery, useGetSysAdminUsersQuery, useUpdateUserBySysAdminMutation } from "../../utils/api";
 
 // Mock dashboard data
 const mockDashboardData = {
@@ -21,13 +21,25 @@ const SiteAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showAddUserForm, setShowAddUserForm] = useState(false); // New state for add user form visibility
   const { data: courseAdmins } = useGetCourseAdministratorsQuery()
+
+  // new: fetch all users for the "All Users" tab (page 1, pageSize 50)
+  const { data: allUsersData, isLoading: allUsersLoading } = useGetSysAdminUsersQuery({ page: 1, pageSize: 50 });
+
   // local mutable admins array
   const [admins, setAdmins] = useState<any[]>([]);
+  // local users array for "All Users" tab
+  const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!courseAdmins?.cAdmins) return;
     setAdmins(courseAdmins.cAdmins);
   }, [courseAdmins]);
+
+  // populate users when fetched
+  useEffect(() => {
+    if (!allUsersData?.users) return;
+    setUsers(allUsersData.users);
+  }, [allUsersData]);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -106,12 +118,14 @@ const SiteAdminDashboard = () => {
 
   const [addCourseAdmin, { isLoading, error }] = useAddCourseAdministratorMutation()
   const [updateCourseAdministrator, { isLoading: updating }] = useUpdateCourseAdministratorMutation()
+  // new: generic sys-admin update for arbitrary users
+  const [updateUserBySysAdmin, { isLoading: updatingUser }] = useUpdateUserBySysAdminMutation()
   // new: delete mutation hook
   const [deleteCourseAdministrator, { isLoading: deleting }] = useDeleteCourseAdministratorMutation()
 
   // Mock API responses (assuming these are static for this example)
   //const dashboardData = mockDashboardData;
-  const usersLoading = false;
+  const usersLoading = allUsersLoading;
   //const dashboardLoading = false;
 
   // Add this hook
@@ -240,23 +254,38 @@ const SiteAdminDashboard = () => {
        // include accountStatus key expected by backend
        accountStatus: editingAdmin.accountStatus,
      };
-
-    try {
-      const response = await updateCourseAdministrator({
-        cAdminId: editingAdmin.id,
-        cAdmin: payload,
-      }).unwrap();
-
-      // update local admins list from server response
-      const updated = response.cAdmin;
-      setAdmins(prev => prev.map(a => (a.id === updated.id ? updated : a)));
-      setModalMessage("Administrator updated successfully.");
-      setEditingAdmin(null);
-    } catch (err) {
-      console.error("Failed to update administrator:", err);
-      setModalMessage("Failed to update administrator.");
-    }
-  };
+ 
+     try {
+      let updatedUser: any = null
+      if (editingAdmin.role === "course-administrator") {
+        const response = await updateCourseAdministrator({
+          cAdminId: editingAdmin.id,
+          cAdmin: payload,
+        }).unwrap();
+        updatedUser = response.cAdmin
+      } else {
+        const response = await updateUserBySysAdmin({
+          userId: editingAdmin.id,
+          user: payload,
+        }).unwrap();
+        updatedUser = response.user
+      }
+ 
+      // update local lists (admins and users) if present
+      if (updatedUser) {
+        setAdmins(prev => prev.map(a => (a.id === updatedUser.id ? updatedUser : a)))
+        setUsers(prev => prev.map(u => (u.id === updatedUser.id ? updatedUser : u)))
+        setModalMessage("User updated successfully.")
+        setEditingAdmin(null)
+      } else {
+        setModalMessage("Update completed.")
+        setEditingAdmin(null)
+      }
+     } catch (err) {
+       console.error("Failed to update administrator:", err);
+       setModalMessage("Failed to update administrator.");
+     }
+   };
 
   const handleDeleteAdminClick = (admin: any) => setAdminToDelete(admin);
   const handleConfirmDeleteAdmin = async () => {
@@ -333,6 +362,17 @@ const SiteAdminDashboard = () => {
                 }`}
             >
               Course Administrator Management
+            </button>
+
+            {/* New tab: All Users */}
+            <button
+              onClick={() => setActiveTab("all-users")}
+              className={`py-2 px-1 border-b-2 font-medium text-lg ${activeTab === "all-users"
+                  ? "border-cyan-700 text-cyan-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+            >
+              User Management
             </button>
           </nav>
         </div>
@@ -470,63 +510,82 @@ const SiteAdminDashboard = () => {
             {/* Chart Section */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Monthly Activity Report</h3>
-                <div className="flex items-center space-x-4 text-sm">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2"></div>
-                    <span className="text-gray-600">Registrations</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-                    <span className="text-gray-600">Courses</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-indigo-600 rounded-full mr-2"></div>
-                    <span className="text-gray-600">Active Users</span>
-                  </div>
+                <h3 className="text-lg font-semibold text-gray-900">Monthly Cumulative Users</h3>
+                <div className="text-sm text-gray-600">
+                  {systemMetrics?.cumulativeUsers && systemMetrics.cumulativeUsers.length > 0
+                    ? `${systemMetrics.cumulativeUsers[systemMetrics.cumulativeUsers.length - 1].count.toLocaleString()} total`
+                    : 'No data'}
                 </div>
               </div>
               
-              {/* Simple Bar Chart */}
-              <div className="flex items-end justify-around h-64 space-x-8">
-                {/* January */}
-                <div className="flex flex-col items-center flex-1">
-                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
-                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '60%'}}></div>
-                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '80%'}}></div>
-                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '55%'}}></div>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3">January</p>
-                </div>
-                
-                {/* February */}
-                <div className="flex flex-col items-center flex-1">
-                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
-                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '95%'}}></div>
-                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '70%'}}></div>
-                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '50%'}}></div>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3">February</p>
-                </div>
-                
-                {/* March */}
-                <div className="flex flex-col items-center flex-1">
-                  <div className="flex items-end justify-center space-x-2 h-48 w-full">
-                    <div className="w-8 bg-cyan-500 rounded-t" style={{height: '75%'}}></div>
-                    <div className="w-8 bg-orange-500 rounded-t" style={{height: '60%'}}></div>
-                    <div className="w-8 bg-indigo-600 rounded-t" style={{height: '90%'}}></div>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3">March</p>
-                </div>
-              </div>
-              
-              <div className="flex justify-between text-xs text-gray-400 mt-2">
-                <span>10k</span>
-                <span>20k</span>
-                <span>30k</span>
-                <span>40k</span>
-                <span>50k</span>
-              </div>
+              {/* Line chart using cumulativeUsers */}
+              {systemMetrics?.cumulativeUsers && systemMetrics.cumulativeUsers.length > 0 ? (
+                (() => {
+                  const data = systemMetrics.cumulativeUsers
+                  const padding = { top: 12, right: 20, bottom: 40, left: 40 }
+                  const width = 720
+                  const height = 240
+                  const innerW = width - padding.left - padding.right
+                  const innerH = height - padding.top - padding.bottom
+                  const values = data.map(d => d.count)
+                  const min = Math.min(...values)
+                  const max = Math.max(...values)
+                  const range = Math.max(1, max - min)
+                  const n = data.length
+                  const xStep = n > 1 ? innerW / (n - 1) : innerW
+
+                  const points = data.map((d, i) => {
+                    const x = padding.left + i * xStep
+                    const y = padding.top + innerH - ((d.count - min) / range) * innerH
+                    return { x, y, label: d.month, value: d.count }
+                  })
+
+                  const pathD = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ')
+
+                  return (
+                    <div className="overflow-x-auto">
+                      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+                        {/* Y axis grid lines */}
+                        {[0, 0.25, 0.5, 0.75, 1].map((t, idx) => {
+                          const y = padding.top + innerH - t * innerH
+                          const val = Math.round(min + t * range)
+                          return (
+                            <g key={idx}>
+                              <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#e5e7eb" strokeWidth={1} />
+                              <text x={8} y={y + 4} fontSize={10} fill="#9CA3AF">{val.toLocaleString()}</text>
+                            </g>
+                          )
+                        })}
+
+                        {/* line path */}
+                        <path d={pathD} fill="none" stroke="#06b6d4" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+
+                        {/* area under line (light) */}
+                        <path
+                          d={`${pathD} L ${padding.left + innerW} ${padding.top + innerH} L ${padding.left} ${padding.top + innerH} Z`}
+                          fill="rgba(6,182,212,0.08)"
+                        />
+
+                        {/* points */}
+                        {points.map((p, i) => (
+                          <g key={i}>
+                            <circle cx={p.x} cy={p.y} r={4} fill="#06b6d4" stroke="#fff" strokeWidth={1} />
+                          </g>
+                        ))}
+
+                        {/* x-axis labels */}
+                        {points.map((p, i) => (
+                          <text key={i} x={p.x} y={height - 12} fontSize={11} textAnchor="middle" fill="#6B7280">
+                            {p.label}
+                          </text>
+                        ))}
+                      </svg>
+                    </div>
+                  )
+                })()
+              ) : (
+                <div className="py-12 text-center text-gray-500">No cumulative user data available.</div>
+              )}
             </div>
           </div>
         )}
@@ -850,6 +909,148 @@ const SiteAdminDashboard = () => {
             )}
           </div>
         )}
+
+        {/* New: User Management Tab (same interface but with Role column) */}
+        {activeTab === "all-users" && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">User Management</h3>
+              {/* no "Add" button for generic users */}
+            </div>
+
+            <div className="flex items-center space-x-4 mb-6">
+              <input
+                type="text"
+                placeholder="Search by name or email"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-lg text-medium focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Filter by Status</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="deactivated">Deactivated</option>
+              </select>
+            </div>
+
+            {usersLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : !users || users.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No users found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      {/* New Role column */}
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Registered On
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users
+                      .filter((user) => {
+                        const matchesSearch =
+                          user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                        const userStatus = user.status || "active";
+                        const matchesStatus = statusFilter === "all" || userStatus === statusFilter;
+                        return matchesSearch && matchesStatus;
+                      })
+                      .map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              {user.avatarUrl ? (
+                                <img
+                                  src={user.avatarUrl || "/placeholder.svg"}
+                                  alt={user.fullName}
+                                  className="w-10 h-10 rounded-full mr-3"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                                  <span className="text-white text-medium font-medium">
+                                    {user.fullName.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <div>
+                                <div className="text-medium font-medium text-gray-900">
+                                  {user.fullName.length > 40 ? user.fullName.slice(0, 37) + "..." : user.fullName}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-medium text-gray-500">
+                            {user.email.length > 30 ? user.email.slice(0, 27) + "..." : user.email}
+                          </td>
+                          {/* Role cell */}
+                          <td className="px-6 py-4 whitespace-nowrap text-medium text-gray-500">
+                            {user.role ? user.role.split("-").map(s => s[0].toUpperCase()+s.slice(1)).join(" ") : "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded-full text-sm font-medium ${
+                                (user.status || "active") === "active" ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-600"
+                              }`}
+                            >
+                              {(() => { const s = (user.status || "active"); return s.charAt(0).toUpperCase() + s.slice(1); })()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-medium text-gray-500">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleViewAdmin(user)}
+                                className="text-blue-600 hover:text-blue-900 text-sm px-2 py-1 rounded border border-blue-600"
+                              >
+                                View
+                              </button>
+                              {/* Update button for generic users */}
+                              <button
+                                onClick={() => handleEditAdminClick(user)}
+                                className="text-indigo-600 hover:text-indigo-900 text-sm px-2 py-1 rounded border border-indigo-600"
+                              >
+                                Update
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Headless UI Modals */}
@@ -913,7 +1114,9 @@ const SiteAdminDashboard = () => {
             <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
-                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">Edit Administrator</Dialog.Title>
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                    {editingAdmin?.role === "course-administrator" ? "Edit Administrator" : "Edit User"}
+                  </Dialog.Title>
                   {editingAdmin && (
                     <form onSubmit={handleSaveEditedAdmin} className="space-y-3">
                       <div>
