@@ -371,16 +371,16 @@ const LessonDetail: React.FC = () => {
 
         {/* Navigation Footer */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 max-w-xs">
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div className="min-w-0">
               {previousLesson ? (
                 <button
                   onClick={handlePreviousLesson}
-                  className="text-left text-gray-600 hover:text-gray-800 font-medium transition-colors group"
+                  className="text-left text-gray-600 hover:text-gray-800 font-medium transition-colors group min-w-0"
                 >
                   <div className="flex items-center">
                     <span className="mr-2">←</span>
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-xs text-gray-500">Previous</div>
                       <div className="truncate group-hover:underline">{previousLesson.title}</div>
                     </div>
@@ -391,22 +391,24 @@ const LessonDetail: React.FC = () => {
               )}
             </div>
 
-            <button
-              onClick={handleMarkComplete}
-              disabled={isMarking || isLessonCompleted}
-              className={`bg-cyan-600 text-white px-6 py-2 rounded-lg transition-colors font-medium ${isMarking || isLessonCompleted ? 'opacity-70 cursor-not-allowed' : 'hover:bg-cyan-700'}`}
-            >
-              {isLessonCompleted ? 'Completed' : isMarking ? 'Marking...' : 'Mark as Complete'}
-            </button>
+            <div className="flex items-center justify-center">
+              <button
+                onClick={handleMarkComplete}
+                disabled={isMarking || isLessonCompleted}
+                className={`bg-cyan-600 text-white px-6 py-2 rounded-lg transition-colors font-medium ${isMarking || isLessonCompleted ? 'opacity-70 cursor-not-allowed' : 'hover:bg-cyan-700'}`}
+              >
+                {isLessonCompleted ? 'Completed' : isMarking ? 'Marking...' : 'Mark as Complete'}
+              </button>
+            </div>
 
-            <div className="flex-1 max-w-xs text-right">
+            <div className="min-w-0 text-right pr-6">
               {nextLesson ? (
                 <button
                   onClick={handleNextLesson}
-                  className="text-right text-cyan-600 hover:text-cyan-700 font-medium transition-colors group"
+                  className="text-right text-cyan-600 hover:text-cyan-700 font-medium transition-colors group min-w-0"
                 >
                   <div className="flex items-center justify-end">
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-xs text-gray-500">Next</div>
                       <div className="truncate group-hover:underline">{nextLesson.title}</div>
                     </div>
