@@ -1012,7 +1012,7 @@ const SiteAdminDashboard = () => {
                           </td>
                           {/* Role cell */}
                           <td className="px-6 py-4 whitespace-nowrap text-medium text-gray-500">
-                            {user.role ? user.role.split("-").map(s => s[0].toUpperCase()+s.slice(1)).join(" ") : "N/A"}
+                            {user.role ? user.role.split("-").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ") : "N/A"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
